@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Authenticatable
 {
@@ -40,13 +41,13 @@ class User extends Authenticatable
         return $this->role === 'operator';
     }
 
-    public function isGuru(): bool
+    public function guru(): HasOne
     {
-        return $this->role === 'guru';
+        return $this->hasOne(Guru::class);
     }
 
-    public function isSiswa(): bool
+    public function siswa(): HasOne
     {
-        return $this->role === 'siswa';
+        return $this->hasOne(Siswa::class);
     }
 }
