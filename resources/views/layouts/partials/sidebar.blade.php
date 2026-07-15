@@ -42,6 +42,40 @@
                     </a>
                 </li>
 
+                <li class="nav-item">
+
+                    <a
+                        class="nav-link {{ request()->routeIs('tahun-ajaran.*') ? 'active' : '' }}"
+                        href="{{ route('tahun-ajaran.index') }}"
+                    >
+
+                        <span class="nav-link-icon">
+                            <i class="ti ti-calendar"></i>
+                        </span>
+
+                        <span class="nav-link-title">
+                            Tahun Ajaran
+                        </span>
+
+                    </a>
+
+                </li>
+
+                <li class="nav-item">
+                    <a
+                        class="nav-link {{ request()->routeIs('kelas.*') ? 'active' : '' }}"
+                        href="{{ route('kelas.index') }}"
+                    >
+                        <span class="nav-link-icon">
+                            <i class="ti ti-school"></i>
+                        </span>
+
+                        <span class="nav-link-title">
+                            Kelas
+                        </span>
+                    </a>
+                </li>
+
             </ul>
 
         </div>
