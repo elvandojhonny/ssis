@@ -76,6 +76,36 @@
                     </a>
                 </li>
 
+                <li class="nav-item">
+                    <a
+                        class="nav-link {{ request()->routeIs('guru.*') ? 'active' : '' }}"
+                        href="{{ route('guru.index') }}"
+                    >
+                        <span class="nav-link-icon">
+                            <i class="ti ti-user"></i>
+                        </span>
+
+                        <span class="nav-link-title">
+                            Guru
+                        </span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a
+                        class="nav-link {{ request()->routeIs('siswa.*') ? 'active' : '' }}"
+                        href="{{ route('siswa.index') }}"
+                    >
+                        <span class="nav-link-icon">
+                            <i class="ti ti-users"></i>
+                        </span>
+
+                        <span class="nav-link-title">
+                            Siswa
+                        </span>
+                    </a>
+                </li>
+
             </ul>
 
         </div>

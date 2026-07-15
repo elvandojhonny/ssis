@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Master\TahunAjaranController;
 use App\Http\Controllers\Master\KelasController;
+use App\Http\Controllers\Master\GuruController;
+use App\Http\Controllers\Master\SiswaController;
 
 Route::middleware('guest')->group(function () {
 
@@ -31,6 +33,12 @@ Route::middleware('auth')->group(function () {
     Route::get('kelas/{kelas}/edit', [KelasController::class, 'edit'])->name('kelas.edit');
     Route::put('kelas/{kelas}', [KelasController::class, 'update'])->name('kelas.update');
     Route::delete('kelas/{kelas}', [KelasController::class, 'destroy'])->name('kelas.destroy');
+
+    Route::resource('guru', GuruController::class)
+    ->except('show');
+
+    Route::resource('siswa', SiswaController::class)
+    ->except('show');
 
     Route::post('/logout', [LoginController::class, 'logout'])
         ->name('logout');
