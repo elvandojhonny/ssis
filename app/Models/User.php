@@ -39,6 +39,14 @@ class User extends Authenticatable
         return $this->hasOne(Siswa::class, 'user_id');
     }
 
+    public function sesiAbsensis()
+    {
+        return $this->hasMany(
+            SesiAbsensi::class,
+            'dibuka_oleh'
+        );
+    }
+
     public function isOperator(): bool
     {
         return $this->role === 'operator';

@@ -119,7 +119,7 @@
             <div class="card-footer">
 
                 <a
-                    href="#"
+                    href="{{ route('absensi.siswa.index') }}"
                     class="btn btn-primary w-100"
                 >
 

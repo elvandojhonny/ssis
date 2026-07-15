@@ -1,3 +1,7 @@
+@php
+    $user = auth()->user();
+@endphp
+
 <aside class="navbar navbar-vertical navbar-expand-lg" data-bs-theme="dark">
     <div class="container-fluid">
 
@@ -48,6 +52,7 @@
             </div>
 
         </li>
+
 
 
         <li class="nav-item">
@@ -131,51 +136,91 @@
 
     @endif
 
+    {{-- MENU ABSENSI OPERATOR --}}
+@if($user->isOperator())
 
-    {{-- MENU GURU --}}
-    @if(auth()->user()->isguru())
+<li class="nav-item mt-3">
+    <div class="nav-link disabled">
+        <span class="nav-link-title text-secondary">
+            ABSENSI
+        </span>
+    </div>
+</li>
 
-        <li class="nav-item">
+<li class="nav-item">
+    <a
+        class="nav-link {{ request()->routeIs('absensi.sesi.*') ? 'active' : '' }}"
+        href="{{ route('absensi.sesi.index') }}"
+    >
+        <span class="nav-link-icon">
+            <i class="ti ti-qrcode"></i>
+        </span>
 
-            <a class="nav-link" href="#">
+        <span class="nav-link-title">
+            Sesi Absensi
+        </span>
+    </a>
+</li>
 
-                <span class="nav-link-icon">
-                    <i class="ti ti-qrcode"></i>
-                </span>
-
-                <span class="nav-link-title">
-                    Absensi
-                </span>
-
-            </a>
-
-        </li>
-
-    @endif
+@endif
 
 
-    {{-- MENU SISWA --}}
-    @if(auth()->user()->isSiswa())
+{{-- MENU GURU --}}
+@if($user->isGuru())
 
-        <li class="nav-item">
+<li class="nav-item mt-3">
+    <div class="nav-link disabled">
+        <span class="nav-link-title text-secondary">
+            ABSENSI
+        </span>
+    </div>
+</li>
 
-            <a class="nav-link" href="#">
+<li class="nav-item">
+    <a
+        class="nav-link {{ request()->routeIs('absensi.sesi.*') ? 'active' : '' }}"
+        href="{{ route('absensi.sesi.index') }}"
+    >
+        <span class="nav-link-icon">
+            <i class="ti ti-qrcode"></i>
+        </span>
 
-                <span class="nav-link-icon">
-                    <i class="ti ti-scan"></i>
-                </span>
+        <span class="nav-link-title">
+            Absensi
+        </span>
+    </a>
+</li>
 
-                <span class="nav-link-title">
-                    Absensi Saya
-                </span>
+@endif
 
-            </a>
 
-        </li>
+{{-- MENU SISWA --}}
+@if($user->isSiswa())
 
-    @endif
+<li class="nav-item mt-3">
+    <div class="nav-link disabled">
+        <span class="nav-link-title text-secondary">
+            ABSENSI
+        </span>
+    </div>
+</li>
 
-</ul>
+<li class="nav-item">
+    <a
+        class="nav-link {{ request()->routeIs('absensi.saya.*') ? 'active' : '' }}"
+        href="#"
+    >
+        <span class="nav-link-icon">
+            <i class="ti ti-scan"></i>
+        </span>
+
+        <span class="nav-link-title">
+            Absensi Saya
+        </span>
+    </a>
+</li>
+
+@endif
 
         </div>
     </div>
