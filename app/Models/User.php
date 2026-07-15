@@ -3,9 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Authenticatable
 {
@@ -18,22 +18,25 @@ class User extends Authenticatable
         'password',
         'role',
         'is_active',
-        'last_login_at',
-    ];
-
-    protected $hidden = [
-        'password',
-        'remember_token',
     ];
 
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
-            'last_login_at' => 'datetime',
-            'is_active' => 'boolean',
             'password' => 'hashed',
+            'is_active' => 'boolean',
         ];
+    }
+
+    public function guru()
+    {
+        return $this->hasOne(Guru::class, 'user_id');
+    }
+
+    public function siswa()
+    {
+        return $this->hasOne(Siswa::class, 'user_id');
     }
 
     public function isOperator(): bool
@@ -41,13 +44,13 @@ class User extends Authenticatable
         return $this->role === 'operator';
     }
 
-    public function guru(): HasOne
+    public function isGuru(): bool
     {
-        return $this->hasOne(Guru::class);
+        return $this->role === 'guru';
     }
 
-    public function siswa(): HasOne
+    public function isSiswa(): bool
     {
-        return $this->hasOne(Siswa::class);
+        return $this->role === 'siswa';
     }
 }
