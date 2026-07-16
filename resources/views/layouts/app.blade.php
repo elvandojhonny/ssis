@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
+
     <meta charset="UTF-8">
 
     <meta
@@ -8,13 +10,14 @@
         content="width=device-width, initial-scale=1"
     >
 
-    {{-- CSRF Token untuk request JavaScript --}}
     <meta
         name="csrf-token"
         content="{{ csrf_token() }}"
     >
 
-    <title>@yield('title', 'Dashboard') | SSIS</title>
+    <title>
+        @yield('title', 'Dashboard') | SSIS
+    </title>
 
     @vite([
         'resources/css/app.css',
@@ -22,37 +25,73 @@
     ])
 
     @stack('styles')
+
 </head>
 
-<body>
 
-<div class="page">
+<body class="ssis-body">
 
-    {{-- Sidebar --}}
+<div class="page ssis-app">
+
+    {{-- ===================================================== --}}
+    {{-- SIDEBAR --}}
+    {{-- ===================================================== --}}
+
     @include('layouts.partials.sidebar')
 
-    <div class="page-wrapper">
 
-        {{-- Navbar --}}
+    {{-- ===================================================== --}}
+    {{-- MAIN WRAPPER --}}
+    {{-- ===================================================== --}}
+
+    <div class="page-wrapper ssis-wrapper">
+
+
+        {{-- ================================================= --}}
+        {{-- NAVBAR --}}
+        {{-- ================================================= --}}
+
         @include('layouts.partials.navbar')
 
-        <main class="page-body">
+
+        {{-- ================================================= --}}
+        {{-- MAIN CONTENT --}}
+        {{-- ================================================= --}}
+
+        <main class="page-body ssis-content">
+
             <div class="container-xl">
 
                 @yield('content')
 
             </div>
+
         </main>
 
-        {{-- Footer --}}
+
+        {{-- ================================================= --}}
+        {{-- FOOTER --}}
+        {{-- ================================================= --}}
+
         @include('layouts.partials.footer')
 
     </div>
 
 </div>
 
-{{-- Script tambahan dari setiap halaman --}}
+
+{{-- ========================================================= --}}
+{{-- MOBILE SIDEBAR OVERLAY --}}
+{{-- ========================================================= --}}
+
+<div
+    id="sidebar-overlay"
+    class="ssis-sidebar-overlay"
+></div>
+
+
 @stack('scripts')
 
 </body>
+
 </html>

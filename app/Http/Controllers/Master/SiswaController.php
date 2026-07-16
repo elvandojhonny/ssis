@@ -175,8 +175,6 @@ class SiswaController extends Controller
                 'nullable',
                 'email',
                 'max:255',
-                Rule::unique('users', 'email')
-                    ->ignore($siswa?->user_id),
             ],
 
             'password' => [

@@ -5,13 +5,47 @@
 <aside class="navbar navbar-vertical navbar-expand-lg" data-bs-theme="dark">
     <div class="container-fluid">
 
-        <h1 class="navbar-brand navbar-brand-autodark">
-            <a href="{{ route('dashboard') }}" class="text-decoration-none">
-                <span class="ssis-brand text-white">
-                    SSIS
-                </span>
-            </a>
-        </h1>
+        <div class="ssis-sidebar-brand">
+
+    <a
+        href="{{ route('dashboard') }}"
+        class="ssis-brand-link"
+    >
+
+        {{-- Logo Oval --}}
+        <div class="ssis-logo">
+
+            {{-- Untuk sementara pakai icon --}}
+            <i class="ti ti-school"></i>
+
+            {{-- Jika sudah punya logo sekolah, ganti dengan:
+
+            <img
+                src="{{ asset('images/logo-sekolah.png') }}"
+                alt="Logo Sekolah"
+            >
+
+            --}}
+
+        </div>
+
+
+        {{-- Nama Sistem --}}
+        <div class="ssis-brand-content">
+
+            <div class="ssis-brand-name">
+                SSIS
+            </div>
+
+            <div class="ssis-brand-subtitle">
+                Smart School
+            </div>
+
+        </div>
+
+    </a>
+
+</div>
 
         <div class="collapse navbar-collapse" id="sidebar-menu">
 
@@ -162,6 +196,33 @@
     </a>
 </li>
 
+<li class="nav-item">
+
+    <a
+        class="nav-link {{
+            request()->routeIs('absensi.rekap.*')
+                ? 'active'
+                : ''
+        }}"
+        href="{{ route('absensi.rekap.index') }}"
+    >
+
+        <span class="nav-link-icon">
+
+            <i class="ti ti-report-analytics"></i>
+
+        </span>
+
+        <span class="nav-link-title">
+
+            Rekap Absensi
+
+        </span>
+
+    </a>
+
+</li>
+
 @endif
 
 
@@ -207,8 +268,8 @@
 
 <li class="nav-item">
     <a
-        class="nav-link {{ request()->routeIs('absensi.saya.*') ? 'active' : '' }}"
-        href="#"
+        href="{{ route('absensi.siswa.index') }}"
+        class="nav-link {{ request()->routeIs('absensi.siswa.*') ? 'active' : '' }}"
     >
         <span class="nav-link-icon">
             <i class="ti ti-scan"></i>

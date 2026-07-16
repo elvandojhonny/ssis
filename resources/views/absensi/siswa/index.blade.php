@@ -254,176 +254,531 @@
 </div>
 
 
-{{-- RIWAYAT --}}
+{{-- ========================================================= --}}
+{{-- REKAP ABSENSI SEMESTER --}}
+{{-- ========================================================= --}}
 
 <div class="card mt-4">
 
     <div class="card-header">
 
-        <h3 class="card-title">
+        <div class="row align-items-center w-100">
 
-            Riwayat Absensi
+            <div class="col">
 
-        </h3>
+                <h3 class="card-title mb-1">
+                    Rekap Absensi Semester
+                </h3>
+
+                <div class="text-secondary">
+                    Ringkasan kehadiran selama tahun ajaran
+                    {{
+                        $user
+                            ->siswa
+                            ->kelas
+                            ->tahunAjaran
+                            ->nama
+                    }}.
+                </div>
+
+            </div>
+
+
+            <div class="col-auto">
+
+                <button
+                    type="button"
+                    class="btn btn-primary"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modal-riwayat-absensi"
+                >
+
+                    <i class="ti ti-history me-1"></i>
+
+                    Lihat Detail
+
+                </button>
+
+            </div>
+
+        </div>
 
     </div>
 
 
-    <div class="table-responsive">
+    <div class="card-body">
 
-        <table class="table table-vcenter card-table">
-
-            <thead>
-
-                <tr>
-
-                    <th>Tanggal</th>
-
-                    <th>Jenis</th>
-
-                    <th>Kelas</th>
-
-                    <th>Waktu Absen</th>
-
-                    <th>Status</th>
-
-                </tr>
-
-            </thead>
+        <div class="row row-cards">
 
 
-            <tbody>
+            {{-- HADIR --}}
 
-            @forelse($riwayat as $absensi)
+            <div class="col-6 col-md">
 
-                <tr>
+                <div class="card">
 
-                    <td>
+                    <div class="card-body text-center">
+
+                        <div class="text-secondary mb-2">
+                            Hadir
+                        </div>
+
+                        <div class="h1 mb-0 text-success">
+
+                            {{ $statistik['hadir'] }}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            {{-- TERLAMBAT --}}
+
+            <div class="col-6 col-md">
+
+                <div class="card">
+
+                    <div class="card-body text-center">
+
+                        <div class="text-secondary mb-2">
+                            Terlambat
+                        </div>
+
+                        <div class="h1 mb-0 text-warning">
+
+                            {{ $statistik['terlambat'] }}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            {{-- IZIN --}}
+
+            <div class="col-6 col-md">
+
+                <div class="card">
+
+                    <div class="card-body text-center">
+
+                        <div class="text-secondary mb-2">
+                            Izin
+                        </div>
+
+                        <div class="h1 mb-0">
+
+                            {{ $statistik['izin'] }}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            {{-- SAKIT --}}
+
+            <div class="col-6 col-md">
+
+                <div class="card">
+
+                    <div class="card-body text-center">
+
+                        <div class="text-secondary mb-2">
+                            Sakit
+                        </div>
+
+                        <div class="h1 mb-0">
+
+                            {{ $statistik['sakit'] }}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            {{-- ALPA --}}
+
+            <div class="col-6 col-md">
+
+                <div class="card">
+
+                    <div class="card-body text-center">
+
+                        <div class="text-secondary mb-2">
+                            Alpa
+                        </div>
+
+                        <div class="h1 mb-0 text-danger">
+
+                            {{ $statistik['alpa'] }}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        {{-- TOTAL --}}
+
+        <div class="mt-4">
+
+            <div class="d-flex justify-content-between">
+
+                <span class="text-secondary">
+                    Total Data Absensi
+                </span>
+
+                <strong>
+                    {{ $statistik['total'] }}
+                </strong>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+{{-- ========================================================= --}}
+{{-- MODAL DETAIL RIWAYAT --}}
+{{-- ========================================================= --}}
+
+<div
+    class="modal modal-blur fade"
+    id="modal-riwayat-absensi"
+    tabindex="-1"
+    aria-hidden="true"
+>
+
+    <div
+        class="
+            modal-dialog
+            modal-xl
+            modal-dialog-centered
+            modal-dialog-scrollable
+        "
+        role="document"
+    >
+
+        <div class="modal-content">
+
+
+            {{-- HEADER --}}
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h2 class="modal-title">
+                        Detail Riwayat Absensi
+                    </h2>
+
+                    <div class="text-secondary mt-1">
+
+                        {{ $user->name }}
+
+                        ·
 
                         {{
-                            $absensi
-                                ->sesiAbsensi
-                                ->tanggal
-                                ->format('d/m/Y')
-                        }}
-
-                    </td>
-
-
-                    <td>
-
-                        {{
-                            ucfirst(
-                                $absensi
-                                    ->sesiAbsensi
-                                    ->jenis
-                            )
-                        }}
-
-                    </td>
-
-
-                    <td>
-
-                        {{
-                            $absensi
-                                ->sesiAbsensi
+                            $user
+                                ->siswa
                                 ->kelas
                                 ->nama
                         }}
 
-                    </td>
+                    </div>
+
+                </div>
 
 
-                    <td>
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="Tutup"
+                ></button>
 
-                        {{
-                            $absensi
-                                ->waktu_absen
-                                ?->format('H:i:s')
-                            ?? '-'
-                        }}
-
-                    </td>
+            </div>
 
 
-                    <td>
+            {{-- BODY --}}
 
-                        @if($absensi->status === 'hadir')
+            <div class="modal-body p-0">
 
-                            <span
-                                class="badge bg-success-lt"
-                            >
-                                Hadir
-                            </span>
+                <div class="table-responsive">
 
-                        @elseif(
-                            $absensi->status
-                            === 'terlambat'
-                        )
-
-                            <span
-                                class="badge bg-warning-lt"
-                            >
-                                Terlambat
-                            </span>
-
-                        @else
-
-                            <span
-                                class="badge bg-secondary-lt"
-                            >
-
-                                {{
-                                    ucfirst(
-                                        $absensi->status
-                                    )
-                                }}
-
-                            </span>
-
-                        @endif
-
-                    </td>
-
-                </tr>
-
-
-            @empty
-
-                <tr>
-
-                    <td
-                        colspan="5"
-                        class="text-center
-                               text-secondary
-                               py-5"
+                    <table
+                        class="
+                            table
+                            table-vcenter
+                            card-table
+                        "
                     >
 
-                        Belum ada riwayat absensi.
+                        <thead>
 
-                    </td>
+                            <tr>
 
-                </tr>
+                                <th>
+                                    Tanggal
+                                </th>
 
-            @endforelse
+                                <th>
+                                    Sesi
+                                </th>
 
-            </tbody>
+                                <th>
+                                    Waktu
+                                </th>
 
-        </table>
+                                <th>
+                                    Status
+                                </th>
 
-    </div>
+                            </tr>
+
+                        </thead>
 
 
-    @if($riwayat->hasPages())
+                        <tbody>
 
-        <div class="card-footer">
+                        @forelse(
+                            $riwayat
+                            as $absensi
+                        )
 
-            {{ $riwayat->links() }}
+                            <tr>
+
+                                {{-- TANGGAL --}}
+
+                                <td>
+
+                                    <div class="fw-bold">
+
+                                        {{
+                                            $absensi
+                                                ->sesiAbsensi
+                                                ->tanggal
+                                                ->format(
+                                                    'd/m/Y'
+                                                )
+                                        }}
+
+                                    </div>
+
+                                </td>
+
+
+                                {{-- SESI --}}
+
+                                <td>
+
+                                    @if(
+                                        $absensi
+                                            ->sesiAbsensi
+                                            ->jenis
+                                        === 'pagi'
+                                    )
+
+                                        <span
+                                            class="
+                                                badge
+                                                bg-yellow-lt
+                                            "
+                                        >
+
+                                            <i
+                                                class="
+                                                    ti
+                                                    ti-sun
+                                                    me-1
+                                                "
+                                            ></i>
+
+                                            Pagi
+
+                                        </span>
+
+                                    @else
+
+                                        <span
+                                            class="
+                                                badge
+                                                bg-blue-lt
+                                            "
+                                        >
+
+                                            <i
+                                                class="
+                                                    ti
+                                                    ti-sunset
+                                                    me-1
+                                                "
+                                            ></i>
+
+                                            Siang
+
+                                        </span>
+
+                                    @endif
+
+                                </td>
+
+
+                                {{-- WAKTU --}}
+
+                                <td>
+
+                                    {{
+                                        (
+                                            $absensi
+                                                ->waktu_absen
+
+                                            ??
+
+                                            $absensi
+                                                ->created_at
+                                        )
+                                        ?->format(
+                                            'H:i:s'
+                                        )
+
+                                        ?? '-'
+                                    }}
+
+                                </td>
+
+
+                                {{-- STATUS --}}
+
+                                <td>
+
+                                    @php
+
+                                        $badgeStatus =
+                                            match(
+                                                $absensi
+                                                    ->status
+                                            ) {
+
+                                                'hadir'
+                                                    => 'success',
+
+                                                'terlambat'
+                                                    => 'warning',
+
+                                                'izin'
+                                                    => 'blue',
+
+                                                'sakit'
+                                                    => 'azure',
+
+                                                'alpa'
+                                                    => 'danger',
+
+                                                default
+                                                    => 'secondary',
+
+                                            };
+
+                                    @endphp
+
+
+                                    <span
+                                        class="
+                                            badge
+                                            bg-{{
+                                                $badgeStatus
+                                            }}-lt
+                                        "
+                                    >
+
+                                        {{
+                                            ucfirst(
+                                                $absensi
+                                                    ->status
+                                            )
+                                        }}
+
+                                    </span>
+
+                                </td>
+
+                            </tr>
+
+
+                        @empty
+
+                            <tr>
+
+                                <td
+                                    colspan="4"
+                                    class="
+                                        text-center
+                                        text-secondary
+                                        py-5
+                                    "
+                                >
+
+                                    Belum ada riwayat
+                                    absensi.
+
+                                </td>
+
+                            </tr>
+
+                        @endforelse
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+
+            {{-- FOOTER --}}
+
+            <div class="modal-footer">
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal"
+                >
+
+                    Tutup
+
+                </button>
+
+            </div>
 
         </div>
 
-    @endif
+    </div>
 
 </div>
 

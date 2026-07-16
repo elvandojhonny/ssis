@@ -8,40 +8,102 @@ use App\Services\AbsensiQrService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
+use Illuminate\Database\QueryException;
+
 class AbsensiSiswaController extends Controller
 {
     public function index()
-    {
-        $user = auth()->user();
+{
+    $user = auth()->user();
 
-        $user->load(
-            'siswa.kelas.tahunAjaran'
-        );
+    $user->load(
+        'siswa.kelas.tahunAjaran'
+    );
 
-        abort_unless(
-            $user->siswa,
-            403,
-            'Data siswa tidak ditemukan.'
-        );
+    abort_unless(
+        $user->siswa,
+        403,
+        'Data siswa tidak ditemukan.'
+    );
 
-        $riwayat = Absensi::with([
-                'sesiAbsensi.kelas',
-            ])
-            ->where(
-                'siswa_id',
-                $user->siswa->id
-            )
-            ->latest('waktu_absen')
-            ->paginate(10);
+    $siswa = $user->siswa;
 
-        return view(
-            'absensi.siswa.index',
-            compact(
-                'user',
-                'riwayat'
-            )
-        );
-    }
+    /*
+    |--------------------------------------------------------------------------
+    | Riwayat Absensi
+    |--------------------------------------------------------------------------
+    | Mengambil riwayat berdasarkan tahun ajaran kelas siswa.
+    */
+
+    $riwayat = Absensi::with([
+            'sesiAbsensi.kelas.tahunAjaran',
+        ])
+        ->where(
+            'siswa_id',
+            $siswa->id
+        )
+        ->whereHas(
+            'sesiAbsensi.kelas',
+            function ($query) use ($siswa) {
+
+                $query->where(
+                    'tahun_ajaran_id',
+                    $siswa
+                        ->kelas
+                        ->tahun_ajaran_id
+                );
+            }
+        )
+        ->get()
+        ->sortByDesc(function ($absensi) {
+
+            return $absensi
+                ->sesiAbsensi
+                ->tanggal;
+        })
+        ->values();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Statistik Absensi
+    |--------------------------------------------------------------------------
+    */
+
+    $statistik = [
+        'hadir' => $riwayat
+            ->where('status', 'hadir')
+            ->count(),
+
+        'terlambat' => $riwayat
+            ->where('status', 'terlambat')
+            ->count(),
+
+        'izin' => $riwayat
+            ->where('status', 'izin')
+            ->count(),
+
+        'sakit' => $riwayat
+            ->where('status', 'sakit')
+            ->count(),
+
+        'alpa' => $riwayat
+            ->where('status', 'alpa')
+            ->count(),
+
+        'total' => $riwayat->count(),
+    ];
+
+
+    return view(
+        'absensi.siswa.index',
+        compact(
+            'user',
+            'riwayat',
+            'statistik'
+        )
+    );
+}
 
     public function scan(
         Request $request,
@@ -191,40 +253,74 @@ class AbsensiSiswaController extends Controller
         }
 
         /*
-         * Simpan absensi.
-         */
-        $absensi = DB::transaction(
-            function () use (
-                $sesi,
-                $siswa,
-                $status,
-                $now
-            ) {
+ * Simpan absensi.
+ *
+ * Database memiliki UNIQUE constraint pada:
+ * sesi_absensi_id + siswa_id.
+ *
+ * Jadi jika dua request masuk hampir bersamaan,
+ * database tetap akan menolak data duplikat.
+ */
+try {
 
-                return Absensi::create([
-                    'sesi_absensi_id' =>
-                        $sesi->id,
+    $absensi = DB::transaction(
+        function () use (
+            $sesi,
+            $siswa,
+            $status,
+            $now
+        ) {
 
-                    'siswa_id' =>
-                        $siswa->id,
+            return Absensi::create([
+                'sesi_absensi_id' =>
+                    $sesi->id,
 
-                    'waktu_absen' =>
-                        $now,
+                'siswa_id' =>
+                    $siswa->id,
 
-                    'status' =>
-                        $status,
+                'waktu_absen' =>
+                    $now,
 
-                    'metode' =>
-                        'qr',
+                'status' =>
+                    $status,
 
-                    'dicatat_oleh' =>
-                        null,
+                'metode' =>
+                    'qr',
 
-                    'keterangan' =>
-                        null,
-                ]);
-            }
-        );
+                'dicatat_oleh' =>
+                    null,
+
+                'keterangan' =>
+                    null,
+            ]);
+        }
+    );
+
+} catch (QueryException $exception) {
+
+    /*
+     * SQLSTATE 23000 berarti terjadi
+     * pelanggaran integrity constraint.
+     *
+     * Dalam kasus ini, kemungkinan data
+     * absensi siswa untuk sesi tersebut
+     * sudah tersimpan.
+     */
+    if ($exception->getCode() === '23000') {
+
+        return response()->json([
+            'message' =>
+                'Anda sudah melakukan absensi pada sesi ini.',
+        ], 409);
+
+    }
+
+    /*
+     * Jika error bukan karena constraint,
+     * biarkan Laravel menangani error aslinya.
+     */
+    throw $exception;
+}
 
         return response()->json([
             'message' =>

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Absensi\SesiAbsensiController;
 use App\Http\Controllers\Absensi\QrAbsensiController;
 use App\Http\Controllers\Absensi\AbsensiSiswaController;
+use App\Http\Controllers\Absensi\RekapAbsensiController;
 
 Route::middleware('guest')->group(function () {
 
@@ -129,9 +130,24 @@ Route::middleware('role:siswa')
         )->name('sesi.qr');
 
         Route::patch(
+            '/sesi/{sesi}/siswa/{siswa}/status',
+            [SesiAbsensiController::class, 'updateStatus']
+        )->name('sesi.status.update');
+
+        Route::patch(
             '/sesi/{sesi}/tutup',
             [SesiAbsensiController::class, 'tutup']
         )->name('sesi.tutup');
+
+        Route::get(
+            '/rekap',
+            [RekapAbsensiController::class, 'index']
+        )->name('rekap.index');
+
+        Route::get(
+            '/rekap/export',
+            [RekapAbsensiController::class, 'export']
+        )->name('rekap.export');
 
     });
 

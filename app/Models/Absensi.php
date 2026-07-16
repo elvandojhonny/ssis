@@ -11,6 +11,7 @@ class Absensi extends Model
         'siswa_id',
         'waktu_absen',
         'status',
+        'waktu_absen',
         'metode',
         'dicatat_oleh',
         'keterangan',

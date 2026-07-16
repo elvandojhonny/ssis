@@ -408,6 +408,380 @@
 
     </div>
 
+    <div class="card mt-4">
+
+    <div class="card-header">
+
+        <div>
+
+            <h3 class="card-title">
+                Daftar Kehadiran Siswa
+            </h3>
+
+            <div class="text-secondary mt-1">
+                Kelola status kehadiran siswa pada sesi ini.
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="table-responsive">
+
+        <table class="table table-vcenter card-table">
+
+            <thead>
+
+                <tr>
+                    <th>Siswa</th>
+                    <th>NIS</th>
+                    <th>Waktu Absen</th>
+                    <th>Metode</th>
+                    <th>Status</th>
+                    <th>Keterangan</th>
+                    <th>Aksi</th>
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+            @forelse($daftarSiswa as $siswa)
+
+                @php
+                    $absensi = $siswa->data_absensi;
+                @endphp
+
+                <tr>
+
+                    <td>
+
+                        <div class="fw-bold">
+                            {{ $siswa->user->name }}
+                        </div>
+
+                    </td>
+
+
+                    <td>
+
+                        {{ $siswa->nis }}
+
+                    </td>
+
+
+                    <td>
+
+                        {{
+                            $absensi
+                                ?->waktu_absen
+                                ?->format('H:i:s')
+                            ?? '-'
+                        }}
+
+                    </td>
+
+
+                    <td>
+
+                        @if($absensi)
+
+                            <span class="badge bg-secondary-lt">
+
+                                {{
+                                    strtoupper(
+                                        $absensi->metode
+                                    )
+                                }}
+
+                            </span>
+
+                        @else
+
+                            -
+
+                        @endif
+
+                    </td>
+
+
+                    <td>
+
+                        @if(!$absensi)
+
+                            <span class="badge bg-secondary-lt">
+                                Belum Absen
+                            </span>
+
+                        @elseif($absensi->status === 'hadir')
+
+                            <span class="badge bg-success-lt">
+                                Hadir
+                            </span>
+
+                        @elseif($absensi->status === 'terlambat')
+
+                            <span class="badge bg-warning-lt">
+                                Terlambat
+                            </span>
+
+                        @elseif($absensi->status === 'izin')
+
+                            <span class="badge bg-blue-lt">
+                                Izin
+                            </span>
+
+                        @elseif($absensi->status === 'sakit')
+
+                            <span class="badge bg-azure-lt">
+                                Sakit
+                            </span>
+
+                        @else
+
+                            <span class="badge bg-danger-lt">
+                                Alpa
+                            </span>
+
+                        @endif
+
+                    </td>
+
+
+                    <td>
+
+                        {{
+                            $absensi?->keterangan
+                            ?? '-'
+                        }}
+
+                    </td>
+
+
+                    <td>
+
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-outline-primary"
+                            data-bs-toggle="modal"
+                            data-bs-target="#statusModal{{ $siswa->id }}"
+                        >
+                            Ubah Status
+                        </button>
+
+                    </td>
+
+                </tr>
+
+
+                {{-- MODAL STATUS --}}
+
+                <div
+                    class="modal modal-blur fade"
+                    id="statusModal{{ $siswa->id }}"
+                    tabindex="-1"
+                >
+
+                    <div
+                        class="modal-dialog modal-dialog-centered"
+                        role="document"
+                    >
+
+                        <div class="modal-content">
+
+                            <form
+                                action="{{
+                                    route(
+                                        'absensi.sesi.status.update',
+                                        [
+                                            $sesi,
+                                            $siswa
+                                        ]
+                                    )
+                                }}"
+                                method="POST"
+                            >
+
+                                @csrf
+                                @method('PATCH')
+
+
+                                <div class="modal-header">
+
+                                    <h5 class="modal-title">
+
+                                        Ubah Status Absensi
+
+                                    </h5>
+
+
+                                    <button
+                                        type="button"
+                                        class="btn-close"
+                                        data-bs-dismiss="modal"
+                                    ></button>
+
+                                </div>
+
+
+                                <div class="modal-body">
+
+                                    <div class="mb-3">
+
+                                        <label class="form-label">
+                                            Siswa
+                                        </label>
+
+                                        <input
+                                            type="text"
+                                            class="form-control"
+                                            value="{{ $siswa->user->name }}"
+                                            disabled
+                                        >
+
+                                    </div>
+
+
+                                    <div class="mb-3">
+
+                                        <label class="form-label">
+                                            Status
+                                        </label>
+
+
+                                        <select
+                                            name="status"
+                                            class="form-select"
+                                            required
+                                        >
+
+                                            <option
+                                                value="hadir"
+                                                @selected(
+                                                    $absensi?->status
+                                                    === 'hadir'
+                                                )
+                                            >
+                                                Hadir
+                                            </option>
+
+                                            <option
+                                                value="terlambat"
+                                                @selected(
+                                                    $absensi?->status
+                                                    === 'terlambat'
+                                                )
+                                            >
+                                                Terlambat
+                                            </option>
+
+                                            <option
+                                                value="izin"
+                                                @selected(
+                                                    $absensi?->status
+                                                    === 'izin'
+                                                )
+                                            >
+                                                Izin
+                                            </option>
+
+                                            <option
+                                                value="sakit"
+                                                @selected(
+                                                    $absensi?->status
+                                                    === 'sakit'
+                                                )
+                                            >
+                                                Sakit
+                                            </option>
+
+                                            <option
+                                                value="alpa"
+                                                @selected(
+                                                    $absensi?->status
+                                                    === 'alpa'
+                                                )
+                                            >
+                                                Alpa
+                                            </option>
+
+                                        </select>
+
+                                    </div>
+
+
+                                    <div>
+
+                                        <label class="form-label">
+                                            Keterangan
+                                        </label>
+
+
+                                        <textarea
+                                            name="keterangan"
+                                            class="form-control"
+                                            rows="3"
+                                            placeholder="Opsional"
+                                        >{{ $absensi?->keterangan }}</textarea>
+
+                                    </div>
+
+                                </div>
+
+
+                                <div class="modal-footer">
+
+                                    <button
+                                        type="button"
+                                        class="btn btn-link"
+                                        data-bs-dismiss="modal"
+                                    >
+                                        Batal
+                                    </button>
+
+
+                                    <button
+                                        type="submit"
+                                        class="btn btn-primary"
+                                    >
+                                        Simpan
+                                    </button>
+
+                                </div>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            @empty
+
+                <tr>
+
+                    <td
+                        colspan="7"
+                        class="text-center text-secondary py-5"
+                    >
+                        Belum ada siswa aktif di kelas ini.
+                    </td>
+
+                </tr>
+
+            @endforelse
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
 </div>
 
 @endsection

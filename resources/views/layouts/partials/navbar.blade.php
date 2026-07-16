@@ -1,48 +1,137 @@
-<header class="navbar navbar-expand-md d-print-none">
-    <div class="container-xl">
+<header class="ssis-navbar d-print-none">
 
-        <button class="navbar-toggler"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#sidebar-menu">
+    <div class="ssis-navbar-inner">
+
+        {{-- Mobile Sidebar Toggle --}}
+        <button
+            class="navbar-toggler ssis-menu-toggle"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#sidebar-menu"
+            aria-controls="sidebar-menu"
+            aria-expanded="false"
+        >
             <span class="navbar-toggler-icon"></span>
         </button>
 
-        <!-- Judul -->
-        <div class="navbar-nav">
-            <div class="nav-item">
-                <span class="nav-link fw-bold">
-                    Smart School Information System
-                </span>
-            </div>
+
+        {{-- Judul Aplikasi --}}
+        <div class="ssis-navbar-title">
+
+            <span class="ssis-navbar-title-main">
+                Smart School Information System
+            </span>
+
         </div>
 
-        <!-- User -->
-        <div class="navbar-nav flex-row order-md-last align-items-center">
 
-            <div class="nav-item d-flex align-items-center">
+        {{-- User Dropdown --}}
+        <div class="dropdown">
 
-                <span class="avatar avatar-sm me-2">
-                    {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+            <button
+                class="ssis-user-menu"
+                type="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+            >
+
+                <span class="avatar ssis-user-avatar">
+
+                    {{
+                        strtoupper(
+                            substr(
+                                auth()->user()->name,
+                                0,
+                                1
+                            )
+                        )
+                    }}
+
                 </span>
 
-                <div class="d-none d-xl-block me-3">
-                    <div class="fw-bold">
+
+                <span class="ssis-user-info">
+
+                    <span class="ssis-user-name">
                         {{ auth()->user()->name }}
+                    </span>
+
+                    <span class="ssis-user-role">
+                        {{ ucfirst(auth()->user()->role) }}
+                    </span>
+
+                </span>
+
+
+                <i class="ti ti-chevron-down ssis-user-arrow"></i>
+
+            </button>
+
+
+            <div
+                class="
+                    dropdown-menu
+                    dropdown-menu-end
+                    ssis-profile-dropdown
+                "
+            >
+
+                <div class="ssis-dropdown-user">
+
+                    <span class="avatar ssis-user-avatar">
+
+                        {{
+                            strtoupper(
+                                substr(
+                                    auth()->user()->name,
+                                    0,
+                                    1
+                                )
+                            )
+                        }}
+
+                    </span>
+
+                    <div>
+
+                        <div class="fw-bold">
+                            {{ auth()->user()->name }}
+                        </div>
+
+                        <div class="small text-secondary text-capitalize">
+                            {{ auth()->user()->role }}
+                        </div>
+
                     </div>
 
-                    <div class="small text-secondary text-capitalize">
-                        {{ auth()->user()->role }}
-                    </div>
                 </div>
 
-                <form action="{{ route('logout') }}" method="POST">
+
+                <div class="dropdown-divider"></div>
+
+
+                <form
+                    action="{{ route('logout') }}"
+                    method="POST"
+                >
+
                     @csrf
 
-                    <button type="submit" class="btn btn-outline-danger btn-sm">
-                        <i class="ti ti-logout me-1"></i>
-                        Logout
+                    <button
+                        type="submit"
+                        class="
+                            dropdown-item
+                            text-danger
+                            ssis-logout-item
+                        "
+                    >
+
+                        <i class="ti ti-logout me-2"></i>
+
+                        Keluar dari Sistem
+
                     </button>
+
                 </form>
 
             </div>
@@ -50,4 +139,5 @@
         </div>
 
     </div>
+
 </header>
