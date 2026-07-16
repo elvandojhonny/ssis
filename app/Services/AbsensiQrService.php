@@ -99,17 +99,13 @@ class AbsensiQrService
         $this->currentInterval();
 
     /*
-     * Menerima:
-     *
-     * - interval saat ini
-     * - satu interval sebelumnya
-     *
-     * Maksimal toleransi sekitar 15 detik.
-     */
-    if (
-        $interval !== $currentInterval
-        && $interval !== $currentInterval - 1
-    ) {
+    * Token hanya berlaku pada interval
+    * 15 detik yang sedang aktif.
+    *
+    * Begitu interval berganti,
+    * token sebelumnya langsung tidak berlaku.
+    */
+    if ($interval !== $currentInterval) {
         return null;
     }
 

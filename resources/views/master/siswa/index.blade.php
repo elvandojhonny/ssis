@@ -286,6 +286,14 @@
 
                             </a>
 
+                            <a
+                                    href="{{ route('siswa.qr.show', $siswa) }}"
+                                    class="btn btn-sm btn-outline-success"
+                                >
+                                    <i class="ti ti-qrcode me-1"></i>
+                                    QR
+                                </a>
+
 
                             <form
                                 action="{{ route(
@@ -312,6 +320,7 @@
                                     <i class="ti ti-trash"></i>
 
                                 </button>
+
 
                             </form>
 

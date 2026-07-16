@@ -261,24 +261,28 @@
 <li class="nav-item mt-3">
     <div class="nav-link disabled">
         <span class="nav-link-title text-secondary">
-            ABSENSI
+            KEHADIRAN
         </span>
     </div>
 </li>
 
 <li class="nav-item">
     <a
-        href="{{ route('absensi.siswa.index') }}"
-        class="nav-link {{ request()->routeIs('absensi.siswa.*') ? 'active' : '' }}"
-    >
-        <span class="nav-link-icon">
-            <i class="ti ti-scan"></i>
-        </span>
+    class="nav-link {{
+        request()->routeIs('absensi.siswa.*')
+            ? 'active'
+            : ''
+    }}"
+    href="{{ route('absensi.siswa.index') }}"
+>
+    <span class="nav-link-icon">
+        <i class="ti ti-report-analytics"></i>
+    </span>
 
-        <span class="nav-link-title">
-            Absensi Saya
-        </span>
-    </a>
+    <span class="nav-link-title">
+        Kehadiran Saya
+    </span>
+</a>
 </li>
 
 @endif

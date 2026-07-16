@@ -9,36 +9,52 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
+use App\Services\FinalisasiSesiAbsensiService;
+
 use App\Models\Absensi;
 use App\Models\Siswa;
 
 class SesiAbsensiController extends Controller
 {
-    public function index()
-    {
-        $sesiAktif = SesiAbsensi::with([
-                'kelas.tahunAjaran',
-                'pembuka',
-            ])
-            ->whereDate('tanggal', today())
-            ->where('status', 'aktif')
-            ->latest()
-            ->get();
+    public function index(
+    FinalisasiSesiAbsensiService $finalisasiService
+) {
+    /*
+     * Finalisasi sesi yang waktunya
+     * sudah berakhir sebelum halaman ditampilkan.
+     */
+    $finalisasiService
+        ->finalisasiKedaluwarsa();
 
-        $riwayatSesi = SesiAbsensi::with([
-                'kelas.tahunAjaran',
-                'pembuka',
-            ])
-            ->withCount('absensis')
-            ->latest('tanggal')
-            ->latest('id')
-            ->paginate(10);
 
-        return view(
-            'absensi.sesi.index',
-            compact('sesiAktif', 'riwayatSesi')
-        );
-    }
+    $sesiAktif = SesiAbsensi::with([
+            'kelas.tahunAjaran',
+            'pembuka',
+        ])
+        ->whereDate('tanggal', today())
+        ->where('status', 'aktif')
+        ->latest()
+        ->get();
+
+
+    $riwayatSesi = SesiAbsensi::with([
+            'kelas.tahunAjaran',
+            'pembuka',
+        ])
+        ->withCount('absensis')
+        ->latest('tanggal')
+        ->latest('id')
+        ->paginate(10);
+
+
+    return view(
+        'absensi.sesi.index',
+        compact(
+            'sesiAktif',
+            'riwayatSesi'
+        )
+    );
+}
 
     public function create()
     {
@@ -139,19 +155,31 @@ class SesiAbsensiController extends Controller
             );
     }
 
-   public function show(SesiAbsensi $sesi)
-{
+   public function show(
+    SesiAbsensi $sesi,
+    FinalisasiSesiAbsensiService $finalisasiService
+) {
+    /*
+     * Finalisasi semua sesi yang waktunya
+     * sudah berakhir.
+     */
+    $finalisasiService->finalisasiKedaluwarsa();
+
+    /*
+     * Ambil ulang data sesi setelah finalisasi.
+     */
+    $sesi->refresh();
+
     $sesi->load([
         'kelas.tahunAjaran',
         'pembuka',
         'absensis.siswa.user',
     ]);
 
-    $sesi->loadCount('absensis');
-
     $daftarSiswa = Siswa::with('user')
         ->where('kelas_id', $sesi->kelas_id)
         ->where('is_active', true)
+        ->orderBy('nis')
         ->get()
         ->map(function ($siswa) use ($sesi) {
 
@@ -164,11 +192,38 @@ class SesiAbsensiController extends Controller
             return $siswa;
         });
 
+    $totalSiswa = $daftarSiswa->count();
+
+    $hadir = $daftarSiswa
+        ->filter(
+            fn ($siswa) =>
+                $siswa->data_absensi?->status === 'hadir'
+        )
+        ->count();
+
+    $terlambat = $daftarSiswa
+        ->filter(
+            fn ($siswa) =>
+                $siswa->data_absensi?->status === 'terlambat'
+        )
+        ->count();
+
+    $belumAbsen = $daftarSiswa
+        ->filter(
+            fn ($siswa) =>
+                $siswa->data_absensi === null
+        )
+        ->count();
+
     return view(
         'absensi.sesi.show',
         compact(
             'sesi',
-            'daftarSiswa'
+            'daftarSiswa',
+            'totalSiswa',
+            'hadir',
+            'terlambat',
+            'belumAbsen'
         )
     );
 }
@@ -240,63 +295,25 @@ public function updateStatus(
     );
 }
 
-    public function tutup(SesiAbsensi $sesi)
-{
-    if ($sesi->status === 'selesai') {
-        return back()->with(
-            'error',
-            'Sesi absensi sudah ditutup.'
-        );
-    }
-
-    DB::transaction(function () use ($sesi) {
-
-        /*
-         * Ambil seluruh siswa aktif
-         * yang terdaftar di kelas sesi.
-         */
-        $siswaKelas = Siswa::where(
-                'kelas_id',
-                $sesi->kelas_id
-            )
-            ->where('is_active', true)
-            ->get();
-
-        foreach ($siswaKelas as $siswa) {
-
-            /*
-             * Jika siswa belum memiliki catatan
-             * pada sesi ini, otomatis ALPA.
-             *
-             * firstOrCreate juga membantu mencegah
-             * data ganda.
-             */
-            Absensi::firstOrCreate(
-                [
-                    'sesi_absensi_id' => $sesi->id,
-                    'siswa_id' => $siswa->id,
-                ],
-                [
-                    'waktu_absen' => null,
-                    'status' => 'alpa',
-                    'metode' => 'sistem',
-                    'dicatat_oleh' => null,
-                    'keterangan' =>
-                        'Tidak melakukan absensi sampai sesi ditutup.',
-                ]
+    public function tutup(
+        SesiAbsensi $sesi,
+        FinalisasiSesiAbsensiService $finalisasiService
+    ) 
+    {
+        if ($sesi->status === 'selesai') {
+            return back()->with(
+                'error',
+                'Sesi absensi sudah ditutup.'
             );
         }
 
-        $sesi->update([
-            'status' => 'selesai',
-        ]);
-    });
+        $finalisasiService->finalisasi($sesi);
 
-    return redirect()
-        ->route('absensi.sesi.show', $sesi)
-        ->with(
-            'success',
-            'Sesi berhasil ditutup. Siswa yang tidak melakukan absensi otomatis tercatat alpa.'
-        );
-}
+        return redirect()
+            ->route('absensi.sesi.show', $sesi)
+            ->with(
+                'success',
+                'Sesi berhasil ditutup. Siswa yang belum absen otomatis menjadi alpa.'
+            );
+    }
 }

@@ -85,55 +85,54 @@
 <div class="row row-cards">
 
     {{-- ABSENSI --}}
-    <div class="col-md-6 col-lg-4">
+<div class="col-md-6 col-lg-4">
 
-        <div class="card h-100">
+    <div class="card h-100">
 
-            <div class="card-body">
+        <div class="card-body">
 
-                <div class="mb-4">
+            <div class="mb-4">
 
-                    <span class="avatar avatar-xl bg-green-lt">
+                <span class="avatar avatar-xl bg-green-lt">
 
-                        <i class="ti ti-scan"></i>
+                    <i class="ti ti-calendar-check"></i>
 
-                    </span>
-
-                </div>
-
-                <h2 class="card-title">
-                    Absensi
-                </h2>
-
-                <p class="text-secondary">
-
-                    Lakukan absensi masuk pagi dan siang
-                    dengan memindai QR Code yang ditampilkan
-                    oleh guru.
-
-                </p>
+                </span>
 
             </div>
 
+            <h2 class="card-title">
+                Kehadiran Saya
+            </h2>
 
-            <div class="card-footer">
+            <p class="text-secondary">
 
-                <a
-                    href="{{ route('absensi.siswa.index') }}"
-                    class="btn btn-primary w-100"
-                >
+                Lihat ringkasan dan riwayat kehadiran
+                pagi dan siang selama semester berjalan.
 
-                    <i class="ti ti-scan me-2"></i>
+            </p>
 
-                    Scan QR Absensi
+        </div>
 
-                </a>
 
-            </div>
+        <div class="card-footer">
+
+            <a
+                href="{{ route('absensi.siswa.index') }}"
+                class="btn btn-primary w-100"
+            >
+
+                <i class="ti ti-report-analytics me-2"></i>
+
+                Lihat Rekap Kehadiran
+
+            </a>
 
         </div>
 
     </div>
+
+</div>
 
 
     {{-- CBT --}}

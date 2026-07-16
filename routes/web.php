@@ -9,9 +9,10 @@ use App\Http\Controllers\Master\TahunAjaranController;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Absensi\SesiAbsensiController;
-use App\Http\Controllers\Absensi\QrAbsensiController;
 use App\Http\Controllers\Absensi\AbsensiSiswaController;
 use App\Http\Controllers\Absensi\RekapAbsensiController;
+use App\Http\Controllers\Siswa\QrSiswaController;
+use App\Http\Controllers\Absensi\ScanAbsensiController;
 
 Route::middleware('guest')->group(function () {
 
@@ -69,6 +70,17 @@ Route::middleware('auth')->group(function () {
             SiswaController::class
         )->except('show');
 
+        Route::get(
+            '/siswa/{siswa}/qr',
+            [QrSiswaController::class, 'show']
+        )->name('siswa.qr.show');
+
+        Route::post(
+            '/siswa/{siswa}/qr/regenerate',
+            [QrSiswaController::class, 'regenerate']
+        )->name('siswa.qr.regenerate');
+
+
     });
 
     /*
@@ -85,11 +97,6 @@ Route::middleware('role:siswa')
             '/saya',
             [AbsensiSiswaController::class, 'index']
         )->name('siswa.index');
-
-        Route::post(
-            '/scan',
-            [AbsensiSiswaController::class, 'scan']
-        )->name('siswa.scan');
 
     });
 
@@ -124,11 +131,6 @@ Route::middleware('role:siswa')
             [SesiAbsensiController::class, 'show']
         )->name('sesi.show');
 
-        Route::get(
-            '/sesi/{sesi}/qr',
-            [QrAbsensiController::class, 'show']
-        )->name('sesi.qr');
-
         Route::patch(
             '/sesi/{sesi}/siswa/{siswa}/status',
             [SesiAbsensiController::class, 'updateStatus']
@@ -148,6 +150,11 @@ Route::middleware('role:siswa')
             '/rekap/export',
             [RekapAbsensiController::class, 'export']
         )->name('rekap.export');
+
+        Route::post(
+            '/sesi/{sesi}/scan',
+            [ScanAbsensiController::class, 'scan']
+        )->name('sesi.scan');
 
     });
 
