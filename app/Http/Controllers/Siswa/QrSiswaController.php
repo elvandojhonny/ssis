@@ -62,7 +62,7 @@ class QrSiswaController extends Controller
         );
 
         return view(
-            'siswa.qr.show',
+            'master.siswa.qr.show',
             compact(
                 'siswa',
                 'qr'

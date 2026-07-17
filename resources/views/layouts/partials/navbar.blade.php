@@ -2,7 +2,9 @@
 
     <div class="ssis-navbar-inner">
 
-        {{-- Mobile Sidebar Toggle --}}
+        {{-- =====================================================
+            MOBILE SIDEBAR TOGGLE
+        ====================================================== --}}
         <button
             class="navbar-toggler ssis-menu-toggle"
             type="button"
@@ -10,12 +12,15 @@
             data-bs-target="#sidebar-menu"
             aria-controls="sidebar-menu"
             aria-expanded="false"
+            aria-label="Buka menu navigasi"
         >
             <span class="navbar-toggler-icon"></span>
         </button>
 
 
-        {{-- Judul Aplikasi --}}
+        {{-- =====================================================
+            JUDUL APLIKASI
+        ====================================================== --}}
         <div class="ssis-navbar-title">
 
             <span class="ssis-navbar-title-main">
@@ -25,7 +30,9 @@
         </div>
 
 
-        {{-- User Dropdown --}}
+        {{-- =====================================================
+            USER PROFILE
+        ====================================================== --}}
         <div class="dropdown">
 
             <button
@@ -35,6 +42,7 @@
                 aria-expanded="false"
             >
 
+                {{-- Avatar --}}
                 <span class="avatar ssis-user-avatar">
 
                     {{
@@ -50,6 +58,7 @@
                 </span>
 
 
+                {{-- Nama & Role --}}
                 <span class="ssis-user-info">
 
                     <span class="ssis-user-name">
@@ -63,11 +72,21 @@
                 </span>
 
 
-                <i class="ti ti-chevron-down ssis-user-arrow"></i>
+                {{-- Dropdown Icon --}}
+                <i
+                    class="
+                        ti
+                        ti-chevron-down
+                        ssis-user-arrow
+                    "
+                ></i>
 
             </button>
 
 
+            {{-- =================================================
+                PROFILE DROPDOWN
+            ================================================== --}}
             <div
                 class="
                     dropdown-menu
@@ -76,6 +95,7 @@
                 "
             >
 
+                {{-- Informasi User --}}
                 <div class="ssis-dropdown-user">
 
                     <span class="avatar ssis-user-avatar">
@@ -92,13 +112,20 @@
 
                     </span>
 
-                    <div>
+
+                    <div class="ssis-dropdown-user-info">
 
                         <div class="fw-bold">
                             {{ auth()->user()->name }}
                         </div>
 
-                        <div class="small text-secondary text-capitalize">
+                        <div
+                            class="
+                                small
+                                text-secondary
+                                text-capitalize
+                            "
+                        >
                             {{ auth()->user()->role }}
                         </div>
 
@@ -110,6 +137,7 @@
                 <div class="dropdown-divider"></div>
 
 
+                {{-- Logout --}}
                 <form
                     action="{{ route('logout') }}"
                     method="POST"

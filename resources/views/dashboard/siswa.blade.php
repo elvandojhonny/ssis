@@ -151,11 +151,6 @@
                     </span>
 
 
-                    <span class="badge bg-secondary-lt">
-
-                        Segera Hadir
-
-                    </span>
 
                 </div>
 
@@ -179,17 +174,16 @@
 
             <div class="card-footer">
 
-                <button
-                    type="button"
-                    class="btn btn-outline-secondary w-100"
-                    disabled
+                <a
+                    href="{{ route('cbt.siswa.index') }}"
+                    class="btn btn-primary w-100"
                 >
 
-                    <i class="ti ti-file-pencil me-2"></i>
+                    <i class="ti ti-report-analytics me-2"></i>
 
                     Lihat Daftar Ujian
 
-                </button>
+                </a>
 
             </div>
 

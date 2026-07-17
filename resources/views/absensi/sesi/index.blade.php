@@ -188,6 +188,10 @@
 
 {{-- RIWAYAT --}}
 
+{{-- ========================================================= --}}
+{{-- RIWAYAT SESI ABSENSI --}}
+{{-- ========================================================= --}}
+
 <div class="card">
 
     <div class="card-header">
@@ -199,28 +203,20 @@
     </div>
 
 
-    <div class="table-responsive">
+    <div class="table-responsive ssis-mobile-table">
 
         <table class="table table-vcenter card-table">
 
             <thead>
 
                 <tr>
-
                     <th>Tanggal</th>
-
                     <th>Kelas</th>
-
                     <th>Jenis</th>
-
                     <th>Waktu</th>
-
-                    <th>Hadir</th>
-
+                    <th>Jumlah Absensi</th>
                     <th>Status</th>
-
-                    <th>Aksi</th>
-
+                    <th class="w-1">Aksi</th>
                 </tr>
 
             </thead>
@@ -232,47 +228,85 @@
 
                 <tr>
 
-                    <td>
+                    {{-- Tanggal --}}
+                    <td data-label="Tanggal">
 
-                        {{ $sesi->tanggal->format('d/m/Y') }}
+                        <span>
 
-                    </td>
-
-
-                    <td>
-
-                        <div class="fw-bold">
-
-                            {{ $sesi->kelas->nama }}
-
-                        </div>
-
-                        <div class="text-secondary small">
+                            <i
+                                class="
+                                    ti
+                                    ti-calendar
+                                    me-1
+                                    text-secondary
+                                "
+                            ></i>
 
                             {{
                                 $sesi
-                                    ->kelas
-                                    ->tahunAjaran
-                                    ->nama
+                                    ->tanggal
+                                    ->format('d/m/Y')
                             }}
+
+                        </span>
+
+                    </td>
+
+
+                    {{-- Kelas --}}
+                    <td data-label="Kelas">
+
+                        <div class="text-end text-md-start">
+
+                            <div class="fw-bold">
+
+                                {{
+                                    $sesi
+                                        ->kelas
+                                        ?->nama
+                                    ?? '-'
+                                }}
+
+                            </div>
+
+                            <div class="text-secondary small">
+
+                                {{
+                                    $sesi
+                                        ->kelas
+                                        ?->tahunAjaran
+                                        ?->nama
+                                    ?? '-'
+                                }}
+
+                            </div>
 
                         </div>
 
                     </td>
 
 
-                    <td>
+                    {{-- Jenis --}}
+                    <td data-label="Jenis">
 
                         @if($sesi->jenis === 'pagi')
 
                             <span class="badge bg-yellow-lt">
+
+                                <i class="ti ti-sun me-1"></i>
+
                                 Pagi
+
                             </span>
 
                         @else
 
                             <span class="badge bg-blue-lt">
+
+                                <i class="ti ti-sunset me-1"></i>
+
                                 Siang
+
                             </span>
 
                         @endif
@@ -280,29 +314,67 @@
                     </td>
 
 
-                    <td>
+                    {{-- Waktu --}}
+                    <td data-label="Waktu">
 
-                        {{ $sesi->waktu_mulai }}
+                        <span>
 
-                        -
+                            <i
+                                class="
+                                    ti
+                                    ti-clock
+                                    me-1
+                                    text-secondary
+                                "
+                            ></i>
 
-                        {{ $sesi->waktu_selesai }}
+                            {{ $sesi->waktu_mulai }}
+
+                            -
+
+                            {{ $sesi->waktu_selesai }}
+
+                        </span>
 
                     </td>
 
 
-                    <td>
+                    {{-- Jumlah Absensi --}}
+                    <td data-label="Jumlah Absensi">
 
-                        {{ $sesi->absensis_count }}
+                        <span>
+
+                            <i
+                                class="
+                                    ti
+                                    ti-users
+                                    me-1
+                                    text-secondary
+                                "
+                            ></i>
+
+                            {{ $sesi->absensis_count }}
+                            siswa
+
+                        </span>
 
                     </td>
 
 
-                    <td>
+                    {{-- Status --}}
+                    <td data-label="Status">
 
                         @if($sesi->status === 'aktif')
 
                             <span class="badge bg-success-lt">
+
+                                <i
+                                    class="
+                                        ti
+                                        ti-circle-check
+                                        me-1
+                                    "
+                                ></i>
 
                                 Aktif
 
@@ -311,6 +383,14 @@
                         @else
 
                             <span class="badge bg-secondary-lt">
+
+                                <i
+                                    class="
+                                        ti
+                                        ti-circle-check
+                                        me-1
+                                    "
+                                ></i>
 
                                 Selesai
 
@@ -321,20 +401,44 @@
                     </td>
 
 
-                    <td>
+                    {{-- Aksi --}}
+                    <td data-label="Aksi">
 
-                        <a
-                            href="{{ route(
-                                'absensi.sesi.show',
-                                $sesi
-                            ) }}"
-                            class="btn btn-sm
-                                   btn-outline-primary"
+                        <div
+                            class="
+                                d-flex
+                                justify-content-end
+                                ssis-table-actions
+                            "
                         >
 
-                            Detail
+                            <a
+                                href="{{
+                                    route(
+                                        'absensi.sesi.show',
+                                        $sesi
+                                    )
+                                }}"
+                                class="
+                                    btn
+                                    btn-sm
+                                    btn-outline-primary
+                                "
+                            >
 
-                        </a>
+                                <i
+                                    class="
+                                        ti
+                                        ti-eye
+                                        me-1
+                                    "
+                                ></i>
+
+                                Detail
+
+                            </a>
+
+                        </div>
 
                     </td>
 
@@ -343,16 +447,25 @@
 
             @empty
 
-                <tr>
+                <tr class="ssis-empty-row">
 
                     <td
                         colspan="7"
-                        class="text-center
-                               text-secondary
-                               py-5"
+                        class="
+                            text-center
+                            text-secondary
+                            py-5
+                        "
                     >
 
-                        Belum ada riwayat sesi absensi.
+                        <i
+                            class="ti ti-history"
+                            style="font-size: 40px;"
+                        ></i>
+
+                        <div class="mt-2">
+                            Belum ada riwayat sesi absensi.
+                        </div>
 
                     </td>
 
@@ -367,6 +480,7 @@
     </div>
 
 
+    {{-- Pagination --}}
     @if($riwayatSesi->hasPages())
 
         <div class="card-footer">

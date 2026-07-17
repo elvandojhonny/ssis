@@ -14,6 +14,11 @@ use App\Http\Controllers\Absensi\RekapAbsensiController;
 use App\Http\Controllers\Siswa\QrSiswaController;
 use App\Http\Controllers\Absensi\ScanAbsensiController;
 
+use App\Http\Controllers\CBT\BankSoalController;
+use App\Http\Controllers\CBT\UjianController;
+use App\Http\Controllers\CBT\UjianSiswaController;
+use App\Http\Controllers\CBT\PengerjaanUjianController;
+
 Route::middleware('guest')->group(function () {
 
     Route::get(
@@ -55,10 +60,12 @@ Route::middleware('auth')->group(function () {
             TahunAjaranController::class
         )->except('show');
 
-        Route::resource(
-            'kelas',
-            KelasController::class
-        )->except('show');
+        Route::get('kelas', [KelasController::class, 'index'])->name('kelas.index');
+        Route::get('kelas/create', [KelasController::class, 'create'])->name('kelas.create');
+        Route::post('kelas', [KelasController::class, 'store'])->name('kelas.store');
+        Route::get('kelas/{kelas}/edit', [KelasController::class, 'edit'])->name('kelas.edit');
+        Route::put('kelas/{kelas}', [KelasController::class, 'update'])->name('kelas.update');
+        Route::delete('kelas/{kelas}', [KelasController::class, 'destroy'])->name('kelas.destroy');
 
         Route::resource(
             'guru',
@@ -155,6 +162,180 @@ Route::middleware('role:siswa')
             '/sesi/{sesi}/scan',
             [ScanAbsensiController::class, 'scan']
         )->name('sesi.scan');
+
+    });
+
+    /*
+|--------------------------------------------------------------------------
+| CBT - Guru
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('role:guru')
+    ->prefix('cbt')
+    ->name('cbt.')
+    ->group(function () {
+
+
+        Route::get(
+            '/bank-soal',
+            [BankSoalController::class, 'index']
+        )->name('bank-soal.index');
+
+        Route::get(
+            '/bank-soal/template',
+            [BankSoalController::class, 'downloadTemplate']
+        )->name('bank-soal.template');
+
+        Route::post(
+            '/bank-soal/upload',
+            [BankSoalController::class, 'upload']
+        )->name('bank-soal.upload');
+
+        Route::post(
+            '/bank-soal/simpan',
+            [BankSoalController::class, 'store']
+        )->name('bank-soal.store');
+
+        Route::get(
+            '/bank-soal/{bankSoal}',
+            [BankSoalController::class, 'show']
+        )->name('bank-soal.show');
+
+    });
+
+    Route::middleware('role:operator')
+    ->prefix('cbt')
+    ->name('cbt.')
+    ->group(function () {
+
+        Route::get(
+            '/ujian',
+            [UjianController::class, 'index']
+        )->name('ujian.index');
+
+        Route::get(
+            '/ujian/buat',
+            [UjianController::class, 'create']
+        )->name('ujian.create');
+
+        Route::post(
+            '/ujian',
+            [UjianController::class, 'store']
+        )->name('ujian.store');
+
+        Route::get(
+            '/ujian/{ujian}',
+            [UjianController::class, 'show']
+        )->name('ujian.show');
+
+        Route::patch(
+            '/ujian/{ujian}/publikasi',
+            [UjianController::class, 'publish']
+        )->name('ujian.publish');
+
+    });
+
+    /*
+|--------------------------------------------------------------------------
+| CBT Siswa
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('role:siswa')
+    ->prefix('cbt')
+    ->name('cbt.siswa.')
+    ->group(function () {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Daftar Ujian Siswa
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/ujian-saya',
+            [UjianSiswaController::class, 'index']
+        )->name('index');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validasi Token
+        |--------------------------------------------------------------------------
+        */
+
+        Route::post(
+            '/ujian/{ujian}/token',
+            [UjianSiswaController::class, 'verifyToken']
+        )->name('ujian.token');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Halaman Persiapan Ujian
+        |--------------------------------------------------------------------------
+        |
+        | Dibuka setelah token berhasil diverifikasi.
+        |
+        */
+
+        Route::get(
+            '/ujian/{ujian}/mulai',
+            [UjianSiswaController::class, 'mulai']
+        )->name('ujian.mulai');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Mulai Pengerjaan
+        |--------------------------------------------------------------------------
+        |
+        | Dipanggil ketika siswa menekan tombol
+        | "Mulai Ujian" pada halaman persiapan.
+        |
+        */
+
+        Route::post(
+            '/ujian/{ujian}/pengerjaan',
+            [PengerjaanUjianController::class, 'mulai']
+        )->name('pengerjaan.mulai');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Halaman Pengerjaan
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/pengerjaan/{pengerjaan}',
+            [PengerjaanUjianController::class, 'show']
+        )->name('pengerjaan.show');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Autosave Jawaban
+        |--------------------------------------------------------------------------
+        */
+
+        Route::post(
+            '/pengerjaan/{pengerjaan}/jawaban',
+            [PengerjaanUjianController::class, 'simpanJawaban']
+        )->name('pengerjaan.jawaban');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Selesaikan Ujian
+        |--------------------------------------------------------------------------
+        */
+
+        Route::post(
+            '/pengerjaan/{pengerjaan}/selesai',
+            [PengerjaanUjianController::class, 'selesai']
+        )->name('pengerjaan.selesai');
 
     });
 

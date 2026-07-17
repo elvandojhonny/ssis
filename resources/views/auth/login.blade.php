@@ -8,6 +8,18 @@
     <title>Login | SSIS</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <style>
+    .login-logo {
+        width: 100px;
+        height: auto;
+        transition: .3s;
+    }
+
+    .login-logo:hover {
+        transform: scale(1.05);
+    }
+    </style>
 </head>
 
 <body class="d-flex flex-column">
@@ -18,15 +30,22 @@
 
         <div class="text-center mb-4">
 
-            <h1 class="fw-bold">
-                SSIS
-            </h1>
+            <!-- Logo -->
+            <img
+                src="{{ asset('images/logo SMAN 6.png') }}"
+                alt="Logo SSIS"
+                class="login-logo mb-3"
+            >
 
-            <p class="text-secondary">
-                Smart School Information System
-            </p>
+                <h1 class="fw-bold mb-1">
+                    SMA Negeri 6
+                </h1>
 
-        </div>
+                <p class="text-secondary mb-0">
+                    Smart School Information System
+                </p>
+
+            </div>
 
         <div class="card card-md">
 

@@ -484,41 +484,6 @@ body.ssis-body {
    MOBILE SIDEBAR OVERLAY
    ============================================================ */
 
-.ssis-sidebar-overlay {
-
-    position: fixed;
-
-    inset: 0;
-
-    z-index: 1029;
-
-    background:
-        rgba(
-            15,
-            23,
-            42,
-            0.45
-        );
-
-    backdrop-filter:
-        blur(3px);
-
-    opacity: 0;
-
-    visibility: hidden;
-
-    transition:
-        all
-        0.25s ease;
-}
-
-.ssis-sidebar-overlay.show {
-
-    opacity: 1;
-
-    visibility: visible;
-}
-
 
 /* ============================================================
    RESPONSIVE
@@ -819,42 +784,24 @@ body.ssis-body {
 }
 
 
-/* LOGO OVAL */
-
-.ssis-logo {
-    width: 54px;
-    height: 42px;
-
-    flex-shrink: 0;
-
+.ssis-logo{
     display: flex;
     align-items: center;
     justify-content: center;
-
-    border-radius: 50%;
-
-    background:
-        linear-gradient(
-            135deg,
-            #ffffff,
-            #eaf3ff
-        );
-
-    color:
-        var(--ssis-primary);
-
-    font-size: 23px;
-
-    box-shadow:
-        0 5px 15px
-        rgba(
-            0,
-            0,
-            0,
-            0.16
-        );
+    background: transparent;
+    box-shadow: none;
+    border: none;
+    padding: 0;
+    width: auto;
+    height: auto;
 }
 
+.ssis-logo img{
+    width: 46px;   /* sesuaikan ukuran */
+    height: 46px;
+    object-fit: contain;
+    display: block;
+}
 
 .ssis-logo img {
     width: 100%;
@@ -898,4 +845,517 @@ body.ssis-body {
     font-weight: 500;
 
     letter-spacing: 0.03em;
+}
+
+/* =========================================================
+   SSIS RESPONSIVE GLOBAL LAYOUT
+========================================================= */
+
+html,
+body {
+    min-height: 100%;
+}
+
+.ssis-body {
+    margin: 0;
+    overflow-x: hidden;
+    background: var(--tblr-bg-surface-secondary, #f5f7fb);
+}
+
+.ssis-app {
+    min-height: 100vh;
+}
+
+.ssis-wrapper {
+    min-width: 0;
+}
+
+.ssis-content {
+    padding-top: 1.25rem;
+    padding-bottom: 2rem;
+}
+
+/* =========================================================
+   GLOBAL CONTENT
+========================================================= */
+
+.ssis-content > .container-xl {
+    width: 100%;
+    max-width: 1440px;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+}
+
+.ssis-content .card {
+    border-radius: 14px;
+}
+
+.ssis-content .card-body {
+    padding: 1.25rem;
+}
+
+.ssis-content .card-header {
+    min-height: auto;
+    padding: 1rem 1.25rem;
+}
+
+/* =========================================================
+   TABLE
+========================================================= */
+
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table th,
+.table td {
+    vertical-align: middle;
+}
+
+/* =========================================================
+   BUTTON
+========================================================= */
+
+.btn {
+    white-space: nowrap;
+}
+
+/* =========================================================
+   MOBILE SIDEBAR OVERLAY
+========================================================= */
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 991.98px) {
+
+    .ssis-content {
+        padding-top: 1rem;
+        padding-bottom: 1.5rem;
+    }
+
+    .ssis-content > .container-xl {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    /*
+     * Page header otomatis lebih fleksibel.
+     */
+    .page-header .row {
+        row-gap: 1rem;
+    }
+
+    .page-header .col-auto {
+        max-width: 100%;
+    }
+
+    /*
+     * Tombol pada header boleh turun baris.
+     */
+    .page-header .col-auto > .d-flex {
+        flex-wrap: wrap;
+    }
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 767.98px) {
+
+    /*
+     * Content tidak terlalu mepet,
+     * tetapi juga tidak terlalu sempit.
+     */
+    .ssis-content {
+        padding-top: 0.75rem;
+        padding-bottom: 1.5rem;
+    }
+
+    .ssis-content > .container-xl {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+
+    /* =====================================================
+       PAGE HEADER
+    ===================================================== */
+
+    .page-header {
+        margin-bottom: 1rem !important;
+    }
+
+    .page-header .row {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 0.75rem;
+    }
+
+    .page-header .col,
+    .page-header .col-auto {
+        width: 100%;
+    }
+
+    .page-header .page-title {
+        font-size: 1.35rem;
+        line-height: 1.3;
+    }
+
+    .page-header .page-pretitle {
+        font-size: 0.7rem;
+    }
+
+    /*
+     * Area tombol header.
+     */
+    .page-header .col-auto > .d-flex {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem !important;
+    }
+
+    .page-header .col-auto .btn {
+        flex: 1 1 auto;
+    }
+
+
+    /* =====================================================
+       CARD
+    ===================================================== */
+
+    .ssis-content .card {
+        border-radius: 12px;
+    }
+
+    .ssis-content .card-body {
+        padding: 1rem;
+    }
+
+    .ssis-content .card-header {
+        padding: 0.9rem 1rem;
+    }
+
+    .ssis-content .card-footer {
+        padding: 0.9rem 1rem;
+    }
+
+    .card-title {
+        line-height: 1.35;
+    }
+
+
+    /* =====================================================
+       GRID CARD
+    ===================================================== */
+
+    .row-cards {
+        --tblr-gutter-y: 0.75rem;
+    }
+
+
+    /* =====================================================
+       TABLE
+    ===================================================== */
+
+    .table-responsive {
+        border-radius: 0 0 12px 12px;
+    }
+
+    /*
+ * Tabel biasa tetap bisa scroll horizontal.
+ * Tabel dengan .ssis-mobile-table berubah menjadi card.
+ */
+.table-responsive:not(.ssis-mobile-table) .table {
+    min-width: 700px;
+}
+
+.table-responsive:not(.ssis-mobile-table) .table th,
+.table-responsive:not(.ssis-mobile-table) .table td {
+    padding: 0.75rem;
+    white-space: nowrap;
+}
+
+
+    /* =====================================================
+       FORM
+    ===================================================== */
+
+    .form-control,
+    .form-select {
+        min-height: 44px;
+    }
+
+    textarea.form-control {
+        min-height: 100px;
+    }
+
+
+    /* =====================================================
+       MODAL
+    ===================================================== */
+
+    .modal-dialog {
+        margin: 0.75rem;
+    }
+
+    .modal-content {
+        border-radius: 14px;
+    }
+
+
+    /* =====================================================
+       ALERT
+    ===================================================== */
+
+    .alert {
+        padding: 0.875rem 1rem;
+    }
+
+
+    /* =====================================================
+       AVATAR
+    ===================================================== */
+
+    .avatar-xl {
+        width: 3.5rem;
+        height: 3.5rem;
+    }
+
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width: 479.98px) {
+
+    .ssis-content > .container-xl {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .ssis-content .card-body {
+        padding: 0.9rem;
+    }
+
+    /*
+     * Tombol header menjadi full width
+     * agar tidak berhimpitan.
+     */
+    .page-header .col-auto .btn,
+    .page-header .col-auto form {
+        width: 100%;
+    }
+
+    .page-header .col-auto form .btn {
+        width: 100%;
+    }
+
+}
+
+/* =========================================================
+   NAVBAR RESPONSIVE
+========================================================= */
+
+.ssis-menu-toggle {
+    display: none;
+}
+
+@media (max-width: 991.98px) {
+
+    .ssis-menu-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        width: 42px;
+        height: 42px;
+
+        padding: 0;
+        flex-shrink: 0;
+    }
+
+    .ssis-navbar-inner {
+        padding-left: 16px;
+        padding-right: 16px;
+        gap: 12px;
+    }
+
+    .ssis-navbar-title {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .ssis-navbar-title-main {
+        display: block;
+
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 575.98px) {
+
+    .ssis-navbar {
+        height: 64px;
+    }
+
+    .ssis-navbar-inner {
+        padding-left: 12px;
+        padding-right: 12px;
+        gap: 8px;
+    }
+
+    .ssis-navbar-title-main {
+        font-size: 13px;
+    }
+
+    .ssis-user-info,
+    .ssis-user-arrow {
+        display: none;
+    }
+
+    .ssis-user-menu {
+        padding: 3px;
+        gap: 0;
+    }
+
+    .ssis-user-avatar {
+        width: 38px;
+        height: 38px;
+    }
+
+    .ssis-profile-dropdown {
+        width: min(
+            260px,
+            calc(100vw - 24px)
+        );
+    }
+}
+
+/* =========================================================
+   RESPONSIVE TABLE -> MOBILE CARD
+========================================================= */
+
+@media (max-width: 767.98px) {
+
+    .ssis-mobile-table {
+        overflow: visible;
+    }
+
+    .ssis-mobile-table table,
+    .ssis-mobile-table tbody,
+    .ssis-mobile-table tr,
+    .ssis-mobile-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .ssis-mobile-table table {
+        min-width: 0 !important;
+    }
+
+    .ssis-mobile-table thead {
+        display: none;
+    }
+
+    .ssis-mobile-table tbody tr {
+        margin-bottom: 12px;
+
+        border: 1px solid var(--ssis-border);
+        border-radius: 12px;
+
+        background: #fff;
+
+        overflow: hidden;
+    }
+
+    .ssis-mobile-table tbody td {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+
+        gap: 16px;
+
+        padding: 11px 14px !important;
+
+        border: 0 !important;
+        border-bottom:
+            1px solid var(--ssis-border) !important;
+
+        white-space: normal !important;
+
+        text-align: right;
+    }
+
+    .ssis-mobile-table tbody td:last-child {
+        border-bottom: 0 !important;
+    }
+
+    /*
+     * Nama kolom diambil dari data-label.
+     */
+    .ssis-mobile-table tbody td::before {
+        content: attr(data-label);
+
+        flex: 0 0 40%;
+
+        text-align: left;
+
+        font-size: 12px;
+        font-weight: 700;
+
+        color: var(--ssis-muted);
+    }
+
+    /*
+     * Kolom aksi.
+     */
+    .ssis-mobile-table td[data-label="Aksi"] {
+        align-items: center;
+    }
+
+    .ssis-mobile-table td[data-label="Aksi"] .btn {
+        white-space: normal;
+    }
+
+}
+
+@media (max-width: 767.98px) {
+
+    .ssis-mobile-table .ssis-table-actions {
+        flex-wrap: wrap;
+    }
+
+    .ssis-mobile-table td[data-label="Siswa"] {
+        align-items: center;
+    }
+
+    .ssis-mobile-table td[data-label="Aksi"] {
+        align-items: center;
+    }
+
+    .ssis-mobile-table .ssis-empty-row td {
+        display: block;
+        text-align: center;
+    }
+
+    .ssis-mobile-table .ssis-empty-row td::before {
+        display: none;
+    }
 }

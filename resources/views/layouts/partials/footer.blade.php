@@ -4,7 +4,7 @@
         <div class="text-center text-secondary ssis-footer">
 
             &copy; {{ date('Y') }}
-            Smart School Information System
+            Smart School Information System | SMA Negeri 6 Malinau
 
         </div>
 
