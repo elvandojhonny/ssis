@@ -552,6 +552,214 @@
 
 </form>
 
+{{-- OVERLAY MASUK MODE UJIAN --}}
+<div
+    id="overlayModeUjian"
+    class="position-fixed top-0 start-0 w-100 h-100 bg-white"
+    style="
+        z-index: 99998;
+        display: {{ $pengerjaan->status === 'diblokir' ? 'none' : 'flex' }};
+    "
+>
+    <div
+        class="
+            d-flex
+            align-items-center
+            justify-content-center
+            w-100
+            h-100
+            p-4
+        "
+    >
+        <div
+            class="text-center"
+            style="max-width: 560px;"
+        >
+
+            <span class="avatar avatar-xl bg-blue-lt mb-4">
+                <i class="ti ti-shield-lock"></i>
+            </span>
+
+            <h1 class="mb-3">
+                Mode Ujian
+            </h1>
+
+            <p class="text-secondary">
+                Sebelum memulai pengerjaan, aktifkan Mode Ujian.
+                Halaman akan masuk ke layar penuh dan sistem
+                pengawasan akan diaktifkan.
+            </p>
+
+            <div class="alert alert-warning text-start mt-4">
+
+                <div class="fw-bold mb-2">
+                    Selama ujian berlangsung:
+                </div>
+
+                <ul class="mb-0 ps-3">
+                    <li>
+                        Jangan berpindah tab.
+                    </li>
+
+                    <li>
+                        Jangan membuka aplikasi lain.
+                    </li>
+
+                    <li>
+                        Jangan keluar dari layar penuh.
+                    </li>
+
+                    <li>
+                        Maksimal 3 pelanggaran.
+                    </li>
+                </ul>
+
+            </div>
+
+            <div class="alert alert-danger text-start">
+                Setelah mencapai 3 pelanggaran,
+                ujian akan diblokir dan hanya operator
+                yang dapat membuka blokir pengerjaan.
+            </div>
+
+            <button
+                type="button"
+                id="btnMasukModeUjian"
+                class="btn btn-primary btn-lg w-100 mt-3"
+            >
+                <i class="ti ti-maximize me-2"></i>
+
+                Masuk Mode Ujian
+            </button>
+
+        </div>
+    </div>
+</div>
+
+{{-- MODAL PERINGATAN PELANGGARAN --}}
+<div
+    class="modal modal-blur fade"
+    id="modalPelanggaran"
+    tabindex="-1"
+    aria-hidden="true"
+    data-bs-backdrop="static"
+    data-bs-keyboard="false"
+>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h3 class="modal-title text-danger">
+                    <i class="ti ti-alert-triangle me-2"></i>
+                    Peringatan Ujian
+                </h3>
+            </div>
+
+            <div class="modal-body text-center py-4">
+
+                <span class="avatar avatar-xl bg-danger-lt mb-3">
+                    <i class="ti ti-shield-exclamation"></i>
+                </span>
+
+                <h2 id="judulPelanggaran">
+                    Pelanggaran Terdeteksi
+                </h2>
+
+                <p
+                    class="text-secondary"
+                    id="pesanPelanggaran"
+                >
+                    Anda terdeteksi meninggalkan halaman ujian.
+                </p>
+
+                <div class="alert alert-warning mt-3">
+                    <strong id="jumlahPelanggaran">
+                        Peringatan 1 dari 3
+                    </strong>
+
+                    <div
+                        class="small mt-1"
+                        id="sisaPelanggaran"
+                    >
+                        Anda masih memiliki 2 kesempatan.
+                    </div>
+                </div>
+
+                <p class="text-secondary small mb-0">
+                    Jangan berpindah tab, meminimalkan browser,
+                    atau keluar dari mode layar penuh selama ujian.
+                </p>
+
+            </div>
+
+            <div class="modal-footer">
+                <button
+                    type="button"
+                    class="btn btn-danger w-100"
+                    id="btnLanjutUjian"
+                >
+                    <i class="ti ti-player-play me-2"></i>
+                    Saya Mengerti, Lanjutkan Ujian
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{{-- OVERLAY BLOKIR UJIAN --}}
+<div
+    id="overlayBlokir"
+    class="position-fixed top-0 start-0 w-100 h-100 bg-white"
+    style="
+        z-index: 99999;
+        display: {{ $pengerjaan->status === 'diblokir' ? 'block' : 'none' }};
+    "
+>
+    <div
+        class="
+            d-flex
+            align-items-center
+            justify-content-center
+            h-100
+            p-4
+        "
+    >
+        <div
+            class="text-center"
+            style="max-width: 520px;"
+        >
+
+            <span class="avatar avatar-xl bg-danger-lt mb-4">
+                <i class="ti ti-lock"></i>
+            </span>
+
+            <h1 class="mb-3">
+                Ujian Diblokir
+            </h1>
+
+            <p class="text-secondary">
+                Anda telah mencapai batas maksimal
+                pelanggaran selama ujian.
+            </p>
+
+            <div class="alert alert-danger mt-4">
+                Pengerjaan ujian telah dikunci.
+                Hubungi operator untuk membuka blokir
+                agar Anda dapat melanjutkan ujian.
+            </div>
+
+            <a
+                href="{{ route('cbt.siswa.index') }}"
+                class="btn btn-outline-secondary mt-3"
+            >
+                Kembali ke Daftar Ujian
+            </a>
+
+        </div>
+    </div>
+</div>
+
 @endsection
 
 
@@ -991,6 +1199,20 @@ document.addEventListener(
                                 const data =
                                     await response.json();
 
+                                    /*
+                                    * Pengerjaan telah diblokir
+                                    * oleh sistem.
+                                    */
+                                    if (
+                                        data.blocked === true
+                                    ) {
+
+                                        window.location.reload();
+
+                                        return;
+
+                                    }
+
 
                                 /*
                                  * Waktu sudah habis.
@@ -1295,6 +1517,961 @@ document.addEventListener(
     }
 );
 
+</script>
+
+<script>
+document.addEventListener(
+    'DOMContentLoaded',
+    function () {
+
+        /*
+        |--------------------------------------------------------------------------
+        | KONFIGURASI
+        |--------------------------------------------------------------------------
+        */
+
+        const pelanggaranUrl = @js(
+            route(
+                'cbt.siswa.pengerjaan.pelanggaran',
+                $pengerjaan
+            )
+        );
+
+        const csrfToken = @js(
+            csrf_token()
+        );
+
+        const pengerjaanDiblokir = @js(
+            $pengerjaan->status === 'diblokir'
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | STATUS
+        |--------------------------------------------------------------------------
+        */
+
+        let ujianAktif = false;
+        let sedangMengirim = false;
+        let modalSedangTerbuka = false;
+        let sedangMasukFullscreen = false;
+        let waktuPelanggaranTerakhir = 0;
+
+        const cooldownPelanggaran = 1000;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | ELEMENT
+        |--------------------------------------------------------------------------
+        */
+
+        const overlayModeUjian =
+            document.getElementById(
+                'overlayModeUjian'
+            );
+
+        const btnMasukModeUjian =
+            document.getElementById(
+                'btnMasukModeUjian'
+            );
+
+        const modalElement =
+            document.getElementById(
+                'modalPelanggaran'
+            );
+
+        const overlayBlokir =
+            document.getElementById(
+                'overlayBlokir'
+            );
+
+        const jumlahElement =
+            document.getElementById(
+                'jumlahPelanggaran'
+            );
+
+        const sisaElement =
+            document.getElementById(
+                'sisaPelanggaran'
+            );
+
+        const pesanElement =
+            document.getElementById(
+                'pesanPelanggaran'
+            );
+
+        const btnLanjut =
+            document.getElementById(
+                'btnLanjutUjian'
+            );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | MODAL
+        |--------------------------------------------------------------------------
+        */
+
+        const modalPelanggaran =
+            modalElement &&
+            typeof bootstrap !== 'undefined'
+                ? new bootstrap.Modal(
+                    modalElement,
+                    {
+                        backdrop: 'static',
+                        keyboard: false,
+                    }
+                )
+                : null;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CEK FULLSCREEN
+        |--------------------------------------------------------------------------
+        */
+
+        function sedangFullscreen()
+        {
+            return !!(
+                document.fullscreenElement ||
+                document.webkitFullscreenElement
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | STATUS AWAL
+        |--------------------------------------------------------------------------
+        */
+
+        if (pengerjaanDiblokir) {
+
+            ujianAktif = false;
+
+            if (overlayModeUjian) {
+
+                overlayModeUjian.style.display =
+                    'none';
+
+            }
+
+            if (overlayBlokir) {
+
+                overlayBlokir.style.display =
+                    'flex';
+
+            }
+
+            document.body.style.overflow =
+                'hidden';
+
+        } else {
+
+            document.body.style.overflow =
+                'hidden';
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | REQUEST FULLSCREEN
+        |--------------------------------------------------------------------------
+        */
+
+        async function masukFullscreen()
+        {
+            /*
+             * Jika sudah fullscreen,
+             * tidak perlu request kembali.
+             */
+            if (sedangFullscreen()) {
+
+                return true;
+
+            }
+
+
+            const element =
+                document.documentElement;
+
+
+            sedangMasukFullscreen =
+                true;
+
+
+            try {
+
+                if (element.requestFullscreen) {
+
+                    await element.requestFullscreen();
+
+                    return true;
+
+                }
+
+
+                if (element.webkitRequestFullscreen) {
+
+                    element.webkitRequestFullscreen();
+
+                    return true;
+
+                }
+
+
+                sedangMasukFullscreen =
+                    false;
+
+
+                return false;
+
+            } catch (error) {
+
+                sedangMasukFullscreen =
+                    false;
+
+
+                console.error(
+                    'Gagal masuk fullscreen:',
+                    error
+                );
+
+
+                return false;
+
+            }
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | AKTIFKAN MODE UJIAN
+        |--------------------------------------------------------------------------
+        */
+
+        function aktifkanModeUjian()
+{
+    if (overlayModeUjian) {
+        overlayModeUjian.style.display =
+            'none';
+    }
+
+    document.body.style.overflow =
+        '';
+
+    setTimeout(
+        function () {
+
+            sedangMasukFullscreen =
+                false;
+
+            /*
+             * PENTING:
+             * Jangan isi Date.now().
+             *
+             * Dengan nilai 0,
+             * pelanggaran pertama langsung
+             * dapat dicatat.
+             */
+            waktuPelanggaranTerakhir =
+                0;
+
+            ujianAktif =
+                true;
+
+            console.log(
+                'PENGAWASAN AKTIF',
+                {
+                    ujianAktif:
+                        ujianAktif,
+
+                    fullscreen:
+                        sedangFullscreen(),
+                }
+            );
+
+        },
+        500
+    );
+}
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | TOMBOL MASUK MODE UJIAN
+        |--------------------------------------------------------------------------
+        */
+
+        if (btnMasukModeUjian) {
+
+            btnMasukModeUjian.addEventListener(
+                'click',
+                async function () {
+
+                    /*
+                     * Jika sudah diblokir,
+                     * jangan izinkan masuk.
+                     */
+                    if (pengerjaanDiblokir) {
+
+                        return;
+
+                    }
+
+
+                    /*
+                     * Cegah klik ganda.
+                     */
+                    btnMasukModeUjian.disabled =
+                        true;
+
+
+                    btnMasukModeUjian.innerHTML =
+                        '<span class="spinner-border spinner-border-sm me-2"></span>' +
+                        'Mengaktifkan Mode Ujian...';
+
+
+                    /*
+                     * Request fullscreen harus berasal
+                     * langsung dari klik pengguna.
+                     */
+                    const berhasil =
+                        await masukFullscreen();
+
+
+                    /*
+                     * Jika gagal masuk fullscreen.
+                     */
+                    if (! berhasil) {
+
+                        btnMasukModeUjian.disabled =
+                            false;
+
+
+                        btnMasukModeUjian.innerHTML =
+                            '<i class="ti ti-maximize me-2"></i>' +
+                            'Masuk Mode Ujian';
+
+
+                        alert(
+                            'Mode layar penuh tidak dapat diaktifkan. ' +
+                            'Pastikan browser mengizinkan fullscreen.'
+                        );
+
+
+                        return;
+
+                    }
+
+
+                    /*
+                     * Fullscreen berhasil.
+                     */
+                    aktifkanModeUjian();
+
+                }
+            );
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | KIRIM PELANGGARAN
+        |--------------------------------------------------------------------------
+        */
+
+        async function catatPelanggaran(
+            jenis
+        ) {
+
+            /*
+             * Pengawasan belum aktif.
+             */
+            if (! ujianAktif) {
+
+                return;
+
+            }
+
+
+            /*
+             * Sedang mengirim request.
+             */
+            if (sedangMengirim) {
+
+                return;
+
+            }
+
+
+            /*
+             * Modal sedang terbuka.
+             */
+            if (modalSedangTerbuka) {
+
+                return;
+
+            }
+
+
+            /*
+             * Anti double event.
+             *
+             * Satu aktivitas seperti Alt + Tab dapat
+             * memicu blur + visibilitychange sekaligus.
+             */
+            const sekarang =
+                Date.now();
+
+
+            if (
+                sekarang -
+                waktuPelanggaranTerakhir
+                <
+                cooldownPelanggaran
+            ) {
+
+                return;
+
+            }
+
+
+            waktuPelanggaranTerakhir =
+                sekarang;
+
+
+            sedangMengirim =
+                true;
+
+
+            console.log(
+                'Mengirim pelanggaran:',
+                jenis
+            );
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        pelanggaranUrl,
+                        {
+
+                            method:
+                                'POST',
+
+                            headers: {
+
+                                'Content-Type':
+                                    'application/json',
+
+                                'Accept':
+                                    'application/json',
+
+                                'X-CSRF-TOKEN':
+                                    csrfToken,
+
+                            },
+
+                            body:
+                                JSON.stringify({
+
+                                    jenis:
+                                        jenis,
+
+                                }),
+
+                        }
+                    );
+
+
+                /*
+                 * CSRF / session expired.
+                 */
+                if (
+                    response.status ===
+                    419
+                ) {
+
+                    window.location.reload();
+
+                    return;
+
+                }
+
+
+                /*
+                 * Response gagal.
+                 */
+                if (! response.ok) {
+
+                    const errorText =
+                        await response.text();
+
+
+                    console.error(
+                        'Request pelanggaran gagal:',
+                        response.status,
+                        errorText
+                    );
+
+
+                    return;
+
+                }
+
+
+                const data =
+                    await response.json();
+
+
+                console.log(
+                    'Response pelanggaran:',
+                    data
+                );
+
+
+                /*
+                 * Pelanggaran ketiga.
+                 */
+                if (
+                    data.status ===
+                    'diblokir'
+                ) {
+
+                    blokirUjian();
+
+                    return;
+
+                }
+
+
+                /*
+                 * Pelanggaran pertama
+                 * atau kedua.
+                 */
+                if (
+                    data.status ===
+                    'peringatan'
+                ) {
+
+                    tampilkanPeringatan(
+                        data
+                    );
+
+                }
+
+            } catch (error) {
+
+                console.error(
+                    'Gagal mencatat pelanggaran:',
+                    error
+                );
+
+            } finally {
+
+                sedangMengirim =
+                    false;
+
+            }
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | PESAN PELANGGARAN
+        |--------------------------------------------------------------------------
+        */
+
+        function getPesanPelanggaran(
+            jenis
+        ) {
+
+            switch (jenis) {
+
+                case 'pindah_tab':
+
+                    return 'Anda terdeteksi berpindah tab atau meninggalkan halaman ujian.';
+
+
+                case 'keluar_fullscreen':
+
+                    return 'Anda terdeteksi keluar dari mode layar penuh.';
+
+
+                case 'kehilangan_fokus':
+
+                    return 'Jendela ujian kehilangan fokus karena Anda berpindah ke aplikasi atau jendela lain.';
+
+
+                default:
+
+                    return 'Aktivitas yang tidak diperbolehkan terdeteksi.';
+
+            }
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | TAMPILKAN PERINGATAN
+        |--------------------------------------------------------------------------
+        */
+
+        function tampilkanPeringatan(
+            data
+        ) {
+
+            /*
+             * Matikan pengawasan sementara
+             * ketika modal tampil.
+             */
+            ujianAktif =
+                false;
+
+
+            modalSedangTerbuka =
+                true;
+
+
+            if (jumlahElement) {
+
+                jumlahElement.textContent =
+                    'Peringatan ' +
+                    data.jumlah_pelanggaran +
+                    ' dari 3';
+
+            }
+
+
+            if (sisaElement) {
+
+                if (
+                    data.sisa_pelanggaran ===
+                    1
+                ) {
+
+                    sisaElement.textContent =
+                        'Ini adalah peringatan terakhir Anda.';
+
+                } else {
+
+                    sisaElement.textContent =
+                        'Anda masih memiliki ' +
+                        data.sisa_pelanggaran +
+                        ' kesempatan.';
+
+                }
+
+            }
+
+
+            if (pesanElement) {
+
+                pesanElement.textContent =
+                    getPesanPelanggaran(
+                        data.jenis
+                    );
+
+            }
+
+
+            if (modalPelanggaran) {
+
+                modalPelanggaran.show();
+
+            } else {
+
+                /*
+                 * Fallback jika Bootstrap Modal
+                 * tidak tersedia.
+                 */
+                alert(
+                    getPesanPelanggaran(
+                        data.jenis
+                    )
+                );
+
+            }
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | BLOKIR UJIAN
+        |--------------------------------------------------------------------------
+        */
+
+        function blokirUjian()
+        {
+
+            ujianAktif =
+                false;
+
+
+            modalSedangTerbuka =
+                true;
+
+
+            if (modalPelanggaran) {
+
+                modalPelanggaran.hide();
+
+            }
+
+
+            if (overlayModeUjian) {
+
+                overlayModeUjian.style.display =
+                    'none';
+
+            }
+
+
+            if (overlayBlokir) {
+
+                overlayBlokir.style.display =
+                    'flex';
+
+            }
+
+
+            document.body.style.overflow =
+                'hidden';
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | LANJUT SETELAH PERINGATAN
+        |--------------------------------------------------------------------------
+        */
+
+        if (btnLanjut) {
+
+            btnLanjut.addEventListener(
+                'click',
+                async function () {
+
+                    /*
+                     * Request fullscreen kembali.
+                     *
+                     * Klik tombol merupakan user gesture,
+                     * sehingga browser mengizinkannya.
+                     */
+                    const berhasil =
+                        await masukFullscreen();
+
+
+                    if (! berhasil) {
+
+                        alert(
+                            'Anda harus kembali ke mode layar penuh untuk melanjutkan ujian.'
+                        );
+
+
+                        return;
+
+                    }
+
+
+                    if (modalPelanggaran) {
+
+                        modalPelanggaran.hide();
+
+                    }
+
+
+                    /*
+                     * Tunggu event fullscreen selesai
+                     * sebelum pengawasan diaktifkan kembali.
+                     */
+                    setTimeout(
+                        function () {
+
+                            modalSedangTerbuka =
+                                false;
+
+
+                            sedangMasukFullscreen =
+                                false;
+
+
+                            waktuPelanggaranTerakhir =
+                                Date.now();
+
+
+                            ujianAktif =
+                                true;
+
+
+                            console.log(
+                                'Pengawasan diaktifkan kembali.'
+                            );
+
+                        },
+                        1000
+                    );
+
+                }
+            );
+
+        }
+
+
+        /*
+|--------------------------------------------------------------------------
+| DETEKSI PINDAH TAB / MINIMIZE
+|--------------------------------------------------------------------------
+*/
+
+document.addEventListener(
+    'visibilitychange',
+    function () {
+
+        console.log(
+            'VISIBILITY CHANGE:',
+            document.visibilityState,
+            'UJIAN:',
+            ujianAktif
+        );
+
+        if (
+            ! ujianAktif ||
+            modalSedangTerbuka
+        ) {
+            return;
+        }
+
+        if (document.hidden) {
+
+            catatPelanggaran(
+                'pindah_tab'
+            );
+
+        }
+
+    }
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| DETEKSI WINDOW KEHILANGAN FOKUS
+|--------------------------------------------------------------------------
+*/
+
+window.addEventListener(
+    'blur',
+    function () {
+
+        console.log(
+            'WINDOW BLUR',
+            'UJIAN:',
+            ujianAktif
+        );
+
+        if (
+            ! ujianAktif ||
+            modalSedangTerbuka
+        ) {
+            return;
+        }
+
+        /*
+         * Langsung catat.
+         *
+         * Jika visibilitychange juga terpanggil,
+         * cooldown akan mencegah double count.
+         */
+        catatPelanggaran(
+            'kehilangan_fokus'
+        );
+
+    }
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| DETEKSI KELUAR FULLSCREEN
+|--------------------------------------------------------------------------
+*/
+
+function handleFullscreenChange()
+{
+    console.log(
+        'FULLSCREEN CHANGE',
+        {
+            fullscreen:
+                sedangFullscreen(),
+
+            ujianAktif:
+                ujianAktif,
+
+            sedangMasuk:
+                sedangMasukFullscreen,
+        }
+    );
+
+
+    if (sedangMasukFullscreen) {
+        return;
+    }
+
+
+    if (
+        ! ujianAktif ||
+        modalSedangTerbuka
+    ) {
+        return;
+    }
+
+
+    if (! sedangFullscreen()) {
+
+        catatPelanggaran(
+            'keluar_fullscreen'
+        );
+
+    }
+}
+
+
+document.addEventListener(
+    'fullscreenchange',
+    handleFullscreenChange
+);
+
+
+document.addEventListener(
+    'webkitfullscreenchange',
+    handleFullscreenChange
+);
+
+        /*
+        |--------------------------------------------------------------------------
+        | DEBUG
+        |--------------------------------------------------------------------------
+        */
+
+        console.log(
+            'Sistem pengawasan CBT berhasil dimuat.'
+        );
+
+    }
+);
 </script>
 
 @endpush

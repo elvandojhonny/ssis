@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Ujian extends Model
 {
@@ -48,6 +49,13 @@ class Ujian extends Model
         return $this->belongsTo(
             User::class,
             'dibuat_oleh'
+        );
+    }
+
+    public function pengerjaans(): HasMany
+    {
+        return $this->hasMany(
+            PengerjaanUjian::class
         );
     }
 

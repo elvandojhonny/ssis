@@ -328,6 +328,29 @@
 
                     </li>
 
+                    <li class="nav-item">
+
+                        <a
+                            class="nav-link {{
+                                request()->routeIs('cbt.rekap.*')
+                                    ? 'active'
+                                    : ''
+                            }}"
+                            href="{{ route('cbt.rekap.index') }}"
+                        >
+
+                            <span class="nav-link-icon">
+                                <i class="ti ti-report-analytics"></i>
+                            </span>
+
+                            <span class="nav-link-title">
+                                Rekap Hasil Ujian
+                            </span>
+
+                        </a>
+
+                    </li>
+
                 @endif
 
 
@@ -522,6 +545,40 @@
                         </a>
 
                     </li>
+
+                    <li class="nav-item">
+
+                        <a
+                            class="nav-link {{
+                                request()->routeIs(
+                                    'cbt.siswa.riwayat'
+                                )
+                                    ||
+                                request()->routeIs(
+                                    'cbt.siswa.pengerjaan.hasil'
+                                )
+                                    ? 'active'
+                                    : ''
+                            }}"
+                            href="{{ route('cbt.siswa.riwayat') }}"
+                        >
+
+                            <span class="nav-link-icon">
+
+                                <i class="ti ti-history"></i>
+
+                            </span>
+
+                            <span class="nav-link-title">
+
+                                Riwayat Ujian
+
+                            </span>
+
+                        </a>
+
+                    </li>
+
 
                 @endif
 

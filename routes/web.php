@@ -19,6 +19,8 @@ use App\Http\Controllers\CBT\UjianController;
 use App\Http\Controllers\CBT\UjianSiswaController;
 use App\Http\Controllers\CBT\PengerjaanUjianController;
 
+use App\Http\Controllers\CBT\PelanggaranUjianController;
+
 Route::middleware('guest')->group(function () {
 
     Route::get(
@@ -87,6 +89,38 @@ Route::middleware('auth')->group(function () {
             [QrSiswaController::class, 'regenerate']
         )->name('siswa.qr.regenerate');
 
+        /*
+|--------------------------------------------------------------------------
+| Rekap Hasil CBT
+|--------------------------------------------------------------------------
+*/
+
+        Route::get(
+            '/cbt/rekap',
+            [UjianController::class, 'rekap']
+        )->name('cbt.rekap.index');
+
+
+        Route::get(
+            '/cbt/rekap/{ujian}',
+            [UjianController::class, 'rekapShow']
+        )->name('cbt.rekap.show');
+
+        Route::get(
+            '/cbt/rekap/{ujian}/export',
+            [UjianController::class, 'exportRekap']
+        )->name('cbt.rekap.export');
+
+        Route::get(
+            '/cbt/rekap/{ujian}/peserta/{pengerjaan}',
+            [UjianController::class, 'rekapPeserta']
+        )->name('cbt.rekap.peserta');
+
+        Route::patch(
+            '/cbt/rekap/{ujian}/peserta/{pengerjaan}/buka-blokir',
+            [UjianController::class, 'bukaBlokir']
+        )->name('cbt.rekap.buka-blokir');
+
 
     });
 
@@ -95,10 +129,10 @@ Route::middleware('auth')->group(function () {
     | Siswa
     |--------------------------------------------------------------------------
     */
-Route::middleware('role:siswa')
-    ->prefix('absensi')
-    ->name('absensi.')
-    ->group(function () {
+        Route::middleware('role:siswa')
+            ->prefix('absensi')
+            ->name('absensi.')
+            ->group(function () {
 
         Route::get(
             '/saya',
@@ -337,7 +371,29 @@ Route::middleware('role:siswa')
             [PengerjaanUjianController::class, 'selesai']
         )->name('pengerjaan.selesai');
 
+        Route::get(
+            '/pengerjaan/{pengerjaan}/hasil',
+            [PengerjaanUjianController::class, 'hasil']
+        )->name('pengerjaan.hasil');
+
+        Route::get(
+            '/riwayat',
+            [PengerjaanUjianController::class, 'riwayat']
+        )->name('riwayat');
+        
+        /*
+        |--------------------------------------------------------------------------
+        | Pelanggaran Ujian
+        |--------------------------------------------------------------------------
+        */
+
+        Route::post(
+            '/pengerjaan/{pengerjaan}/pelanggaran',
+            [PelanggaranUjianController::class, 'store']
+        )->name('pengerjaan.pelanggaran');
+
     });
+    
 
 });
 

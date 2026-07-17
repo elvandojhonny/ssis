@@ -6,7 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Models\BankSoal;
 use App\Models\Kelas;
 use App\Models\Ujian;
+use App\Models\PengerjaanUjian;
 use Illuminate\Http\Request;
+
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+
+use Illuminate\Support\Facades\DB;
 
 class UjianController extends Controller
 {
@@ -271,5 +280,968 @@ class UjianController extends Controller
             'success',
             'Ujian berhasil dipublikasikan.'
         );
+}
+
+/*
+|--------------------------------------------------------------------------
+| Rekap Hasil Ujian
+|--------------------------------------------------------------------------
+*/
+public function rekap()
+{
+    $ujians = Ujian::query()
+        ->with([
+            'bankSoal.guru',
+            'kelas.tahunAjaran',
+        ])
+        ->withCount([
+            'pengerjaans',
+            'pengerjaans as selesai_count' => function ($query) {
+                $query->where('status', 'selesai');
+            },
+        ])
+        ->whereIn('status', [
+            'dipublikasi',
+            'selesai',
+        ])
+        ->latest('waktu_mulai')
+        ->paginate(10);
+
+    return view(
+        'cbt.rekap.index',
+        compact('ujians')
+    );
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Detail Rekap Hasil Ujian
+|--------------------------------------------------------------------------
+*/
+public function rekapShow(Ujian $ujian)
+{
+    $ujian->load([
+        'bankSoal.guru',
+        'kelas.tahunAjaran',
+
+        'pengerjaans' => function ($query) {
+            $query
+                ->with([
+                    'siswa.user',
+                ])
+                ->orderByDesc('nilai');
+        },
+    ]);
+
+    /*
+     * Ambil seluruh siswa yang berada
+     * pada kelas tujuan ujian.
+     */
+    $siswas = $ujian->kelas
+        ->siswa()
+        ->with('user')
+        ->where('is_active', true)
+        ->orderBy('nama')
+        ->get();
+
+
+    /*
+     * Index pengerjaan berdasarkan siswa_id
+     * agar mudah dicocokkan di Blade.
+     */
+    $pengerjaanPerSiswa = $ujian
+        ->pengerjaans
+        ->keyBy('siswa_id');
+
+
+    /*
+     * Statistik rekap.
+     */
+    $totalSiswa = $siswas->count();
+
+    $sudahMengerjakan = $ujian
+        ->pengerjaans
+        ->where('status', 'selesai')
+        ->count();
+
+    $sedangMengerjakan = $ujian
+        ->pengerjaans
+        ->where('status', 'mengerjakan')
+        ->count();
+
+    /*
+    * Peserta yang sedang diblokir
+    * karena pelanggaran ujian.
+    */
+    $diblokir = $ujian
+        ->pengerjaans
+        ->where('status', 'diblokir')
+        ->count();
+
+    /*
+    * Benar-benar belum pernah
+    * memulai pengerjaan ujian.
+    */
+    $belumMengerjakan =
+        max(
+            0,
+            $totalSiswa
+            - $sudahMengerjakan
+            - $sedangMengerjakan
+            - $diblokir
+        );
+
+
+    /*
+     * Hitung rata-rata hanya dari
+     * pengerjaan yang sudah selesai.
+     */
+    $rataRata = $ujian
+        ->pengerjaans
+        ->where('status', 'selesai')
+        ->avg('nilai');
+
+
+    return view(
+        'cbt.rekap.show',
+        compact(
+            'ujian',
+            'siswas',
+            'pengerjaanPerSiswa',
+            'totalSiswa',
+            'sudahMengerjakan',
+            'sedangMengerjakan',
+            'diblokir',
+            'belumMengerjakan',
+            'rataRata'
+        )
+    );
+}
+
+/*
+|--------------------------------------------------------------------------
+| Detail Hasil Peserta
+|--------------------------------------------------------------------------
+*/
+public function rekapPeserta(
+    Ujian $ujian,
+    PengerjaanUjian $pengerjaan
+) {
+    /*
+     * Pastikan pengerjaan memang
+     * berasal dari ujian yang dibuka.
+     */
+    abort_unless(
+        (int) $pengerjaan->ujian_id ===
+        (int) $ujian->id,
+        404
+    );
+
+
+    /*
+     * Hanya pengerjaan yang sudah selesai
+     * yang dapat dilihat hasilnya.
+     */
+    if ($pengerjaan->status !== 'selesai') {
+
+        return redirect()
+            ->route(
+                'cbt.rekap.show',
+                $ujian
+            )
+            ->with(
+                'error',
+                'Peserta belum menyelesaikan ujian.'
+            );
+    }
+
+
+    /*
+     * Load seluruh data yang dibutuhkan.
+     */
+    $pengerjaan->load([
+        'siswa.user',
+
+        'ujian.bankSoal.soals' => function ($query) {
+            $query->orderBy('nomor');
+        },
+
+        'ujian.kelas',
+
+        'jawabans.soal',
+    ]);
+
+
+    /*
+     * Index jawaban berdasarkan soal_id.
+     */
+    $jawabanPerSoal = $pengerjaan
+        ->jawabans
+        ->keyBy('soal_id');
+
+
+    /*
+     * Statistik jawaban.
+     */
+    $totalSoal = $pengerjaan
+        ->ujian
+        ->bankSoal
+        ->soals
+        ->count();
+
+
+    $jawabanBenar = $pengerjaan
+        ->jawabans
+        ->where('is_benar', true)
+        ->count();
+
+
+    $jawabanSalah = $pengerjaan
+        ->jawabans
+        ->where('is_benar', false)
+        ->count();
+
+
+    $tidakDijawab = max(
+        0,
+        $totalSoal
+        - $pengerjaan->jawabans->count()
+    );
+
+
+    return view(
+        'cbt.rekap.peserta',
+        compact(
+            'ujian',
+            'pengerjaan',
+            'jawabanPerSoal',
+            'totalSoal',
+            'jawabanBenar',
+            'jawabanSalah',
+            'tidakDijawab'
+        )
+    );
+}
+
+/*
+|--------------------------------------------------------------------------
+| Export Rekap Hasil Ujian
+|--------------------------------------------------------------------------
+*/
+public function exportRekap(
+    Ujian $ujian
+): BinaryFileResponse {
+
+    /*
+     * Load data ujian.
+     */
+    $ujian->load([
+        'bankSoal.guru',
+        'kelas.tahunAjaran',
+
+        'pengerjaans' => function ($query) {
+
+            $query->with([
+                'siswa',
+            ]);
+
+        },
+    ]);
+
+
+    /*
+     * Ambil seluruh siswa aktif
+     * dari kelas tujuan ujian.
+     */
+    $siswas = $ujian
+        ->kelas
+        ->siswa()
+        ->where(
+            'is_active',
+            true
+        )
+        ->orderBy('nama')
+        ->get();
+
+
+    /*
+     * Kelompokkan pengerjaan
+     * berdasarkan siswa.
+     */
+    $pengerjaanPerSiswa =
+        $ujian
+            ->pengerjaans
+            ->keyBy('siswa_id');
+
+
+    /*
+     * Buat spreadsheet.
+     */
+    $spreadsheet =
+        new Spreadsheet();
+
+    $sheet =
+        $spreadsheet
+            ->getActiveSheet();
+
+
+    /*
+     * Nama sheet maksimal
+     * 31 karakter.
+     */
+    $sheet->setTitle(
+        'Rekap Hasil Ujian'
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | JUDUL
+    |--------------------------------------------------------------------------
+    */
+
+    $sheet->mergeCells(
+        'A1:H1'
+    );
+
+    $sheet->setCellValue(
+        'A1',
+        'REKAP HASIL UJIAN'
+    );
+
+
+    $sheet->mergeCells(
+        'A2:H2'
+    );
+
+    $sheet->setCellValue(
+        'A2',
+        $ujian->judul
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | INFORMASI UJIAN
+    |--------------------------------------------------------------------------
+    */
+
+    $sheet->setCellValue(
+        'A4',
+        'Mata Pelajaran'
+    );
+
+    $sheet->setCellValue(
+        'B4',
+        $ujian
+            ->bankSoal
+            ->mata_pelajaran
+        ?? '-'
+    );
+
+
+    $sheet->setCellValue(
+        'A5',
+        'Kelas'
+    );
+
+    $sheet->setCellValue(
+        'B5',
+        $ujian
+            ->kelas
+            ->nama
+        ?? '-'
+    );
+
+
+    $sheet->setCellValue(
+        'A6',
+        'Tahun Ajaran'
+    );
+
+    $sheet->setCellValue(
+        'B6',
+        $ujian
+            ->kelas
+            ->tahunAjaran
+            ->nama
+        ?? '-'
+    );
+
+
+    $sheet->setCellValue(
+        'D4',
+        'Tanggal Ujian'
+    );
+
+    $sheet->setCellValue(
+        'E4',
+        $ujian
+            ->waktu_mulai
+            ?->format(
+                'd/m/Y'
+            )
+        ?? '-'
+    );
+
+
+    $sheet->setCellValue(
+        'D5',
+        'Waktu'
+    );
+
+    $sheet->setCellValue(
+        'E5',
+        (
+            $ujian
+                ->waktu_mulai
+                ?->format('H:i')
+            ?? '-'
+        )
+        .
+        ' - '
+        .
+        (
+            $ujian
+                ->waktu_selesai
+                ?->format('H:i')
+            ?? '-'
+        )
+    );
+
+
+    $sheet->setCellValue(
+        'D6',
+        'Durasi'
+    );
+
+    $sheet->setCellValue(
+        'E6',
+        $ujian->durasi_menit
+        . ' menit'
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | HEADER TABEL
+    |--------------------------------------------------------------------------
+    */
+
+    $headerRow = 8;
+
+    $headers = [
+        'No',
+        'NIS',
+        'Nama Siswa',
+        'Status',
+        'Waktu Mulai',
+        'Waktu Selesai',
+        'Nilai',
+        'Keterangan',
+    ];
+
+
+    foreach (
+        $headers
+        as $index => $header
+    ) {
+
+        $column =
+            chr(
+                65 + $index
+            );
+
+        $sheet->setCellValue(
+            $column
+            . $headerRow,
+            $header
+        );
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | DATA SISWA
+    |--------------------------------------------------------------------------
+    */
+
+    $row = 9;
+
+    $nomor = 1;
+
+
+    foreach (
+        $siswas
+        as $siswa
+    ) {
+
+        $pengerjaan =
+            $pengerjaanPerSiswa
+                ->get(
+                    $siswa->id
+                );
+
+
+        /*
+         * Tentukan status.
+         */
+        if (! $pengerjaan) {
+
+            $status =
+                'Belum Mengerjakan';
+
+        } elseif (
+            $pengerjaan->status
+            === 'mengerjakan'
+        ) {
+
+            $status =
+                'Mengerjakan';
+
+        } elseif (
+            $pengerjaan->status
+            === 'selesai'
+        ) {
+
+            $status =
+                'Selesai';
+
+        } else {
+
+            $status =
+                ucfirst(
+                    $pengerjaan
+                        ->status
+                );
+
+        }
+
+
+        /*
+         * Tentukan keterangan.
+         */
+        if (! $pengerjaan) {
+
+            $keterangan =
+                'Belum mengikuti ujian';
+
+        } elseif (
+            $pengerjaan->status
+            === 'mengerjakan'
+        ) {
+
+            $keterangan =
+                'Belum menyelesaikan ujian';
+
+        } else {
+
+            $keterangan =
+                'Telah menyelesaikan ujian';
+
+        }
+
+
+        $sheet->setCellValue(
+            'A' . $row,
+            $nomor
+        );
+
+
+        $sheet->setCellValueExplicit(
+            'B' . $row,
+            (string) (
+                $siswa->nis
+                ?? '-'
+            ),
+            \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING
+        );
+
+
+        $sheet->setCellValue(
+            'C' . $row,
+            $siswa->nama
+        );
+
+
+        $sheet->setCellValue(
+            'D' . $row,
+            $status
+        );
+
+
+        $sheet->setCellValue(
+            'E' . $row,
+
+            $pengerjaan
+                ?->waktu_mulai
+                ?->format(
+                    'd/m/Y H:i'
+                )
+            ?? '-'
+        );
+
+
+        $sheet->setCellValue(
+            'F' . $row,
+
+            $pengerjaan
+                ?->waktu_selesai
+                ?->format(
+                    'd/m/Y H:i'
+                )
+            ?? '-'
+        );
+
+
+        /*
+         * Nilai hanya ditampilkan
+         * jika ujian sudah selesai.
+         */
+        if (
+            $pengerjaan &&
+            $pengerjaan->status
+            === 'selesai'
+        ) {
+
+            $sheet->setCellValue(
+                'G' . $row,
+                (float)
+                $pengerjaan->nilai
+            );
+
+        } else {
+
+            $sheet->setCellValue(
+                'G' . $row,
+                '-'
+            );
+
+        }
+
+
+        $sheet->setCellValue(
+            'H' . $row,
+            $keterangan
+        );
+
+
+        $row++;
+
+        $nomor++;
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | STYLE JUDUL
+    |--------------------------------------------------------------------------
+    */
+
+    $sheet
+        ->getStyle('A1:H1')
+        ->getFont()
+        ->setBold(true)
+        ->setSize(16);
+
+
+    $sheet
+        ->getStyle('A2:H2')
+        ->getFont()
+        ->setBold(true)
+        ->setSize(13);
+
+
+    $sheet
+        ->getStyle('A1:H2')
+        ->getAlignment()
+        ->setHorizontal(
+            Alignment::HORIZONTAL_CENTER
+        );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | STYLE HEADER
+    |--------------------------------------------------------------------------
+    */
+
+    $sheet
+        ->getStyle(
+            'A8:H8'
+        )
+        ->getFont()
+        ->setBold(true);
+
+
+    $sheet
+        ->getStyle(
+            'A8:H8'
+        )
+        ->getAlignment()
+        ->setHorizontal(
+            Alignment::HORIZONTAL_CENTER
+        );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | BORDER TABEL
+    |--------------------------------------------------------------------------
+    */
+
+    $lastRow =
+        max(
+            8,
+            $row - 1
+        );
+
+
+    $sheet
+        ->getStyle(
+            'A8:H'
+            . $lastRow
+        )
+        ->getBorders()
+        ->getAllBorders()
+        ->setBorderStyle(
+            Border::BORDER_THIN
+        );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | ALIGNMENT
+    |--------------------------------------------------------------------------
+    */
+
+    $sheet
+        ->getStyle(
+            'A9:A'
+            . $lastRow
+        )
+        ->getAlignment()
+        ->setHorizontal(
+            Alignment::HORIZONTAL_CENTER
+        );
+
+
+    $sheet
+        ->getStyle(
+            'D9:G'
+            . $lastRow
+        )
+        ->getAlignment()
+        ->setHorizontal(
+            Alignment::HORIZONTAL_CENTER
+        );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | LEBAR KOLOM
+    |--------------------------------------------------------------------------
+    */
+
+    $sheet
+        ->getColumnDimension('A')
+        ->setWidth(7);
+
+    $sheet
+        ->getColumnDimension('B')
+        ->setWidth(18);
+
+    $sheet
+        ->getColumnDimension('C')
+        ->setWidth(30);
+
+    $sheet
+        ->getColumnDimension('D')
+        ->setWidth(22);
+
+    $sheet
+        ->getColumnDimension('E')
+        ->setWidth(22);
+
+    $sheet
+        ->getColumnDimension('F')
+        ->setWidth(22);
+
+    $sheet
+        ->getColumnDimension('G')
+        ->setWidth(12);
+
+    $sheet
+        ->getColumnDimension('H')
+        ->setWidth(30);
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | SIMPAN FILE SEMENTARA
+    |--------------------------------------------------------------------------
+    */
+
+    $fileName =
+        'Rekap-Ujian-'
+        .
+        str($ujian->judul)
+            ->slug()
+        .
+        '.xlsx';
+
+
+    $tempPath =
+        storage_path(
+            'app/'
+            . $fileName
+        );
+
+
+    $writer =
+        new Xlsx(
+            $spreadsheet
+        );
+
+    $writer->save(
+        $tempPath
+    );
+
+
+    /*
+     * Bersihkan object spreadsheet
+     * dari memory.
+     */
+    $spreadsheet
+        ->disconnectWorksheets();
+
+
+    unset(
+        $spreadsheet
+    );
+
+
+    /*
+     * Download dan hapus file
+     * setelah dikirim.
+     */
+    return response()
+        ->download(
+            $tempPath,
+            $fileName
+        )
+        ->deleteFileAfterSend(
+            true
+        );
+}
+
+public function bukaBlokir(
+    Ujian $ujian,
+    PengerjaanUjian $pengerjaan
+) {
+    /*
+     * Pastikan pengerjaan benar-benar
+     * berasal dari ujian yang dibuka.
+     */
+    abort_unless(
+        (int) $pengerjaan->ujian_id ===
+        (int) $ujian->id,
+        404
+    );
+
+
+    /*
+     * Hanya pengerjaan dengan status
+     * diblokir yang dapat dibuka kembali.
+     */
+    if ($pengerjaan->status !== 'diblokir') {
+
+        return back()->with(
+            'error',
+            'Peserta ini tidak sedang diblokir.'
+        );
+    }
+
+
+    /*
+     * Jika batas waktu pengerjaan sudah habis,
+     * siswa tidak dapat melanjutkan lagi.
+     */
+    if (
+        now()->gte(
+            $pengerjaan->batas_waktu
+        )
+    ) {
+
+        return back()->with(
+            'error',
+            'Blokir tidak dapat dibuka karena waktu pengerjaan peserta telah berakhir.'
+        );
+    }
+
+
+    DB::transaction(function () use ($pengerjaan) {
+
+        /*
+         * Lock row agar tidak terjadi
+         * proses buka blokir bersamaan.
+         */
+        $attempt =
+            PengerjaanUjian::query()
+                ->whereKey(
+                    $pengerjaan->id
+                )
+                ->lockForUpdate()
+                ->firstOrFail();
+
+
+        /*
+         * Periksa kembali status setelah
+         * mendapatkan database lock.
+         */
+        if ($attempt->status !== 'diblokir') {
+            return;
+        }
+
+
+        $attempt->update([
+
+            /*
+             * Aktifkan kembali pengerjaan.
+             */
+            'status' =>
+                'mengerjakan',
+
+            /*
+             * Reset jumlah pelanggaran.
+             */
+            'jumlah_pelanggaran' =>
+                0,
+
+            /*
+             * Hapus status waktu blokir aktif.
+             */
+            'diblokir_pada' =>
+                null,
+
+            /*
+             * Catat user/operator
+             * yang membuka blokir.
+             */
+            'dibuka_blokir_oleh' =>
+                auth()->id(),
+
+        ]);
+
+    });
+
+
+    return back()->with(
+        'success',
+        'Blokir peserta berhasil dibuka. Peserta dapat melanjutkan ujian.'
+    );
 }
 }
