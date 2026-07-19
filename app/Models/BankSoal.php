@@ -15,6 +15,7 @@ class BankSoal extends Model
         'tingkat',
         'deskripsi',
         'status',
+        'is_archived',
         'nama_file',
     ];
 

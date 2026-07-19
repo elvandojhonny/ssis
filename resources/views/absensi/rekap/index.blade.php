@@ -486,95 +486,95 @@
     </div>
 
 
-    {{-- ===================================================== --}}
-    {{-- REKAP KEHADIRAN PER SISWA --}}
-    {{-- ===================================================== --}}
+ {{-- ========================================================= --}}
+{{-- REKAP KEHADIRAN PER SISWA --}}
+{{-- ========================================================= --}}
 
-    <div class="card-body border-top">
+<div class="card-body border-top">
 
-        <div class="mb-4">
+    <div class="mb-4">
 
-            <h3 class="card-title">
-                Rekap Kehadiran Per Siswa
-            </h3>
+        <h3 class="card-title">
+            Rekap Kehadiran Per Siswa
+        </h3>
 
-            <div class="text-secondary">
+        <div class="text-secondary">
 
-                Rekap dan riwayat kehadiran setiap siswa selama
+            Rekap dan riwayat kehadiran setiap siswa selama
 
-                {{ $daftarBulan[$bulan] }}
-                {{ $tahun }}.
-
-            </div>
+            {{ $daftarBulan[$bulan] }}
+            {{ $tahun }}.
 
         </div>
 
-
-        <div class="table-responsive ssis-mobile-table">
-
-            <table class="table table-vcenter">
-
-                <thead>
-
-                    <tr>
-
-                        <th>No</th>
-                        <th>Nama Siswa</th>
-                        <th>NIS</th>
-                        <th>Kelas</th>
-
-                        <th class="text-center">
-                            Hadir
-                        </th>
-
-                        <th class="text-center">
-                            Terlambat
-                        </th>
-
-                        <th class="text-center">
-                            Izin
-                        </th>
-
-                        <th class="text-center">
-                            Sakit
-                        </th>
-
-                        <th class="text-center">
-                            Alpa
-                        </th>
-
-                        <th class="text-center">
-                            Total
-                        </th>
-
-                        <th class="w-1">
-                            Aksi
-                        </th>
-
-                    </tr>
-
-                </thead>
+    </div>
 
 
-                <tbody>
+    {{-- ===================================================== --}}
+    {{-- DESKTOP / LAPTOP --}}
+    {{-- ===================================================== --}}
+
+    <div class="d-none d-md-block">
+
+        <table class="table table-vcenter">
+
+            <thead>
+
+                <tr>
+
+                    <th>No</th>
+                    <th>Nama Siswa</th>
+                    <th>NIS</th>
+                    <th>Kelas</th>
+
+                    <th class="text-center">
+                        Hadir
+                    </th>
+
+                    <th class="text-center">
+                        Terlambat
+                    </th>
+
+                    <th class="text-center">
+                        Izin
+                    </th>
+
+                    <th class="text-center">
+                        Sakit
+                    </th>
+
+                    <th class="text-center">
+                        Alpa
+                    </th>
+
+                    <th class="text-center">
+                        Total
+                    </th>
+
+                    <th class="w-1">
+                        Aksi
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
 
                 @forelse(
                     $dataTingkat['rekap_siswa']
                     as $rekap
                 )
 
-                    {{-- BARIS SISWA --}}
-
                     <tr>
 
-                        <td data-label="No">
-
+                        <td>
                             {{ $loop->iteration }}
-
                         </td>
 
 
-                        <td data-label="Nama Siswa">
+                        <td>
 
                             <div class="fw-bold">
 
@@ -589,7 +589,7 @@
                         </td>
 
 
-                        <td data-label="NIS">
+                        <td>
 
                             {{
                                 $rekap['siswa']
@@ -599,7 +599,7 @@
                         </td>
 
 
-                        <td data-label="Kelas">
+                        <td>
 
                             <span class="badge bg-blue-lt">
 
@@ -614,10 +614,7 @@
                         </td>
 
 
-                        <td
-                            data-label="Hadir"
-                            class="text-center"
-                        >
+                        <td class="text-center">
 
                             <span class="badge bg-success-lt">
 
@@ -628,10 +625,7 @@
                         </td>
 
 
-                        <td
-                            data-label="Terlambat"
-                            class="text-center"
-                        >
+                        <td class="text-center">
 
                             <span class="badge bg-warning-lt">
 
@@ -642,10 +636,7 @@
                         </td>
 
 
-                        <td
-                            data-label="Izin"
-                            class="text-center"
-                        >
+                        <td class="text-center">
 
                             <span class="badge bg-blue-lt">
 
@@ -656,10 +647,7 @@
                         </td>
 
 
-                        <td
-                            data-label="Sakit"
-                            class="text-center"
-                        >
+                        <td class="text-center">
 
                             <span class="badge bg-azure-lt">
 
@@ -670,10 +658,7 @@
                         </td>
 
 
-                        <td
-                            data-label="Alpa"
-                            class="text-center"
-                        >
+                        <td class="text-center">
 
                             <span class="badge bg-danger-lt">
 
@@ -684,63 +669,48 @@
                         </td>
 
 
-                        <td
-                            data-label="Total"
-                            class="text-center fw-bold"
-                        >
+                        <td class="text-center fw-bold">
 
                             {{ $rekap['total'] }}
 
                         </td>
 
 
-                        <td data-label="Aksi">
+                        <td>
 
-                            <div
+                            <button
+                                type="button"
                                 class="
-                                    d-flex
-                                    justify-content-end
-                                    ssis-table-actions
+                                    btn
+                                    btn-sm
+                                    btn-outline-primary
                                 "
+                                data-bs-toggle="collapse"
+                                data-bs-target="#riwayat-desktop-{{ $namaTingkat }}-{{ $rekap['siswa']->id }}"
+                                aria-expanded="false"
                             >
 
-                                <button
-                                    type="button"
-                                    class="
-                                        btn
-                                        btn-sm
-                                        btn-outline-primary
-                                    "
-                                    data-bs-toggle="collapse"
-                                    data-bs-target="#riwayat-{{ $namaTingkat }}-{{ $rekap['siswa']->id }}"
-                                    aria-expanded="false"
-                                >
+                                <i class="ti ti-history me-1"></i>
 
-                                    <i class="ti ti-history me-1"></i>
+                                Detail
 
-                                    Detail
-
-                                </button>
-
-                            </div>
+                            </button>
 
                         </td>
 
                     </tr>
 
 
-                    {{-- ===================================== --}}
-                    {{-- DETAIL RIWAYAT SISWA --}}
-                    {{-- ===================================== --}}
+                    {{-- DETAIL DESKTOP --}}
 
                     <tr
                         class="collapse"
-                        id="riwayat-{{ $namaTingkat }}-{{ $rekap['siswa']->id }}"
+                        id="riwayat-desktop-{{ $namaTingkat }}-{{ $rekap['siswa']->id }}"
                     >
 
                         <td colspan="11" class="p-0">
 
-                            <div class="bg-light p-3 p-md-4">
+                            <div class="bg-light p-4">
 
                                 <div class="mb-3">
 
@@ -755,6 +725,7 @@
                                         }}
 
                                     </h4>
+
 
                                     <div class="text-secondary">
 
@@ -775,65 +746,129 @@
                                 </div>
 
 
-                                {{-- TABEL DETAIL --}}
-
-                                <div
+                                <table
                                     class="
-                                        table-responsive
-                                        ssis-mobile-table
+                                        table
+                                        table-sm
+                                        table-vcenter
+                                        bg-white
+                                        mb-0
                                     "
                                 >
 
-                                    <table
-                                        class="
-                                            table
-                                            table-sm
-                                            table-vcenter
-                                            bg-white
-                                        "
-                                    >
+                                    <thead>
 
-                                        <thead>
+                                        <tr>
 
-                                            <tr>
+                                            <th>
+                                                Tanggal
+                                            </th>
 
-                                                <th>
-                                                    Tanggal
-                                                </th>
+                                            <th>
+                                                Absensi Pagi
+                                            </th>
 
-                                                <th>
-                                                    Absensi Pagi
-                                                </th>
+                                            <th>
+                                                Waktu Pagi
+                                            </th>
 
-                                                <th>
-                                                    Waktu Pagi
-                                                </th>
+                                            <th>
+                                                Absensi Siang
+                                            </th>
 
-                                                <th>
-                                                    Absensi Siang
-                                                </th>
+                                            <th>
+                                                Waktu Siang
+                                            </th>
 
-                                                <th>
-                                                    Waktu Siang
-                                                </th>
+                                        </tr>
 
-                                            </tr>
-
-                                        </thead>
+                                    </thead>
 
 
-                                        <tbody>
+                                    <tbody>
 
                                         @forelse(
                                             $rekap['riwayat']
                                             as $riwayat
                                         )
 
+                                            @php
+
+                                                $statusPagi =
+                                                    $riwayat[
+                                                        'pagi'
+                                                    ][
+                                                        'status'
+                                                    ]
+                                                    ?? null;
+
+
+                                                $statusSiang =
+                                                    $riwayat[
+                                                        'siang'
+                                                    ][
+                                                        'status'
+                                                    ]
+                                                    ?? null;
+
+
+                                                $badgePagi =
+                                                    match(
+                                                        $statusPagi
+                                                    ) {
+
+                                                        'hadir'
+                                                            => 'success',
+
+                                                        'terlambat'
+                                                            => 'warning',
+
+                                                        'izin'
+                                                            => 'blue',
+
+                                                        'sakit'
+                                                            => 'azure',
+
+                                                        'alpa'
+                                                            => 'danger',
+
+                                                        default
+                                                            => 'secondary',
+
+                                                    };
+
+
+                                                $badgeSiang =
+                                                    match(
+                                                        $statusSiang
+                                                    ) {
+
+                                                        'hadir'
+                                                            => 'success',
+
+                                                        'terlambat'
+                                                            => 'warning',
+
+                                                        'izin'
+                                                            => 'blue',
+
+                                                        'sakit'
+                                                            => 'azure',
+
+                                                        'alpa'
+                                                            => 'danger',
+
+                                                        default
+                                                            => 'secondary',
+
+                                                    };
+
+                                            @endphp
+
+
                                             <tr>
 
-                                                {{-- TANGGAL --}}
-
-                                                <td data-label="Tanggal">
+                                                <td>
 
                                                     <div class="fw-bold">
 
@@ -854,81 +889,29 @@
                                                 </td>
 
 
-                                                {{-- STATUS PAGI --}}
+                                                <td>
 
-                                                <td data-label="Absensi Pagi">
+                                                    <span
+                                                        class="
+                                                            badge
+                                                            bg-{{ $badgePagi }}-lt
+                                                        "
+                                                    >
 
-                                                    @if($riwayat['pagi'])
-
-                                                        @php
-
-                                                            $statusPagi =
-                                                                $riwayat[
-                                                                    'pagi'
-                                                                ][
-                                                                    'status'
-                                                                ];
-
-                                                            $badgePagi =
-                                                                match(
-                                                                    $statusPagi
-                                                                ) {
-                                                                    'hadir'
-                                                                        => 'success',
-
-                                                                    'terlambat'
-                                                                        => 'warning',
-
-                                                                    'izin'
-                                                                        => 'blue',
-
-                                                                    'sakit'
-                                                                        => 'azure',
-
-                                                                    'alpa'
-                                                                        => 'danger',
-
-                                                                    default
-                                                                        => 'secondary',
-                                                                };
-
-                                                        @endphp
-
-
-                                                        <span
-                                                            class="
-                                                                badge
-                                                                bg-{{ $badgePagi }}-lt
-                                                            "
-                                                        >
-
-                                                            {{
-                                                                ucfirst(
+                                                        {{
+                                                            $statusPagi
+                                                                ? ucfirst(
                                                                     $statusPagi
                                                                 )
-                                                            }}
+                                                                : '-'
+                                                        }}
 
-                                                        </span>
-
-                                                    @else
-
-                                                        <span
-                                                            class="
-                                                                badge
-                                                                bg-secondary-lt
-                                                            "
-                                                        >
-                                                            -
-                                                        </span>
-
-                                                    @endif
+                                                    </span>
 
                                                 </td>
 
 
-                                                {{-- WAKTU PAGI --}}
-
-                                                <td data-label="Waktu Pagi">
+                                                <td>
 
                                                     {{
                                                         $riwayat[
@@ -942,81 +925,29 @@
                                                 </td>
 
 
-                                                {{-- STATUS SIANG --}}
+                                                <td>
 
-                                                <td data-label="Absensi Siang">
+                                                    <span
+                                                        class="
+                                                            badge
+                                                            bg-{{ $badgeSiang }}-lt
+                                                        "
+                                                    >
 
-                                                    @if($riwayat['siang'])
-
-                                                        @php
-
-                                                            $statusSiang =
-                                                                $riwayat[
-                                                                    'siang'
-                                                                ][
-                                                                    'status'
-                                                                ];
-
-                                                            $badgeSiang =
-                                                                match(
-                                                                    $statusSiang
-                                                                ) {
-                                                                    'hadir'
-                                                                        => 'success',
-
-                                                                    'terlambat'
-                                                                        => 'warning',
-
-                                                                    'izin'
-                                                                        => 'blue',
-
-                                                                    'sakit'
-                                                                        => 'azure',
-
-                                                                    'alpa'
-                                                                        => 'danger',
-
-                                                                    default
-                                                                        => 'secondary',
-                                                                };
-
-                                                        @endphp
-
-
-                                                        <span
-                                                            class="
-                                                                badge
-                                                                bg-{{ $badgeSiang }}-lt
-                                                            "
-                                                        >
-
-                                                            {{
-                                                                ucfirst(
+                                                        {{
+                                                            $statusSiang
+                                                                ? ucfirst(
                                                                     $statusSiang
                                                                 )
-                                                            }}
+                                                                : '-'
+                                                        }}
 
-                                                        </span>
-
-                                                    @else
-
-                                                        <span
-                                                            class="
-                                                                badge
-                                                                bg-secondary-lt
-                                                            "
-                                                        >
-                                                            -
-                                                        </span>
-
-                                                    @endif
+                                                    </span>
 
                                                 </td>
 
 
-                                                {{-- WAKTU SIANG --}}
-
-                                                <td data-label="Waktu Siang">
+                                                <td>
 
                                                     {{
                                                         $riwayat[
@@ -1034,7 +965,7 @@
 
                                         @empty
 
-                                            <tr class="ssis-empty-row">
+                                            <tr>
 
                                                 <td
                                                     colspan="5"
@@ -1054,11 +985,9 @@
 
                                         @endforelse
 
-                                        </tbody>
+                                    </tbody>
 
-                                    </table>
-
-                                </div>
+                                </table>
 
                             </div>
 
@@ -1069,7 +998,7 @@
 
                 @empty
 
-                    <tr class="ssis-empty-row">
+                    <tr>
 
                         <td
                             colspan="11"
@@ -1089,16 +1018,657 @@
 
                 @endforelse
 
-                </tbody>
+            </tbody>
 
-            </table>
+        </table>
 
-        </div>
+    </div>
+
+
+
+    {{-- ===================================================== --}}
+    {{-- MOBILE --}}
+    {{-- ===================================================== --}}
+
+    <div class="d-md-none">
+
+        @forelse(
+            $dataTingkat['rekap_siswa']
+            as $rekap
+        )
+
+            <div class="border rounded mb-3 overflow-hidden">
+
+
+                {{-- HEADER SISWA --}}
+
+                <div class="p-3">
+
+                    <div
+                        class="
+                            d-flex
+                            justify-content-between
+                            align-items-start
+                            gap-3
+                            mb-3
+                        "
+                    >
+
+                        <div class="min-w-0">
+
+                            <div class="fw-bold">
+
+                                {{
+                                    $rekap['siswa']
+                                        ->user
+                                        ->name
+                                }}
+
+                            </div>
+
+
+                            <div class="text-secondary small mt-1">
+
+                                NIS:
+
+                                {{
+                                    $rekap['siswa']
+                                        ->nis
+                                }}
+
+                            </div>
+
+                        </div>
+
+
+                        <span
+                            class="
+                                badge
+                                bg-blue-lt
+                                flex-shrink-0
+                            "
+                        >
+
+                            {{
+                                $rekap['siswa']
+                                    ->kelas
+                                    ->nama
+                            }}
+
+                        </span>
+
+                    </div>
+
+
+
+                    {{-- STATISTIK SISWA --}}
+
+                    <div class="row g-2 text-center">
+
+
+                        <div class="col-4">
+
+                            <div
+                                class="
+                                    border
+                                    rounded
+                                    p-2
+                                    h-100
+                                "
+                            >
+
+                                <div
+                                    class="
+                                        text-secondary
+                                        small
+                                    "
+                                >
+                                    Hadir
+                                </div>
+
+                                <div
+                                    class="
+                                        fw-bold
+                                        text-success
+                                        mt-1
+                                    "
+                                >
+                                    {{ $rekap['hadir'] }}
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-4">
+
+                            <div
+                                class="
+                                    border
+                                    rounded
+                                    p-2
+                                    h-100
+                                "
+                            >
+
+                                <div
+                                    class="
+                                        text-secondary
+                                        small
+                                    "
+                                >
+                                    Terlambat
+                                </div>
+
+                                <div
+                                    class="
+                                        fw-bold
+                                        text-warning
+                                        mt-1
+                                    "
+                                >
+                                    {{ $rekap['terlambat'] }}
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-4">
+
+                            <div
+                                class="
+                                    border
+                                    rounded
+                                    p-2
+                                    h-100
+                                "
+                            >
+
+                                <div
+                                    class="
+                                        text-secondary
+                                        small
+                                    "
+                                >
+                                    Izin
+                                </div>
+
+                                <div
+                                    class="
+                                        fw-bold
+                                        text-primary
+                                        mt-1
+                                    "
+                                >
+                                    {{ $rekap['izin'] }}
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-4">
+
+                            <div
+                                class="
+                                    border
+                                    rounded
+                                    p-2
+                                    h-100
+                                "
+                            >
+
+                                <div
+                                    class="
+                                        text-secondary
+                                        small
+                                    "
+                                >
+                                    Sakit
+                                </div>
+
+                                <div class="fw-bold mt-1">
+                                    {{ $rekap['sakit'] }}
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-4">
+
+                            <div
+                                class="
+                                    border
+                                    rounded
+                                    p-2
+                                    h-100
+                                "
+                            >
+
+                                <div
+                                    class="
+                                        text-secondary
+                                        small
+                                    "
+                                >
+                                    Alpa
+                                </div>
+
+                                <div
+                                    class="
+                                        fw-bold
+                                        text-danger
+                                        mt-1
+                                    "
+                                >
+                                    {{ $rekap['alpa'] }}
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-4">
+
+                            <div
+                                class="
+                                    border
+                                    rounded
+                                    p-2
+                                    h-100
+                                "
+                            >
+
+                                <div
+                                    class="
+                                        text-secondary
+                                        small
+                                    "
+                                >
+                                    Total
+                                </div>
+
+                                <div class="fw-bold mt-1">
+                                    {{ $rekap['total'] }}
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+
+                    {{-- TOMBOL DETAIL --}}
+
+                    <button
+                        type="button"
+                        class="
+                            btn
+                            btn-outline-primary
+                            w-100
+                            mt-3
+                        "
+                        data-bs-toggle="collapse"
+                        data-bs-target="#riwayat-mobile-{{ $namaTingkat }}-{{ $rekap['siswa']->id }}"
+                        aria-expanded="false"
+                    >
+
+                        <i class="ti ti-history me-1"></i>
+
+                        Lihat Riwayat Kehadiran
+
+                    </button>
+
+                </div>
+
+
+
+                {{-- ========================================= --}}
+                {{-- DETAIL MOBILE TANPA TABEL --}}
+                {{-- ========================================= --}}
+
+                <div
+                    class="collapse"
+                    id="riwayat-mobile-{{ $namaTingkat }}-{{ $rekap['siswa']->id }}"
+                >
+
+                    <div
+                        class="
+                            border-top
+                            bg-light
+                            p-3
+                        "
+                    >
+
+                        <div class="fw-bold mb-3">
+                            Riwayat Absensi
+                        </div>
+
+
+                        @forelse(
+                            $rekap['riwayat']
+                            as $riwayat
+                        )
+
+                            @php
+
+                                $statusPagi =
+                                    $riwayat[
+                                        'pagi'
+                                    ][
+                                        'status'
+                                    ]
+                                    ?? null;
+
+
+                                $statusSiang =
+                                    $riwayat[
+                                        'siang'
+                                    ][
+                                        'status'
+                                    ]
+                                    ?? null;
+
+
+                                $badgePagi =
+                                    match(
+                                        $statusPagi
+                                    ) {
+
+                                        'hadir'
+                                            => 'success',
+
+                                        'terlambat'
+                                            => 'warning',
+
+                                        'izin'
+                                            => 'blue',
+
+                                        'sakit'
+                                            => 'azure',
+
+                                        'alpa'
+                                            => 'danger',
+
+                                        default
+                                            => 'secondary',
+
+                                    };
+
+
+                                $badgeSiang =
+                                    match(
+                                        $statusSiang
+                                    ) {
+
+                                        'hadir'
+                                            => 'success',
+
+                                        'terlambat'
+                                            => 'warning',
+
+                                        'izin'
+                                            => 'blue',
+
+                                        'sakit'
+                                            => 'azure',
+
+                                        'alpa'
+                                            => 'danger',
+
+                                        default
+                                            => 'secondary',
+
+                                    };
+
+                            @endphp
+
+
+                            <div
+                                class="
+                                    bg-white
+                                    border
+                                    rounded
+                                    p-3
+                                    mb-2
+                                "
+                            >
+
+
+                                {{-- TANGGAL --}}
+
+                                <div
+                                    class="
+                                        fw-bold
+                                        mb-3
+                                    "
+                                >
+
+                                    {{
+                                        \Carbon\Carbon::parse(
+                                            $riwayat[
+                                                'tanggal'
+                                            ]
+                                        )
+                                        ->locale('id')
+                                        ->translatedFormat(
+                                            'l, d F Y'
+                                        )
+                                    }}
+
+                                </div>
+
+
+
+                                {{-- PAGI --}}
+
+                                <div
+                                    class="
+                                        d-flex
+                                        justify-content-between
+                                        align-items-center
+                                        gap-3
+                                        pb-2
+                                        mb-2
+                                        border-bottom
+                                    "
+                                >
+
+                                    <div>
+
+                                        <div
+                                            class="
+                                                text-secondary
+                                                small
+                                            "
+                                        >
+                                            Absensi Pagi
+                                        </div>
+
+                                        <div class="mt-1">
+
+                                            <span
+                                                class="
+                                                    badge
+                                                    bg-{{ $badgePagi }}-lt
+                                                "
+                                            >
+
+                                                {{
+                                                    $statusPagi
+                                                        ? ucfirst(
+                                                            $statusPagi
+                                                        )
+                                                        : '-'
+                                                }}
+
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    <div class="text-end">
+
+                                        <div
+                                            class="
+                                                text-secondary
+                                                small
+                                            "
+                                        >
+                                            Waktu
+                                        </div>
+
+                                        <div class="fw-bold mt-1">
+
+                                            {{
+                                                $riwayat[
+                                                    'pagi'
+                                                ][
+                                                    'waktu'
+                                                ]
+                                                ?? '-'
+                                            }}
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+
+
+                                {{-- SIANG --}}
+
+                                <div
+                                    class="
+                                        d-flex
+                                        justify-content-between
+                                        align-items-center
+                                        gap-3
+                                    "
+                                >
+
+                                    <div>
+
+                                        <div
+                                            class="
+                                                text-secondary
+                                                small
+                                            "
+                                        >
+                                            Absensi Siang
+                                        </div>
+
+                                        <div class="mt-1">
+
+                                            <span
+                                                class="
+                                                    badge
+                                                    bg-{{ $badgeSiang }}-lt
+                                                "
+                                            >
+
+                                                {{
+                                                    $statusSiang
+                                                        ? ucfirst(
+                                                            $statusSiang
+                                                        )
+                                                        : '-'
+                                                }}
+
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    <div class="text-end">
+
+                                        <div
+                                            class="
+                                                text-secondary
+                                                small
+                                            "
+                                        >
+                                            Waktu
+                                        </div>
+
+                                        <div class="fw-bold mt-1">
+
+                                            {{
+                                                $riwayat[
+                                                    'siang'
+                                                ][
+                                                    'waktu'
+                                                ]
+                                                ?? '-'
+                                            }}
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                        @empty
+
+                            <div
+                                class="
+                                    text-center
+                                    text-secondary
+                                    py-4
+                                "
+                            >
+
+                                Belum ada riwayat
+                                absensi siswa.
+
+                            </div>
+
+                        @endforelse
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+        @empty
+
+            <div
+                class="
+                    text-center
+                    text-secondary
+                    py-5
+                "
+            >
+
+                Tidak ada data siswa
+                pada periode ini.
+
+            </div>
+
+        @endforelse
 
     </div>
 
 </div>
-
 
 @empty
 

@@ -3,9 +3,15 @@
 @endphp
 
 <aside
-    class="navbar navbar-vertical navbar-expand-lg"
+    class="
+        navbar
+        navbar-vertical
+        navbar-expand-lg
+        ssis-sidebar
+    "
     data-bs-theme="dark"
 >
+
     <div class="container-fluid">
 
         {{-- =====================================================
@@ -29,7 +35,7 @@
                 <div class="ssis-brand-content">
 
                     <div class="ssis-brand-name">
-                        SMA N 6
+                        SMA Negeri 6
                     </div>
 
                     <div class="ssis-brand-subtitle">
@@ -146,7 +152,7 @@
                         >
 
                             <span class="nav-link-icon">
-                                <i class="ti ti-school"></i>
+                                <i class="ti ti-door-enter"></i>
                             </span>
 
                             <span class="nav-link-title">

@@ -26,13 +26,35 @@
 
         <div class="col-12 col-md-auto">
 
-            <a
-                href="{{ route('cbt.bank-soal.template') }}"
-                class="btn btn-outline-primary w-100"
+            <div
+                class="
+                    d-flex
+                    flex-column
+                    flex-md-row
+                    gap-2
+                "
             >
-                <i class="ti ti-download me-1"></i>
-                Download Template Soal
-            </a>
+
+                <a
+                    href="{{ route('cbt.bank-soal.arsip') }}"
+                    class="btn btn-outline-secondary"
+                >
+                    <i class="ti ti-archive me-1"></i>
+
+                    Arsip Bank Soal
+                </a>
+
+
+                <a
+                    href="{{ route('cbt.bank-soal.template') }}"
+                    class="btn btn-outline-primary"
+                >
+                    <i class="ti ti-download me-1"></i>
+
+                    Download Template Soal
+                </a>
+
+            </div>
 
         </div>
 
@@ -995,16 +1017,52 @@
 
                         <td>
 
-                            <a
-                                href="{{ route(
-                                    'cbt.bank-soal.show',
-                                    $bankSoal
-                                ) }}"
-                                class="btn btn-sm btn-outline-primary"
-                            >
-                                <i class="ti ti-eye me-1"></i>
-                                Detail
-                            </a>
+                            <div class="d-flex gap-2">
+
+                                <a
+                                    href="{{
+                                        route(
+                                            'cbt.bank-soal.show',
+                                            $bankSoal
+                                        )
+                                    }}"
+                                    class="btn btn-sm btn-outline-primary"
+                                >
+                                    <i class="ti ti-eye me-1"></i>
+
+                                    Detail
+                                </a>
+
+
+                                <form
+                                    action="{{
+                                        route(
+                                            'cbt.bank-soal.archive',
+                                            $bankSoal
+                                        )
+                                    }}"
+                                    method="POST"
+                                >
+
+                                    @csrf
+                                    @method('PATCH')
+
+
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm btn-outline-secondary"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#modalArsipBankSoal"
+                                        data-action="{{ route('cbt.bank-soal.archive', $bankSoal) }}"
+                                        data-nama="{{ $bankSoal->judul }}"
+                                    >
+                                        <i class="ti ti-archive me-1"></i>
+                                        Arsip
+                                    </button>
+
+                                </form>
+
+                            </div>
 
                         </td>
 
@@ -1127,6 +1185,18 @@
                     Lihat Detail
                 </a>
 
+                <button
+                    type="button"
+                    class="btn btn-outline-secondary w-100 mt-2"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalArsipBankSoal"
+                    data-action="{{ route('cbt.bank-soal.archive', $bankSoal) }}"
+                    data-nama="{{ $bankSoal->judul }}"
+                >
+                    <i class="ti ti-archive me-1"></i>
+                    Arsipkan
+                </button>
+
             </div>
 
         @empty
@@ -1158,5 +1228,147 @@
     @endif
 
 </div>
+
+<div
+    class="modal modal-blur fade"
+    id="modalArsipBankSoal"
+    tabindex="-1"
+    aria-hidden="true"
+>
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <div class="modal-status bg-warning"></div>
+
+            <div class="modal-body text-center py-4">
+
+                <span class="avatar avatar-xl bg-warning-lt mb-3">
+                    <i class="ti ti-archive"></i>
+                </span>
+
+                <h3>
+                    Arsipkan Bank Soal?
+                </h3>
+
+                <div class="text-secondary">
+
+                    Bank soal
+
+                    <strong id="namaBankSoalArsip"></strong>
+
+                    akan dipindahkan ke arsip.
+
+                    <div class="mt-2">
+                        Data soal tidak akan dihapus dan dapat
+                        dipulihkan kembali kapan saja.
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="modal-footer">
+
+                <div class="w-100">
+
+                    <div class="row">
+
+                        <div class="col">
+
+                            <button
+                                type="button"
+                                class="btn w-100"
+                                data-bs-dismiss="modal"
+                            >
+                                Batal
+                            </button>
+
+                        </div>
+
+
+                        <div class="col">
+
+                            <form
+                                id="formArsipBankSoal"
+                                method="POST"
+                            >
+
+                                @csrf
+                                @method('PATCH')
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-warning w-100"
+                                >
+                                    <i class="ti ti-archive me-1"></i>
+
+                                    Ya, Arsipkan
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+@push('scripts')
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const modal = document.getElementById(
+        'modalArsipBankSoal'
+    );
+
+    if (!modal) {
+        return;
+    }
+
+    modal.addEventListener(
+        'show.bs.modal',
+        function (event) {
+
+            const button = event.relatedTarget;
+
+            const action = button.getAttribute(
+                'data-action'
+            );
+
+            const nama = button.getAttribute(
+                'data-nama'
+            );
+
+
+            const form = document.getElementById(
+                'formArsipBankSoal'
+            );
+
+            const namaElement = document.getElementById(
+                'namaBankSoalArsip'
+            );
+
+
+            form.action = action;
+
+            namaElement.textContent = nama;
+
+        }
+    );
+
+});
+</script>
+
+@endpush
 
 @endsection

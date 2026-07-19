@@ -1,16 +1,48 @@
-@extends('layouts.app')
+@extends('layouts.exam')
 
 @section('title', 'Pengerjaan Ujian')
 
 @section('content')
 
 @php
-    $ujian = $pengerjaan->ujian;
-    $soals = $ujian->bankSoal->soals;
 
-    $jawabanTersimpan = $pengerjaan
-        ->jawabans
-        ->keyBy('soal_id');
+    /*
+    |--------------------------------------------------------------------------
+    | DATA UJIAN
+    |--------------------------------------------------------------------------
+    |
+    | Variabel $soals sudah dikirim dari controller
+    | berdasarkan urutan_soal milik pengerjaan siswa.
+    |
+    | Jangan gunakan lagi:
+    |
+    | $soals = $ujian->bankSoal->soals;
+    |
+    | karena itu akan mengembalikan urutan asli.
+    |
+    */
+
+    $ujian = $pengerjaan->ujian;
+
+
+    /*
+     * Jawaban siswa yang sudah tersimpan.
+     */
+    $jawabanTersimpan =
+        $pengerjaan
+            ->jawabans
+            ->keyBy('soal_id');
+
+
+    /*
+     * Urutan pilihan jawaban permanen
+     * milik siswa ini.
+     */
+    $urutanJawaban =
+        $pengerjaan
+            ->urutan_jawaban
+        ?? [];
+
 @endphp
 
 
@@ -104,17 +136,161 @@
         @forelse($soals as $index => $soal)
 
             @php
-                $jawaban = $jawabanTersimpan
-                    ->get($soal->id)
-                    ?->jawaban;
 
-                $pilihanJawaban = [
-                    'A' => $soal->pilihan_a,
-                    'B' => $soal->pilihan_b,
-                    'C' => $soal->pilihan_c,
-                    'D' => $soal->pilihan_d,
-                    'E' => $soal->pilihan_e,
+                /*
+                |--------------------------------------------------------------------------
+                | JAWABAN YANG SUDAH TERSIMPAN
+                |--------------------------------------------------------------------------
+                |
+                | Jawaban yang disimpan tetap menggunakan
+                | huruf ASLI dari bank soal.
+                |
+                */
+
+                $jawabanAsli =
+                    $jawabanTersimpan
+                        ->get($soal->id)
+                        ?->jawaban;
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | AMBIL URUTAN JAWABAN SISWA
+                |--------------------------------------------------------------------------
+                */
+
+                $urutanPilihan =
+                    $urutanJawaban[
+                        (string) $soal->id
+                    ]
+                    ?? [
+                        'A',
+                        'B',
+                        'C',
+                        'D',
+                        'E',
+                    ];
+
+
+                /*
+                 * Huruf yang ditampilkan kepada siswa.
+                 */
+                $hurufTampilan = [
+                    'A',
+                    'B',
+                    'C',
+                    'D',
+                    'E',
                 ];
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | SUSUN PILIHAN JAWABAN
+                |--------------------------------------------------------------------------
+                |
+                | Contoh urutan:
+                |
+                | ['C', 'A', 'D', 'B']
+                |
+                | Maka:
+                |
+                | Tampilan A = pilihan C asli
+                | Tampilan B = pilihan A asli
+                | Tampilan C = pilihan D asli
+                | Tampilan D = pilihan B asli
+                |
+                */
+
+                $pilihanJawaban = [];
+
+
+                foreach (
+                    $urutanPilihan
+                    as $indexPilihan => $hurufAsli
+                ) {
+
+                    /*
+                     * Pastikan index huruf tampilan tersedia.
+                     */
+                    if (
+                        ! isset(
+                            $hurufTampilan[
+                                $indexPilihan
+                            ]
+                        )
+                    ) {
+                        continue;
+                    }
+
+
+                    $hurufDisplay =
+                        $hurufTampilan[
+                            $indexPilihan
+                        ];
+
+
+                    /*
+                     * Contoh:
+                     *
+                     * hurufAsli = C
+                     *
+                     * menjadi:
+                     *
+                     * pilihan_c
+                     */
+                    $kolom =
+                        'pilihan_' .
+                        strtolower(
+                            $hurufAsli
+                        );
+
+
+                    /*
+                     * Lewati pilihan kosong.
+                     */
+                    if (
+                        is_null(
+                            $soal->{$kolom}
+                        )
+                        ||
+                        trim(
+                            (string)
+                            $soal->{$kolom}
+                        ) === ''
+                    ) {
+                        continue;
+                    }
+
+
+                    $pilihanJawaban[] = [
+
+                        /*
+                         * Huruf yang terlihat siswa.
+                         */
+                        'huruf_tampilan' =>
+                            $hurufDisplay,
+
+
+                        /*
+                         * Huruf asli dari database.
+                         *
+                         * Ini yang dikirim ke server.
+                         */
+                        'huruf_asli' =>
+                            $hurufAsli,
+
+
+                        /*
+                         * Isi jawaban.
+                         */
+                        'teks' =>
+                            $soal->{$kolom},
+
+                    ];
+
+                }
+
             @endphp
 
 
@@ -140,7 +316,10 @@
                     >
 
                         <h3 class="card-title mb-0">
+
+                            {{-- Nomor mengikuti urutan acak --}}
                             Soal {{ $index + 1 }}
+
                         </h3>
 
 
@@ -181,61 +360,94 @@
                             soal-pertanyaan
                         "
                     >
+
                         {!! nl2br(e($soal->pertanyaan)) !!}
+
                     </div>
 
 
-                    {{-- PILIHAN JAWABAN --}}
+                    {{-- ================================================= --}}
+                    {{-- PILIHAN JAWABAN YANG SUDAH DIACAK --}}
+                    {{-- ================================================= --}}
+
                     <div class="jawaban-list">
 
-                        @foreach($pilihanJawaban as $huruf => $pilihan)
+                        @foreach(
+                            $pilihanJawaban
+                            as $pilihan
+                        )
 
-                            @if(!is_null($pilihan) && $pilihan !== '')
+                            <label
+                                class="
+                                    jawaban-option
+                                    d-flex
+                                    align-items-start
+                                    gap-3
+                                    border
+                                    rounded
+                                    p-3
+                                    mb-3
+                                "
+                            >
 
-                                <label
+                                <input
+                                    type="radio"
                                     class="
-                                        jawaban-option
-                                        d-flex
-                                        align-items-start
-                                        gap-3
-                                        border
-                                        rounded
-                                        p-3
-                                        mb-3
+                                        form-check-input
+                                        mt-1
+                                        jawaban-radio
+                                    "
+
+                                    name="jawaban_{{ $soal->id }}"
+
+                                    value="{{
+                                        $pilihan[
+                                            'huruf_asli'
+                                        ]
+                                    }}"
+
+                                    data-soal-id="{{
+                                        $soal->id
+                                    }}"
+
+                                    @checked(
+                                        $jawabanAsli ===
+                                        $pilihan[
+                                            'huruf_asli'
+                                        ]
+                                    )
+                                >
+
+
+                                {{-- Huruf yang terlihat siswa --}}
+                                <span
+                                    class="
+                                        jawaban-huruf
+                                        fw-bold
                                     "
                                 >
 
-                                    <input
-                                        type="radio"
-                                        class="
-                                            form-check-input
-                                            mt-1
-                                            jawaban-radio
-                                        "
-                                        name="jawaban_{{ $soal->id }}"
-                                        value="{{ $huruf }}"
-                                        data-soal-id="{{ $soal->id }}"
-                                        {{ $jawaban === $huruf ? 'checked' : '' }}
-                                    >
+                                    {{
+                                        $pilihan[
+                                            'huruf_tampilan'
+                                        ]
+                                    }}.
+
+                                </span>
 
 
-                                    <span
-                                        class="
-                                            jawaban-huruf
-                                            fw-bold
-                                        "
-                                    >
-                                        {{ $huruf }}
-                                    </span>
+                                {{-- Isi pilihan --}}
+                                <span class="flex-fill">
 
+                                    {{
+                                        $pilihan[
+                                            'teks'
+                                        ]
+                                    }}
 
-                                    <span class="flex-fill">
-                                        {{ $pilihan }}
-                                    </span>
+                                </span>
 
-                                </label>
-
-                            @endif
+                            </label>
 
                         @endforeach
 
@@ -273,7 +485,10 @@
                         </button>
 
 
-                        @if($index < $soals->count() - 1)
+                        @if(
+                            $index <
+                            $soals->count() - 1
+                        )
 
                             <button
                                 type="button"
@@ -376,11 +591,19 @@
                     "
                 >
 
-                    @foreach($soals as $index => $soal)
+                    @foreach(
+                        $soals
+                        as $index => $soal
+                    )
 
                         @php
-                            $sudahDijawab = $jawabanTersimpan
-                                ->has($soal->id);
+
+                            $sudahDijawab =
+                                $jawabanTersimpan
+                                    ->has(
+                                        $soal->id
+                                    );
+
                         @endphp
 
 
@@ -531,7 +754,6 @@
 </div>
 
 
-
 {{-- ========================================================= --}}
 {{-- FORM SUBMIT FINAL --}}
 {{-- ========================================================= --}}
@@ -552,15 +774,32 @@
 
 </form>
 
+
+{{-- ========================================================= --}}
 {{-- OVERLAY MASUK MODE UJIAN --}}
+{{-- ========================================================= --}}
+
 <div
     id="overlayModeUjian"
-    class="position-fixed top-0 start-0 w-100 h-100 bg-white"
+    class="
+        position-fixed
+        top-0
+        start-0
+        w-100
+        h-100
+        bg-white
+    "
     style="
         z-index: 99998;
-        display: {{ $pengerjaan->status === 'diblokir' ? 'none' : 'flex' }};
+        display:
+        {{
+            $pengerjaan->status === 'diblokir'
+                ? 'none'
+                : 'flex'
+        }};
     "
 >
+
     <div
         class="
             d-flex
@@ -571,32 +810,58 @@
             p-4
         "
     >
+
         <div
             class="text-center"
             style="max-width: 560px;"
         >
 
-            <span class="avatar avatar-xl bg-blue-lt mb-4">
+            <span
+                class="
+                    avatar
+                    avatar-xl
+                    bg-blue-lt
+                    mb-4
+                "
+            >
+
                 <i class="ti ti-shield-lock"></i>
+
             </span>
+
 
             <h1 class="mb-3">
                 Mode Ujian
             </h1>
 
+
             <p class="text-secondary">
-                Sebelum memulai pengerjaan, aktifkan Mode Ujian.
-                Halaman akan masuk ke layar penuh dan sistem
-                pengawasan akan diaktifkan.
+
+                Sebelum memulai pengerjaan,
+                aktifkan Mode Ujian.
+
+                Halaman akan masuk ke layar penuh
+                dan sistem pengawasan akan diaktifkan.
+
             </p>
 
-            <div class="alert alert-warning text-start mt-4">
+
+            <div
+                class="
+                    alert
+                    alert-warning
+                    text-start
+                    mt-4
+                "
+            >
 
                 <div class="fw-bold mb-2">
                     Selama ujian berlangsung:
                 </div>
 
+
                 <ul class="mb-0 ps-3">
+
                     <li>
                         Jangan berpindah tab.
                     </li>
@@ -612,31 +877,56 @@
                     <li>
                         Maksimal 3 pelanggaran.
                     </li>
+
                 </ul>
 
             </div>
 
-            <div class="alert alert-danger text-start">
+
+            <div
+                class="
+                    alert
+                    alert-danger
+                    text-start
+                "
+            >
+
                 Setelah mencapai 3 pelanggaran,
                 ujian akan diblokir dan hanya operator
                 yang dapat membuka blokir pengerjaan.
+
             </div>
+
 
             <button
                 type="button"
                 id="btnMasukModeUjian"
-                class="btn btn-primary btn-lg w-100 mt-3"
+                class="
+                    btn
+                    btn-primary
+                    btn-lg
+                    w-100
+                    mt-3
+                "
             >
+
                 <i class="ti ti-maximize me-2"></i>
 
                 Masuk Mode Ujian
+
             </button>
 
         </div>
+
     </div>
+
 </div>
 
+
+{{-- ========================================================= --}}
 {{-- MODAL PERINGATAN PELANGGARAN --}}
+{{-- ========================================================= --}}
+
 <div
     class="modal modal-blur fade"
     id="modalPelanggaran"
@@ -645,77 +935,139 @@
     data-bs-backdrop="static"
     data-bs-keyboard="false"
 >
+
     <div class="modal-dialog modal-dialog-centered">
+
         <div class="modal-content">
 
             <div class="modal-header">
+
                 <h3 class="modal-title text-danger">
+
                     <i class="ti ti-alert-triangle me-2"></i>
+
                     Peringatan Ujian
+
                 </h3>
+
             </div>
+
 
             <div class="modal-body text-center py-4">
 
-                <span class="avatar avatar-xl bg-danger-lt mb-3">
+                <span
+                    class="
+                        avatar
+                        avatar-xl
+                        bg-danger-lt
+                        mb-3
+                    "
+                >
+
                     <i class="ti ti-shield-exclamation"></i>
+
                 </span>
 
+
                 <h2 id="judulPelanggaran">
+
                     Pelanggaran Terdeteksi
+
                 </h2>
+
 
                 <p
                     class="text-secondary"
                     id="pesanPelanggaran"
                 >
-                    Anda terdeteksi meninggalkan halaman ujian.
+
+                    Anda terdeteksi meninggalkan
+                    halaman ujian.
+
                 </p>
 
+
                 <div class="alert alert-warning mt-3">
+
                     <strong id="jumlahPelanggaran">
+
                         Peringatan 1 dari 3
+
                     </strong>
+
 
                     <div
                         class="small mt-1"
                         id="sisaPelanggaran"
                     >
+
                         Anda masih memiliki 2 kesempatan.
+
                     </div>
+
                 </div>
 
+
                 <p class="text-secondary small mb-0">
-                    Jangan berpindah tab, meminimalkan browser,
-                    atau keluar dari mode layar penuh selama ujian.
+
+                    Jangan berpindah tab,
+                    meminimalkan browser,
+                    atau keluar dari mode layar penuh
+                    selama ujian.
+
                 </p>
 
             </div>
 
+
             <div class="modal-footer">
+
                 <button
                     type="button"
                     class="btn btn-danger w-100"
                     id="btnLanjutUjian"
                 >
+
                     <i class="ti ti-player-play me-2"></i>
+
                     Saya Mengerti, Lanjutkan Ujian
+
                 </button>
+
             </div>
 
         </div>
+
     </div>
+
 </div>
 
+
+{{-- ========================================================= --}}
 {{-- OVERLAY BLOKIR UJIAN --}}
+{{-- ========================================================= --}}
+
 <div
     id="overlayBlokir"
-    class="position-fixed top-0 start-0 w-100 h-100 bg-white"
+    class="
+        position-fixed
+        top-0
+        start-0
+        w-100
+        h-100
+        bg-white
+    "
     style="
         z-index: 99999;
-        display: {{ $pengerjaan->status === 'diblokir' ? 'block' : 'none' }};
+        display:
+        {{
+            $pengerjaan->status === 'diblokir'
+                ? 'block'
+                : 'none'
+        }};
     "
 >
+
     <div
         class="
             d-flex
@@ -725,43 +1077,65 @@
             p-4
         "
     >
+
         <div
             class="text-center"
             style="max-width: 520px;"
         >
 
-            <span class="avatar avatar-xl bg-danger-lt mb-4">
+            <span
+                class="
+                    avatar
+                    avatar-xl
+                    bg-danger-lt
+                    mb-4
+                "
+            >
+
                 <i class="ti ti-lock"></i>
+
             </span>
+
 
             <h1 class="mb-3">
                 Ujian Diblokir
             </h1>
 
+
             <p class="text-secondary">
+
                 Anda telah mencapai batas maksimal
                 pelanggaran selama ujian.
+
             </p>
 
+
             <div class="alert alert-danger mt-4">
+
                 Pengerjaan ujian telah dikunci.
+
                 Hubungi operator untuk membuka blokir
                 agar Anda dapat melanjutkan ujian.
+
             </div>
+
 
             <a
                 href="{{ route('cbt.siswa.index') }}"
                 class="btn btn-outline-secondary mt-3"
             >
+
                 Kembali ke Daftar Ujian
+
             </a>
 
         </div>
+
     </div>
+
 </div>
 
 @endsection
-
 
 
 @push('styles')
@@ -1520,533 +1894,819 @@ document.addEventListener(
 </script>
 
 <script>
-document.addEventListener(
-    'DOMContentLoaded',
-    function () {
+document.addEventListener('DOMContentLoaded', function () {
 
-        /*
-        |--------------------------------------------------------------------------
-        | KONFIGURASI
-        |--------------------------------------------------------------------------
-        */
+    /*
+    |--------------------------------------------------------------------------
+    | KONFIGURASI
+    |--------------------------------------------------------------------------
+    */
 
-        const pelanggaranUrl = @js(
-            route(
-                'cbt.siswa.pengerjaan.pelanggaran',
-                $pengerjaan
-            )
+    const pelanggaranUrl = @js(
+        route(
+            'cbt.siswa.pengerjaan.pelanggaran',
+            $pengerjaan
+        )
+    );
+
+    const csrfToken = @js(csrf_token());
+
+    const pengerjaanDiblokir = @js(
+        $pengerjaan->status === 'diblokir'
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | STATUS PENGAWASAN
+    |--------------------------------------------------------------------------
+    */
+
+    let ujianAktif = false;
+
+    let sedangMengirim = false;
+
+    let modalSedangTerbuka = false;
+
+    let sedangMasukFullscreen = false;
+
+    let waktuPelanggaranTerakhir = 0;
+
+    let pelanggaranTertunda = null;
+
+    /*
+     * Digunakan untuk mencegah satu aktivitas
+     * menghasilkan beberapa pelanggaran sekaligus.
+     *
+     * Contoh:
+     * Alt + Tab dapat memicu:
+     * - blur
+     * - visibilitychange
+     * - fullscreenchange
+     */
+    const cooldownPelanggaran = 1500;
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | ELEMENT
+    |--------------------------------------------------------------------------
+    */
+
+    const overlayModeUjian =
+        document.getElementById(
+            'overlayModeUjian'
         );
 
-        const csrfToken = @js(
-            csrf_token()
+    const btnMasukModeUjian =
+        document.getElementById(
+            'btnMasukModeUjian'
         );
 
-        const pengerjaanDiblokir = @js(
-            $pengerjaan->status === 'diblokir'
+    const modalElement =
+        document.getElementById(
+            'modalPelanggaran'
+        );
+
+    const overlayBlokir =
+        document.getElementById(
+            'overlayBlokir'
+        );
+
+    const jumlahElement =
+        document.getElementById(
+            'jumlahPelanggaran'
+        );
+
+    const sisaElement =
+        document.getElementById(
+            'sisaPelanggaran'
+        );
+
+    const pesanElement =
+        document.getElementById(
+            'pesanPelanggaran'
+        );
+
+    const btnLanjut =
+        document.getElementById(
+            'btnLanjutUjian'
         );
 
 
+    function bukaModalPelanggaran()
+{
+    if (! modalElement) {
+        return;
+    }
+
+    modalElement.classList.add('show');
+
+    modalElement.style.display =
+        'block';
+
+    modalElement.removeAttribute(
+        'aria-hidden'
+    );
+
+    modalElement.setAttribute(
+        'aria-modal',
+        'true'
+    );
+
+    document.body.classList.add(
+        'modal-open'
+    );
+}
+
+/*
+|--------------------------------------------------------------------------
+MODAL PELANGGARAN TERTUTUP
+|--------------------------------------------------------------------------
+*/
+
+
+function tutupModalPelanggaran()
+{
+    if (! modalElement) {
+        return;
+    }
+
+    modalElement.classList.remove(
+        'show'
+    );
+
+    modalElement.style.display =
+        'none';
+
+    modalElement.setAttribute(
+        'aria-hidden',
+        'true'
+    );
+
+    modalElement.removeAttribute(
+        'aria-modal'
+    );
+
+    document.body.classList.remove(
+        'modal-open'
+    );
+}
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | CEK FULLSCREEN
+    |--------------------------------------------------------------------------
+    */
+
+    function sedangFullscreen()
+    {
+        return !!(
+            document.fullscreenElement ||
+            document.webkitFullscreenElement
+        );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | STATUS AWAL PENGERJAAN
+    |--------------------------------------------------------------------------
+    */
+
+    if (pengerjaanDiblokir) {
+
+        ujianAktif = false;
+
+        if (overlayModeUjian) {
+
+            overlayModeUjian.style.display =
+                'none';
+
+        }
+
+        if (overlayBlokir) {
+
+            overlayBlokir.style.display =
+                'flex';
+
+        }
+
+        document.body.style.overflow =
+            'hidden';
+
+    } else {
+
         /*
-        |--------------------------------------------------------------------------
-        | STATUS
-        |--------------------------------------------------------------------------
-        */
+         * Sebelum siswa menekan tombol
+         * Masuk Mode Ujian.
+         */
+        document.body.style.overflow =
+            'hidden';
 
-        let ujianAktif = false;
-        let sedangMengirim = false;
-        let modalSedangTerbuka = false;
-        let sedangMasukFullscreen = false;
-        let waktuPelanggaranTerakhir = 0;
-
-        const cooldownPelanggaran = 1000;
+    }
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | MASUK FULLSCREEN
+    |--------------------------------------------------------------------------
+    */
+
+    async function masukFullscreen()
+    {
         /*
-        |--------------------------------------------------------------------------
-        | ELEMENT
-        |--------------------------------------------------------------------------
-        */
+         * Jika sudah fullscreen,
+         * tidak perlu request lagi.
+         */
+        if (sedangFullscreen()) {
 
-        const overlayModeUjian =
-            document.getElementById(
-                'overlayModeUjian'
-            );
+            return true;
 
-        const btnMasukModeUjian =
-            document.getElementById(
-                'btnMasukModeUjian'
-            );
-
-        const modalElement =
-            document.getElementById(
-                'modalPelanggaran'
-            );
-
-        const overlayBlokir =
-            document.getElementById(
-                'overlayBlokir'
-            );
-
-        const jumlahElement =
-            document.getElementById(
-                'jumlahPelanggaran'
-            );
-
-        const sisaElement =
-            document.getElementById(
-                'sisaPelanggaran'
-            );
-
-        const pesanElement =
-            document.getElementById(
-                'pesanPelanggaran'
-            );
-
-        const btnLanjut =
-            document.getElementById(
-                'btnLanjutUjian'
-            );
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | MODAL
-        |--------------------------------------------------------------------------
-        */
-
-        const modalPelanggaran =
-            modalElement &&
-            typeof bootstrap !== 'undefined'
-                ? new bootstrap.Modal(
-                    modalElement,
-                    {
-                        backdrop: 'static',
-                        keyboard: false,
-                    }
-                )
-                : null;
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | CEK FULLSCREEN
-        |--------------------------------------------------------------------------
-        */
-
-        function sedangFullscreen()
-        {
-            return !!(
-                document.fullscreenElement ||
-                document.webkitFullscreenElement
-            );
         }
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | STATUS AWAL
-        |--------------------------------------------------------------------------
-        */
-
-        if (pengerjaanDiblokir) {
-
-            ujianAktif = false;
-
-            if (overlayModeUjian) {
-
-                overlayModeUjian.style.display =
-                    'none';
-
-            }
-
-            if (overlayBlokir) {
-
-                overlayBlokir.style.display =
-                    'flex';
-
-            }
-
-            document.body.style.overflow =
-                'hidden';
-
-        } else {
-
-            document.body.style.overflow =
-                'hidden';
-
-        }
+        const element =
+            document.documentElement;
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | REQUEST FULLSCREEN
-        |--------------------------------------------------------------------------
-        */
+        sedangMasukFullscreen =
+            true;
 
-        async function masukFullscreen()
-        {
+
+        try {
+
             /*
-             * Jika sudah fullscreen,
-             * tidak perlu request kembali.
+             * Chrome, Edge, Firefox.
              */
-            if (sedangFullscreen()) {
+            if (element.requestFullscreen) {
+
+                await element.requestFullscreen();
 
                 return true;
 
             }
 
 
-            const element =
-                document.documentElement;
+            /*
+             * Safari lama.
+             */
+            if (element.webkitRequestFullscreen) {
 
+                element.webkitRequestFullscreen();
 
-            sedangMasukFullscreen =
-                true;
-
-
-            try {
-
-                if (element.requestFullscreen) {
-
-                    await element.requestFullscreen();
-
-                    return true;
-
-                }
-
-
-                if (element.webkitRequestFullscreen) {
-
-                    element.webkitRequestFullscreen();
-
-                    return true;
-
-                }
-
-
-                sedangMasukFullscreen =
-                    false;
-
-
-                return false;
-
-            } catch (error) {
-
-                sedangMasukFullscreen =
-                    false;
-
-
-                console.error(
-                    'Gagal masuk fullscreen:',
-                    error
-                );
-
-
-                return false;
+                return true;
 
             }
 
-        }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | AKTIFKAN MODE UJIAN
-        |--------------------------------------------------------------------------
-        */
-
-        function aktifkanModeUjian()
-{
-    if (overlayModeUjian) {
-        overlayModeUjian.style.display =
-            'none';
-    }
-
-    document.body.style.overflow =
-        '';
-
-    setTimeout(
-        function () {
 
             sedangMasukFullscreen =
                 false;
 
-            /*
-             * PENTING:
-             * Jangan isi Date.now().
-             *
-             * Dengan nilai 0,
-             * pelanggaran pertama langsung
-             * dapat dicatat.
-             */
-            waktuPelanggaranTerakhir =
-                0;
 
-            ujianAktif =
-                true;
+            return false;
 
-            console.log(
-                'PENGAWASAN AKTIF',
-                {
-                    ujianAktif:
-                        ujianAktif,
+        } catch (error) {
 
-                    fullscreen:
-                        sedangFullscreen(),
-                }
+            sedangMasukFullscreen =
+                false;
+
+
+            console.error(
+                'Gagal masuk fullscreen:',
+                error
             );
 
-        },
-        500
-    );
-}
+
+            return false;
+
+        }
+    }
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | AKTIFKAN MODE UJIAN
+    |--------------------------------------------------------------------------
+    */
+
+    function aktifkanModeUjian()
+    {
         /*
-        |--------------------------------------------------------------------------
-        | TOMBOL MASUK MODE UJIAN
-        |--------------------------------------------------------------------------
-        */
+         * Hilangkan halaman pembuka.
+         */
+        if (overlayModeUjian) {
 
-        if (btnMasukModeUjian) {
-
-            btnMasukModeUjian.addEventListener(
-                'click',
-                async function () {
-
-                    /*
-                     * Jika sudah diblokir,
-                     * jangan izinkan masuk.
-                     */
-                    if (pengerjaanDiblokir) {
-
-                        return;
-
-                    }
-
-
-                    /*
-                     * Cegah klik ganda.
-                     */
-                    btnMasukModeUjian.disabled =
-                        true;
-
-
-                    btnMasukModeUjian.innerHTML =
-                        '<span class="spinner-border spinner-border-sm me-2"></span>' +
-                        'Mengaktifkan Mode Ujian...';
-
-
-                    /*
-                     * Request fullscreen harus berasal
-                     * langsung dari klik pengguna.
-                     */
-                    const berhasil =
-                        await masukFullscreen();
-
-
-                    /*
-                     * Jika gagal masuk fullscreen.
-                     */
-                    if (! berhasil) {
-
-                        btnMasukModeUjian.disabled =
-                            false;
-
-
-                        btnMasukModeUjian.innerHTML =
-                            '<i class="ti ti-maximize me-2"></i>' +
-                            'Masuk Mode Ujian';
-
-
-                        alert(
-                            'Mode layar penuh tidak dapat diaktifkan. ' +
-                            'Pastikan browser mengizinkan fullscreen.'
-                        );
-
-
-                        return;
-
-                    }
-
-
-                    /*
-                     * Fullscreen berhasil.
-                     */
-                    aktifkanModeUjian();
-
-                }
-            );
+            overlayModeUjian.style.display =
+                'none';
 
         }
 
 
         /*
-        |--------------------------------------------------------------------------
-        | KIRIM PELANGGARAN
-        |--------------------------------------------------------------------------
-        */
-
-        async function catatPelanggaran(
-            jenis
-        ) {
-
-            /*
-             * Pengawasan belum aktif.
-             */
-            if (! ujianAktif) {
-
-                return;
-
-            }
+         * Aktifkan scroll halaman soal.
+         */
+        document.body.style.overflow =
+            '';
 
 
-            /*
-             * Sedang mengirim request.
-             */
-            if (sedangMengirim) {
+        /*
+         * Tunggu event fullscreen awal selesai.
+         */
+        setTimeout(
+            function () {
 
-                return;
-
-            }
-
-
-            /*
-             * Modal sedang terbuka.
-             */
-            if (modalSedangTerbuka) {
-
-                return;
-
-            }
-
-
-            /*
-             * Anti double event.
-             *
-             * Satu aktivitas seperti Alt + Tab dapat
-             * memicu blur + visibilitychange sekaligus.
-             */
-            const sekarang =
-                Date.now();
-
-
-            if (
-                sekarang -
-                waktuPelanggaranTerakhir
-                <
-                cooldownPelanggaran
-            ) {
-
-                return;
-
-            }
-
-
-            waktuPelanggaranTerakhir =
-                sekarang;
-
-
-            sedangMengirim =
-                true;
-
-
-            console.log(
-                'Mengirim pelanggaran:',
-                jenis
-            );
-
-
-            try {
-
-                const response =
-                    await fetch(
-                        pelanggaranUrl,
-                        {
-
-                            method:
-                                'POST',
-
-                            headers: {
-
-                                'Content-Type':
-                                    'application/json',
-
-                                'Accept':
-                                    'application/json',
-
-                                'X-CSRF-TOKEN':
-                                    csrfToken,
-
-                            },
-
-                            body:
-                                JSON.stringify({
-
-                                    jenis:
-                                        jenis,
-
-                                }),
-
-                        }
-                    );
+                sedangMasukFullscreen =
+                    false;
 
 
                 /*
-                 * CSRF / session expired.
+                 * Pelanggaran pertama harus
+                 * langsung bisa tercatat.
                  */
-                if (
-                    response.status ===
-                    419
-                ) {
-
-                    window.location.reload();
-
-                    return;
-
-                }
+                waktuPelanggaranTerakhir =
+                    0;
 
 
-                /*
-                 * Response gagal.
-                 */
-                if (! response.ok) {
-
-                    const errorText =
-                        await response.text();
-
-
-                    console.error(
-                        'Request pelanggaran gagal:',
-                        response.status,
-                        errorText
-                    );
-
-
-                    return;
-
-                }
-
-
-                const data =
-                    await response.json();
+                ujianAktif =
+                    true;
 
 
                 console.log(
-                    'Response pelanggaran:',
-                    data
+                    'Pengawasan CBT aktif.'
                 );
+
+            },
+            500
+        );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | TOMBOL MASUK MODE UJIAN
+    |--------------------------------------------------------------------------
+    */
+
+    if (btnMasukModeUjian) {
+
+        btnMasukModeUjian.addEventListener(
+            'click',
+            async function () {
+
+                if (pengerjaanDiblokir) {
+
+                    return;
+
+                }
+
+
+                btnMasukModeUjian.disabled =
+                    true;
+
+
+                btnMasukModeUjian.innerHTML =
+                    '<span class="spinner-border spinner-border-sm me-2"></span>' +
+                    'Mengaktifkan Mode Ujian...';
 
 
                 /*
-                 * Pelanggaran ketiga.
+                 * Fullscreen harus dipanggil
+                 * langsung dari aksi klik siswa.
                  */
-                if (
-                    data.status ===
-                    'diblokir'
-                ) {
+                const berhasil =
+                    await masukFullscreen();
 
-                    blokirUjian();
+
+                if (! berhasil) {
+
+                    btnMasukModeUjian.disabled =
+                        false;
+
+
+                    btnMasukModeUjian.innerHTML =
+                        '<i class="ti ti-maximize me-2"></i>' +
+                        'Masuk Mode Ujian';
+
+
+                    alert(
+                        'Mode layar penuh tidak dapat diaktifkan. ' +
+                        'Pastikan browser mengizinkan fullscreen.'
+                    );
+
+
+                    return;
+
+                }
+
+
+                aktifkanModeUjian();
+
+            }
+        );
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | PESAN BERDASARKAN JENIS PELANGGARAN
+    |--------------------------------------------------------------------------
+    */
+
+    function getPesanPelanggaran(jenis)
+    {
+        switch (jenis) {
+
+            case 'pindah_tab':
+
+                return 'Anda terdeteksi meninggalkan tab halaman ujian.';
+
+
+            case 'kehilangan_fokus':
+
+                return 'Anda terdeteksi berpindah ke jendela atau aplikasi lain.';
+
+
+            case 'keluar_fullscreen':
+
+                return 'Anda terdeteksi keluar dari Mode Ujian atau layar penuh.';
+
+
+            default:
+
+                return 'Aktivitas yang tidak diperbolehkan terdeteksi.';
+
+        }
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | TAMPILKAN MODAL PERINGATAN
+    |--------------------------------------------------------------------------
+    */
+
+    function tampilkanPeringatan(data)
+    {
+        /*
+         * Matikan pengawasan sementara.
+         *
+         * Ini mencegah modal sendiri
+         * menghasilkan pelanggaran baru.
+         */
+        ujianAktif =
+            false;
+
+
+        modalSedangTerbuka =
+            true;
+
+
+        if (jumlahElement) {
+
+            jumlahElement.textContent =
+                'Peringatan ' +
+                data.jumlah_pelanggaran +
+                ' dari 3';
+
+        }
+
+
+        if (sisaElement) {
+
+            if (
+                Number(
+                    data.sisa_pelanggaran
+                ) === 1
+            ) {
+
+                sisaElement.textContent =
+                    'Ini adalah peringatan terakhir Anda.';
+
+            } else {
+
+                sisaElement.textContent =
+                    'Anda masih memiliki ' +
+                    data.sisa_pelanggaran +
+                    ' kesempatan.';
+
+            }
+
+        }
+
+
+        if (pesanElement) {
+
+            pesanElement.textContent =
+                getPesanPelanggaran(
+                    data.jenis
+                );
+
+        }
+
+
+        bukaModalPelanggaran();
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | PROSES PELANGGARAN TERTUNDA
+    |--------------------------------------------------------------------------
+    |
+    | Ketika siswa pergi dari halaman:
+    |
+    | 1. Pelanggaran langsung dikirim ke server.
+    | 2. Response disimpan.
+    | 3. Ketika siswa kembali ke halaman,
+    |    modal peringatan ditampilkan.
+    |
+    */
+
+    function prosesPelanggaranTertunda()
+    {
+        if (! pelanggaranTertunda) {
+
+            return;
+
+        }
+
+
+        /*
+         * Jangan tampilkan modal
+         * selama halaman masih tersembunyi.
+         */
+        if (document.hidden) {
+
+            return;
+
+        }
+
+
+        const data =
+            pelanggaranTertunda;
+
+
+        pelanggaranTertunda =
+            null;
+
+
+        setTimeout(
+            function () {
+
+                /*
+                 * Pastikan siswa masih berada
+                 * pada halaman ujian.
+                 */
+                if (document.hidden) {
+
+                    pelanggaranTertunda =
+                        data;
+
+                    return;
+
+                }
+
+
+                tampilkanPeringatan(
+                    data
+                );
+
+            },
+            250
+        );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | BLOKIR UJIAN
+    |--------------------------------------------------------------------------
+    */
+
+    function blokirUjian()
+    {
+        ujianAktif =
+            false;
+
+
+        modalSedangTerbuka =
+            true;
+
+
+        pelanggaranTertunda =
+            null;
+
+
+        tutupModalPelanggaran();
+
+
+        if (overlayModeUjian) {
+
+            overlayModeUjian.style.display =
+                'none';
+
+        }
+
+
+        if (overlayBlokir) {
+
+            overlayBlokir.style.display =
+                'flex';
+
+        }
+
+
+        document.body.style.overflow =
+            'hidden';
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | KIRIM PELANGGARAN KE SERVER
+    |--------------------------------------------------------------------------
+    */
+
+    async function catatPelanggaran(jenis)
+{
+    if (! ujianAktif) {
+        return;
+    }
+
+
+    if (modalSedangTerbuka) {
+        return;
+    }
+
+
+    /*
+     * Cegah blur + visibilitychange +
+     * fullscreenchange dihitung terpisah.
+     */
+    const sekarang =
+        Date.now();
+
+
+    if (
+        sekarang -
+        waktuPelanggaranTerakhir
+        <
+        cooldownPelanggaran
+    ) {
+        return;
+    }
+
+
+    /*
+     * Kunci waktu langsung saat event pertama masuk.
+     */
+    waktuPelanggaranTerakhir =
+        sekarang;
+
+
+    if (sedangMengirim) {
+        return;
+    }
+
+
+    sedangMengirim =
+        true;
+
+
+    console.log(
+        'Pelanggaran terdeteksi:',
+        jenis
+    );
+
+
+    // LANJUTKAN try { ... } MILIK KAMU
+
+
+        try {
+
+            const response =
+                await fetch(
+                    pelanggaranUrl,
+                    {
+
+                        method:
+                            'POST',
+
+                        headers: {
+
+                            'Content-Type':
+                                'application/json',
+
+                            'Accept':
+                                'application/json',
+
+                            'X-CSRF-TOKEN':
+                                csrfToken,
+
+                        },
+
+                        body:
+                            JSON.stringify({
+
+                                jenis:
+                                    jenis,
+
+                            }),
+
+                        /*
+                         * Membantu request tetap dikirim
+                         * ketika halaman kehilangan fokus.
+                         */
+                        keepalive:
+                            true,
+
+                    }
+                );
+
+
+            /*
+             * Session / CSRF habis.
+             */
+            if (
+                response.status === 419
+            ) {
+
+                window.location.reload();
+
+                return;
+
+            }
+
+
+            if (! response.ok) {
+
+                const errorText =
+                    await response.text();
+
+
+                console.error(
+                    'Gagal mencatat pelanggaran:',
+                    response.status,
+                    errorText
+                );
+
+
+                return;
+
+            }
+
+
+            const data =
+                await response.json();
+
+
+            console.log(
+                'Pelanggaran berhasil dicatat:',
+                data
+            );
+
+
+            /*
+             * Pelanggaran ketiga.
+             */
+            if (
+                data.status ===
+                'diblokir'
+            ) {
+
+                /*
+                 * Jika siswa masih di luar halaman,
+                 * overlay akan tetap tampil ketika
+                 * halaman dibuka kembali.
+                 */
+                blokirUjian();
+
+
+                return;
+
+            }
+
+
+            /*
+             * Pelanggaran pertama / kedua.
+             */
+            if (
+                data.status ===
+                'peringatan'
+            ) {
+
+                /*
+                 * Jika halaman sedang tersembunyi,
+                 * simpan peringatannya.
+                 */
+                if (document.hidden) {
+
+                    pelanggaranTertunda =
+                        data;
+
 
                     return;
 
@@ -2054,285 +2714,51 @@ document.addEventListener(
 
 
                 /*
-                 * Pelanggaran pertama
-                 * atau kedua.
+                 * Jika halaman masih terlihat,
+                 * tampilkan langsung.
                  */
-                if (
-                    data.status ===
-                    'peringatan'
-                ) {
-
-                    tampilkanPeringatan(
-                        data
-                    );
-
-                }
-
-            } catch (error) {
-
-                console.error(
-                    'Gagal mencatat pelanggaran:',
-                    error
-                );
-
-            } finally {
-
-                sedangMengirim =
-                    false;
-
-            }
-
-        }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | PESAN PELANGGARAN
-        |--------------------------------------------------------------------------
-        */
-
-        function getPesanPelanggaran(
-            jenis
-        ) {
-
-            switch (jenis) {
-
-                case 'pindah_tab':
-
-                    return 'Anda terdeteksi berpindah tab atau meninggalkan halaman ujian.';
-
-
-                case 'keluar_fullscreen':
-
-                    return 'Anda terdeteksi keluar dari mode layar penuh.';
-
-
-                case 'kehilangan_fokus':
-
-                    return 'Jendela ujian kehilangan fokus karena Anda berpindah ke aplikasi atau jendela lain.';
-
-
-                default:
-
-                    return 'Aktivitas yang tidak diperbolehkan terdeteksi.';
-
-            }
-
-        }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | TAMPILKAN PERINGATAN
-        |--------------------------------------------------------------------------
-        */
-
-        function tampilkanPeringatan(
-            data
-        ) {
-
-            /*
-             * Matikan pengawasan sementara
-             * ketika modal tampil.
-             */
-            ujianAktif =
-                false;
-
-
-            modalSedangTerbuka =
-                true;
-
-
-            if (jumlahElement) {
-
-                jumlahElement.textContent =
-                    'Peringatan ' +
-                    data.jumlah_pelanggaran +
-                    ' dari 3';
-
-            }
-
-
-            if (sisaElement) {
-
-                if (
-                    data.sisa_pelanggaran ===
-                    1
-                ) {
-
-                    sisaElement.textContent =
-                        'Ini adalah peringatan terakhir Anda.';
-
-                } else {
-
-                    sisaElement.textContent =
-                        'Anda masih memiliki ' +
-                        data.sisa_pelanggaran +
-                        ' kesempatan.';
-
-                }
-
-            }
-
-
-            if (pesanElement) {
-
-                pesanElement.textContent =
-                    getPesanPelanggaran(
-                        data.jenis
-                    );
-
-            }
-
-
-            if (modalPelanggaran) {
-
-                modalPelanggaran.show();
-
-            } else {
-
-                /*
-                 * Fallback jika Bootstrap Modal
-                 * tidak tersedia.
-                 */
-                alert(
-                    getPesanPelanggaran(
-                        data.jenis
-                    )
+                tampilkanPeringatan(
+                    data
                 );
 
             }
 
-        }
+        } catch (error) {
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | BLOKIR UJIAN
-        |--------------------------------------------------------------------------
-        */
-
-        function blokirUjian()
-        {
-
-            ujianAktif =
-                false;
-
-
-            modalSedangTerbuka =
-                true;
-
-
-            if (modalPelanggaran) {
-
-                modalPelanggaran.hide();
-
-            }
-
-
-            if (overlayModeUjian) {
-
-                overlayModeUjian.style.display =
-                    'none';
-
-            }
-
-
-            if (overlayBlokir) {
-
-                overlayBlokir.style.display =
-                    'flex';
-
-            }
-
-
-            document.body.style.overflow =
-                'hidden';
-
-        }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | LANJUT SETELAH PERINGATAN
-        |--------------------------------------------------------------------------
-        */
-
-        if (btnLanjut) {
-
-            btnLanjut.addEventListener(
-                'click',
-                async function () {
-
-                    /*
-                     * Request fullscreen kembali.
-                     *
-                     * Klik tombol merupakan user gesture,
-                     * sehingga browser mengizinkannya.
-                     */
-                    const berhasil =
-                        await masukFullscreen();
-
-
-                    if (! berhasil) {
-
-                        alert(
-                            'Anda harus kembali ke mode layar penuh untuk melanjutkan ujian.'
-                        );
-
-
-                        return;
-
-                    }
-
-
-                    if (modalPelanggaran) {
-
-                        modalPelanggaran.hide();
-
-                    }
-
-
-                    /*
-                     * Tunggu event fullscreen selesai
-                     * sebelum pengawasan diaktifkan kembali.
-                     */
-                    setTimeout(
-                        function () {
-
-                            modalSedangTerbuka =
-                                false;
-
-
-                            sedangMasukFullscreen =
-                                false;
-
-
-                            waktuPelanggaranTerakhir =
-                                Date.now();
-
-
-                            ujianAktif =
-                                true;
-
-
-                            console.log(
-                                'Pengawasan diaktifkan kembali.'
-                            );
-
-                        },
-                        1000
-                    );
-
-                }
+            console.error(
+                'Terjadi kesalahan saat mencatat pelanggaran:',
+                error
             );
 
+        } finally {
+
+            sedangMengirim =
+                false;
+
         }
+    }
 
 
-        /*
+    /*
+    |--------------------------------------------------------------------------
+    | SISWA MENINGGALKAN / KEMBALI KE TAB
+    |--------------------------------------------------------------------------
+    |
+    | Desktop:
+    | - pindah tab
+    | - membuka tab baru
+    | - minimize browser
+    |
+    | Mobile:
+    | - pindah aplikasi
+    | - menekan Home
+    | - berpindah tab browser
+    |
+    */
+
+    /*
 |--------------------------------------------------------------------------
-| DETEKSI PINDAH TAB / MINIMIZE
+| DETEKSI PINDAH TAB
 |--------------------------------------------------------------------------
 */
 
@@ -2341,35 +2767,56 @@ document.addEventListener(
     function () {
 
         console.log(
-            'VISIBILITY CHANGE:',
-            document.visibilityState,
-            'UJIAN:',
-            ujianAktif
+            'Visibility:',
+            document.visibilityState
         );
 
-        if (
-            ! ujianAktif ||
-            modalSedangTerbuka
-        ) {
-            return;
-        }
 
-        if (document.hidden) {
+        /*
+         * Siswa meninggalkan tab.
+         */
+        if (
+            document.visibilityState ===
+            'hidden'
+        ) {
 
             catatPelanggaran(
                 'pindah_tab'
             );
+
+
+            return;
+
+        }
+
+
+        /*
+         * Siswa kembali ke tab ujian.
+         */
+        if (
+            document.visibilityState ===
+            'visible'
+        ) {
+
+            prosesPelanggaranTertunda();
 
         }
 
     }
 );
 
-
-/*
+    /*
 |--------------------------------------------------------------------------
-| DETEKSI WINDOW KEHILANGAN FOKUS
+| WINDOW KEHILANGAN FOKUS
 |--------------------------------------------------------------------------
+|
+| Mendeteksi:
+|
+| - Alt + Tab
+| - klik aplikasi lain
+| - pindah window browser
+| - browser kehilangan fokus
+|
 */
 
 window.addEventListener(
@@ -2377,24 +2824,9 @@ window.addEventListener(
     function () {
 
         console.log(
-            'WINDOW BLUR',
-            'UJIAN:',
-            ujianAktif
+            'Window kehilangan fokus.'
         );
 
-        if (
-            ! ujianAktif ||
-            modalSedangTerbuka
-        ) {
-            return;
-        }
-
-        /*
-         * Langsung catat.
-         *
-         * Jika visibilitychange juga terpanggil,
-         * cooldown akan mencegah double count.
-         */
         catatPelanggaran(
             'kehilangan_fokus'
         );
@@ -2405,73 +2837,195 @@ window.addEventListener(
 
 /*
 |--------------------------------------------------------------------------
-| DETEKSI KELUAR FULLSCREEN
+| WINDOW KEMBALI AKTIF
 |--------------------------------------------------------------------------
 */
 
-function handleFullscreenChange()
-{
-    console.log(
-        'FULLSCREEN CHANGE',
-        {
-            fullscreen:
-                sedangFullscreen(),
+window.addEventListener(
+    'focus',
+    function () {
 
-            ujianAktif:
-                ujianAktif,
+        console.log(
+            'Window kembali aktif.'
+        );
 
-            sedangMasuk:
-                sedangMasukFullscreen,
+
+        prosesPelanggaranTertunda();
+
+    }
+);
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | KELUAR FULLSCREEN
+    |--------------------------------------------------------------------------
+    */
+
+    function handleFullscreenChange()
+    {
+        /*
+         * Abaikan perubahan ketika sistem
+         * sedang memasukkan siswa ke fullscreen.
+         */
+        if (sedangMasukFullscreen) {
+
+            return;
+
         }
+
+
+        if (
+            ! ujianAktif ||
+            modalSedangTerbuka
+        ) {
+
+            return;
+
+        }
+
+
+        /*
+         * Siswa keluar fullscreen.
+         */
+        if (! sedangFullscreen()) {
+
+            catatPelanggaran(
+                'keluar_fullscreen'
+            );
+
+        }
+    }
+
+
+    document.addEventListener(
+        'fullscreenchange',
+        handleFullscreenChange
     );
 
 
-    if (sedangMasukFullscreen) {
-        return;
-    }
+    document.addEventListener(
+        'webkitfullscreenchange',
+        handleFullscreenChange
+    );
 
 
-    if (
-        ! ujianAktif ||
-        modalSedangTerbuka
-    ) {
-        return;
-    }
+    /*
+    |--------------------------------------------------------------------------
+    | LANJUTKAN UJIAN SETELAH PERINGATAN
+    |--------------------------------------------------------------------------
+    */
+
+    if (btnLanjut) {
+
+        btnLanjut.addEventListener(
+            'click',
+            async function () {
+
+                btnLanjut.disabled =
+                    true;
 
 
-    if (! sedangFullscreen()) {
+                btnLanjut.innerHTML =
+                    '<span class="spinner-border spinner-border-sm me-2"></span>' +
+                    'Mengaktifkan Mode Ujian...';
 
-        catatPelanggaran(
-            'keluar_fullscreen'
+
+                /*
+                 * Siswa harus masuk fullscreen
+                 * kembali sebelum melanjutkan.
+                 */
+                const berhasil =
+                    await masukFullscreen();
+
+
+                if (! berhasil) {
+
+                    btnLanjut.disabled =
+                        false;
+
+
+                    btnLanjut.innerHTML =
+                        '<i class="ti ti-player-play me-2"></i>' +
+                        'Saya Mengerti, Lanjutkan Ujian';
+
+
+                    alert(
+                        'Anda harus kembali ke Mode Ujian untuk melanjutkan.'
+                    );
+
+
+                    return;
+
+                }
+
+
+                /*
+                 * Tutup modal.
+                 */
+                tutupModalPelanggaran();
+
+
+                btnLanjut.disabled =
+                    false;
+
+
+                btnLanjut.innerHTML =
+                    '<i class="ti ti-player-play me-2"></i>' +
+                    'Saya Mengerti, Lanjutkan Ujian';
+
+
+                /*
+                 * Tunggu fullscreen stabil.
+                 */
+                setTimeout(
+                    function () {
+
+                        modalSedangTerbuka =
+                            false;
+
+
+                        sedangMasukFullscreen =
+                            false;
+
+
+                        /*
+                         * Reset agar pelanggaran berikutnya
+                         * dapat langsung tercatat.
+                         */
+                        waktuPelanggaranTerakhir =
+                            0;
+
+
+                        ujianAktif =
+                            true;
+
+
+                        console.log(
+                            'Pengawasan CBT aktif kembali.'
+                        );
+
+                    },
+                    500
+                );
+
+            }
         );
 
     }
-}
 
 
-document.addEventListener(
-    'fullscreenchange',
-    handleFullscreenChange
-);
+    /*
+    |--------------------------------------------------------------------------
+    | DEBUG
+    |--------------------------------------------------------------------------
+    */
 
+    console.log(
+        'Sistem pengawasan CBT berhasil dimuat.'
+    );
 
-document.addEventListener(
-    'webkitfullscreenchange',
-    handleFullscreenChange
-);
-
-        /*
-        |--------------------------------------------------------------------------
-        | DEBUG
-        |--------------------------------------------------------------------------
-        */
-
-        console.log(
-            'Sistem pengawasan CBT berhasil dimuat.'
-        );
-
-    }
-);
+});
 </script>
 
 @endpush

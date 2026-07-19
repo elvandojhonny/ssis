@@ -333,7 +333,6 @@
             modal-dialog
             modal-xl
             modal-dialog-centered
-            modal-dialog-scrollable
         "
         role="document"
     >
@@ -345,10 +344,10 @@
 
             <div class="modal-header">
 
-                <div>
+                <div class="pe-3">
 
                     <h2 class="modal-title">
-                        Detail Riwayat kehadiran
+                        Detail Riwayat Kehadiran
                     </h2>
 
                     <div class="text-secondary mt-1">
@@ -379,17 +378,25 @@
             </div>
 
 
+            {{-- ================================================= --}}
             {{-- BODY --}}
+            {{-- ================================================= --}}
 
             <div class="modal-body p-0">
 
-                <div class="table-responsive">
+
+                {{-- ============================================= --}}
+                {{-- DESKTOP / LAPTOP --}}
+                {{-- ============================================= --}}
+
+                <div class="d-none d-md-block">
 
                     <table
                         class="
                             table
                             table-vcenter
                             card-table
+                            mb-0
                         "
                     >
 
@@ -420,16 +427,275 @@
 
                         <tbody>
 
-                        @forelse(
-                            $riwayat
-                            as $absensi
-                        )
+                            @forelse(
+                                $riwayat
+                                as $absensi
+                            )
 
-                            <tr>
+                                <tr>
 
-                                {{-- TANGGAL --}}
 
-                                <td>
+                                    {{-- TANGGAL --}}
+
+                                    <td>
+
+                                        <div class="fw-bold">
+
+                                            {{
+                                                $absensi
+                                                    ->sesiAbsensi
+                                                    ->tanggal
+                                                    ->format(
+                                                        'd/m/Y'
+                                                    )
+                                            }}
+
+                                        </div>
+
+                                    </td>
+
+
+                                    {{-- SESI --}}
+
+                                    <td>
+
+                                        @if(
+                                            $absensi
+                                                ->sesiAbsensi
+                                                ->jenis
+                                            === 'pagi'
+                                        )
+
+                                            <span
+                                                class="
+                                                    badge
+                                                    bg-yellow-lt
+                                                "
+                                            >
+
+                                                <i
+                                                    class="
+                                                        ti
+                                                        ti-sun
+                                                        me-1
+                                                    "
+                                                ></i>
+
+                                                Pagi
+
+                                            </span>
+
+                                        @else
+
+                                            <span
+                                                class="
+                                                    badge
+                                                    bg-blue-lt
+                                                "
+                                            >
+
+                                                <i
+                                                    class="
+                                                        ti
+                                                        ti-sunset
+                                                        me-1
+                                                    "
+                                                ></i>
+
+                                                Siang
+
+                                            </span>
+
+                                        @endif
+
+                                    </td>
+
+
+                                    {{-- WAKTU --}}
+
+                                    <td>
+
+                                        {{
+                                            (
+                                                $absensi
+                                                    ->waktu_absen
+
+                                                ??
+
+                                                $absensi
+                                                    ->created_at
+                                            )
+                                            ?->format(
+                                                'H:i:s'
+                                            )
+
+                                            ?? '-'
+                                        }}
+
+                                    </td>
+
+
+                                    {{-- STATUS --}}
+
+                                    <td>
+
+                                        @php
+
+                                            $badgeStatus =
+                                                match(
+                                                    $absensi
+                                                        ->status
+                                                ) {
+
+                                                    'hadir'
+                                                        => 'success',
+
+                                                    'terlambat'
+                                                        => 'warning',
+
+                                                    'izin'
+                                                        => 'blue',
+
+                                                    'sakit'
+                                                        => 'azure',
+
+                                                    'alpa'
+                                                        => 'danger',
+
+                                                    default
+                                                        => 'secondary',
+
+                                                };
+
+                                        @endphp
+
+
+                                        <span
+                                            class="
+                                                badge
+                                                bg-{{
+                                                    $badgeStatus
+                                                }}-lt
+                                            "
+                                        >
+
+                                            {{
+                                                ucfirst(
+                                                    $absensi
+                                                        ->status
+                                                )
+                                            }}
+
+                                        </span>
+
+                                    </td>
+
+                                </tr>
+
+
+                            @empty
+
+                                <tr>
+
+                                    <td
+                                        colspan="4"
+                                        class="
+                                            text-center
+                                            text-secondary
+                                            py-5
+                                        "
+                                    >
+
+                                        Belum ada riwayat
+                                        kehadiran.
+
+                                    </td>
+
+                                </tr>
+
+                            @endforelse
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+
+                {{-- ============================================= --}}
+                {{-- MOBILE --}}
+                {{-- ============================================= --}}
+
+                <div class="d-md-none">
+
+                    @forelse(
+                        $riwayat
+                        as $absensi
+                    )
+
+                        @php
+
+                            $badgeStatus =
+                                match(
+                                    $absensi->status
+                                ) {
+
+                                    'hadir'
+                                        => 'success',
+
+                                    'terlambat'
+                                        => 'warning',
+
+                                    'izin'
+                                        => 'blue',
+
+                                    'sakit'
+                                        => 'azure',
+
+                                    'alpa'
+                                        => 'danger',
+
+                                    default
+                                        => 'secondary',
+
+                                };
+
+                        @endphp
+
+
+                        <div
+                            class="
+                                p-3
+                                border-bottom
+                            "
+                        >
+
+
+                            {{-- HEADER CARD --}}
+
+                            <div
+                                class="
+                                    d-flex
+                                    justify-content-between
+                                    align-items-start
+                                    gap-3
+                                    mb-3
+                                "
+                            >
+
+                                <div>
+
+                                    <div
+                                        class="
+                                            text-secondary
+                                            small
+                                            mb-1
+                                        "
+                                    >
+                                        Tanggal
+                                    </div>
+
 
                                     <div class="fw-bold">
 
@@ -444,12 +710,54 @@
 
                                     </div>
 
-                                </td>
+                                </div>
+
+
+                                <div>
+
+                                    <span
+                                        class="
+                                            badge
+                                            bg-{{
+                                                $badgeStatus
+                                            }}-lt
+                                        "
+                                    >
+
+                                        {{
+                                            ucfirst(
+                                                $absensi
+                                                    ->status
+                                            )
+                                        }}
+
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+
+                            {{-- DETAIL CARD --}}
+
+                            <div class="row g-3">
 
 
                                 {{-- SESI --}}
 
-                                <td>
+                                <div class="col-6">
+
+                                    <div
+                                        class="
+                                            text-secondary
+                                            small
+                                            mb-1
+                                        "
+                                    >
+                                        Sesi
+                                    </div>
+
 
                                     @if(
                                         $absensi
@@ -500,123 +808,89 @@
 
                                     @endif
 
-                                </td>
+                                </div>
+
 
 
                                 {{-- WAKTU --}}
 
-                                <td>
+                                <div class="col-6">
 
-                                    {{
-                                        (
-                                            $absensi
-                                                ->waktu_absen
-
-                                            ??
-
-                                            $absensi
-                                                ->created_at
-                                        )
-                                        ?->format(
-                                            'H:i:s'
-                                        )
-
-                                        ?? '-'
-                                    }}
-
-                                </td>
-
-
-                                {{-- STATUS --}}
-
-                                <td>
-
-                                    @php
-
-                                        $badgeStatus =
-                                            match(
-                                                $absensi
-                                                    ->status
-                                            ) {
-
-                                                'hadir'
-                                                    => 'success',
-
-                                                'terlambat'
-                                                    => 'warning',
-
-                                                'izin'
-                                                    => 'blue',
-
-                                                'sakit'
-                                                    => 'azure',
-
-                                                'alpa'
-                                                    => 'danger',
-
-                                                default
-                                                    => 'secondary',
-
-                                            };
-
-                                    @endphp
-
-
-                                    <span
+                                    <div
                                         class="
-                                            badge
-                                            bg-{{
-                                                $badgeStatus
-                                            }}-lt
+                                            text-secondary
+                                            small
+                                            mb-1
                                         "
                                     >
+                                        Waktu
+                                    </div>
+
+
+                                    <div class="fw-bold">
 
                                         {{
-                                            ucfirst(
+                                            (
                                                 $absensi
-                                                    ->status
+                                                    ->waktu_absen
+
+                                                ??
+
+                                                $absensi
+                                                    ->created_at
                                             )
+                                            ?->format(
+                                                'H:i:s'
+                                            )
+
+                                            ?? '-'
                                         }}
 
-                                    </span>
+                                    </div>
 
-                                </td>
+                                </div>
 
-                            </tr>
+                            </div>
+
+                        </div>
 
 
-                        @empty
+                    @empty
 
-                            <tr>
+                        <div
+                            class="
+                                text-center
+                                text-secondary
+                                py-5
+                                px-3
+                            "
+                        >
 
-                                <td
-                                    colspan="4"
-                                    class="
-                                        text-center
-                                        text-secondary
-                                        py-5
-                                    "
-                                >
+                            <i
+                                class="
+                                    ti
+                                    ti-calendar-off
+                                    fs-1
+                                    d-block
+                                    mb-2
+                                "
+                            ></i>
 
-                                    Belum ada riwayat
-                                    kehadiran.
+                            Belum ada riwayat kehadiran.
 
-                                </td>
+                        </div>
 
-                            </tr>
-
-                        @endforelse
-
-                        </tbody>
-
-                    </table>
+                    @endforelse
 
                 </div>
 
             </div>
 
 
+
+            {{-- ================================================= --}}
             {{-- FOOTER --}}
+            {{-- ================================================= --}}
 
             <div class="modal-footer">
 

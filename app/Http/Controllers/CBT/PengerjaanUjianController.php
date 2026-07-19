@@ -257,57 +257,210 @@ class PengerjaanUjianController extends Controller
 
 
         /*
-         * Buat pengerjaan.
+|--------------------------------------------------------------------------
+| Buat Pengerjaan dan Urutan Acak
+|--------------------------------------------------------------------------
+*/
+
+$pengerjaan = DB::transaction(
+    function () use (
+        $ujian,
+        $siswa,
+        $sekarang,
+        $batasWaktu
+    ) {
+
+        /*
+         * Cek apakah pengerjaan sudah ada.
          */
-        $pengerjaan = DB::transaction(
-            function () use (
-                $ujian,
-                $siswa,
-                $sekarang,
-                $batasWaktu
+        $existing =
+            PengerjaanUjian::query()
+                ->where(
+                    'ujian_id',
+                    $ujian->id
+                )
+                ->where(
+                    'siswa_id',
+                    $siswa->id
+                )
+                ->first();
+
+
+        if ($existing) {
+            return $existing;
+        }
+
+
+        /*
+         * Ambil semua soal dari bank soal.
+         */
+        $soals =
+            Soal::query()
+                ->where(
+                    'bank_soal_id',
+                    $ujian->bank_soal_id
+                )
+                ->orderBy('nomor')
+                ->get();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Urutan Soal
+        |--------------------------------------------------------------------------
+        |
+        | Yang disimpan adalah ID soal.
+        |
+        | Contoh:
+        |
+        | Siswa A:
+        | [1, 5, 3, 2, 4]
+        |
+        | Siswa B:
+        | [4, 2, 1, 5, 3]
+        |
+        */
+
+        $urutanSoal =
+            $soals
+                ->pluck('id');
+
+
+        if ($ujian->acak_soal) {
+
+            $urutanSoal =
+                $urutanSoal
+                    ->shuffle();
+
+        }
+
+
+        $urutanSoal =
+            $urutanSoal
+                ->values()
+                ->all();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Urutan Pilihan Jawaban
+        |--------------------------------------------------------------------------
+        |
+        | Kita menyimpan urutan huruf jawaban asli.
+        |
+        | Contoh soal ID 10:
+        |
+        | ["C", "A", "D", "B"]
+        |
+        | Artinya:
+        |
+        | Tampilan A = pilihan_c asli
+        | Tampilan B = pilihan_a asli
+        | Tampilan C = pilihan_d asli
+        | Tampilan D = pilihan_b asli
+        |
+        */
+
+        $urutanJawaban = [];
+
+
+        foreach ($soals as $soal) {
+
+            /*
+             * Hanya masukkan pilihan
+             * yang benar-benar tersedia.
+             */
+            $pilihan = [];
+
+
+            foreach (
+                [
+                    'A',
+                    'B',
+                    'C',
+                    'D',
+                    'E',
+                ]
+                as $huruf
             ) {
 
-                $existing =
-                    PengerjaanUjian::query()
-                        ->where(
-                            'ujian_id',
-                            $ujian->id
-                        )
-                        ->where(
-                            'siswa_id',
-                            $siswa->id
-                        )
-                        ->first();
+                $kolom =
+                    'pilihan_' .
+                    strtolower($huruf);
 
 
-                if ($existing) {
-                    return $existing;
+                if (
+                    ! is_null(
+                        $soal->{$kolom}
+                    ) &&
+                    trim(
+                        (string)
+                        $soal->{$kolom}
+                    ) !== ''
+                ) {
+
+                    $pilihan[] =
+                        $huruf;
+
                 }
 
-
-                return PengerjaanUjian::create([
-
-                    'ujian_id' =>
-                        $ujian->id,
-
-                    'siswa_id' =>
-                        $siswa->id,
-
-                    'waktu_mulai' =>
-                        $sekarang,
-
-                    'batas_waktu' =>
-                        $batasWaktu,
-
-                    'status' =>
-                        'mengerjakan',
-
-                    'jumlah_pelanggaran' =>
-                        0,
-
-                ]);
             }
-        );
+
+
+            /*
+             * Acak jika pengaturan
+             * ujian mengaktifkannya.
+             */
+            if ($ujian->acak_jawaban) {
+
+                shuffle($pilihan);
+
+            }
+
+
+            /*
+             * Simpan berdasarkan ID soal.
+             */
+            $urutanJawaban[
+                (string) $soal->id
+            ] = $pilihan;
+
+        }
+
+
+        /*
+         * Buat pengerjaan.
+         */
+        return PengerjaanUjian::create([
+
+            'ujian_id' =>
+                $ujian->id,
+
+            'siswa_id' =>
+                $siswa->id,
+
+            'waktu_mulai' =>
+                $sekarang,
+
+            'batas_waktu' =>
+                $batasWaktu,
+
+            'urutan_soal' =>
+                $urutanSoal,
+
+            'urutan_jawaban' =>
+                $urutanJawaban,
+
+            'status' =>
+                'mengerjakan',
+
+            'jumlah_pelanggaran' =>
+                0,
+
+        ]);
+
+    }
+);
 
 
         /*
@@ -366,131 +519,208 @@ class PengerjaanUjianController extends Controller
     |--------------------------------------------------------------------------
     */
     public function show(
-        PengerjaanUjian $pengerjaan
+    PengerjaanUjian $pengerjaan
+) {
+    /*
+    |--------------------------------------------------------------------------
+    | Ambil Data Siswa
+    |--------------------------------------------------------------------------
+    */
+
+    $siswa = auth()
+        ->user()
+        ->siswa;
+
+
+    /*
+     * Pastikan pengerjaan milik siswa
+     * yang sedang login.
+     */
+    abort_unless(
+        $siswa &&
+        (int) $pengerjaan->siswa_id ===
+        (int) $siswa->id,
+        403
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Load Relasi
+    |--------------------------------------------------------------------------
+    */
+
+    $pengerjaan->load([
+
+        'ujian.bankSoal.soals' =>
+            function ($query) {
+
+                $query
+                    ->orderBy('nomor');
+
+            },
+
+        'ujian.kelas',
+
+        'jawabans',
+
+    ]);
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Jika Ujian Sudah Selesai
+    |--------------------------------------------------------------------------
+    */
+
+    if (
+        $pengerjaan->status ===
+        'selesai'
     ) {
-        $siswa = auth()
-            ->user()
-            ->siswa;
 
-
-        /*
-         * Pastikan pengerjaan milik siswa.
-         */
-        abort_unless(
-            $siswa &&
-            (int) $pengerjaan->siswa_id ===
-            (int) $siswa->id,
-            403,
-            'Anda tidak memiliki akses ke pengerjaan ini.'
-        );
-
-
-        /*
-         * Jika sudah selesai,
-         * arahkan ke hasil.
-         */
-        if (
-            $pengerjaan->status ===
-            'selesai'
-        ) {
-            return redirect()
-                ->route(
-                    'cbt.siswa.pengerjaan.hasil',
-                    $pengerjaan
-                );
-        }
-
-
-        /*
-         * Jika diblokir,
-         * halaman soal tidak boleh dibuka.
-         */
-        if (
-            $pengerjaan->status ===
-            'diblokir'
-        ) {
-            return redirect()
-                ->route(
-                    'cbt.siswa.index'
-                )
-                ->with(
-                    'error',
-                    'Pengerjaan ujian Anda telah diblokir karena mencapai batas pelanggaran. Hubungi operator untuk membuka blokir.'
-                );
-        }
-
-
-        /*
-         * Hanya status mengerjakan
-         * yang dapat membuka soal.
-         */
-        if (
-            $pengerjaan->status !==
-            'mengerjakan'
-        ) {
-            return redirect()
-                ->route(
-                    'cbt.siswa.index'
-                )
-                ->with(
-                    'error',
-                    'Pengerjaan ujian tidak tersedia.'
-                );
-        }
-
-
-        /*
-         * Waktu habis.
-         */
-        if (
-            now()->gte(
-                $pengerjaan->batas_waktu
-            )
-        ) {
-            $this->selesaikanOtomatis(
+        return redirect()
+            ->route(
+                'cbt.siswa.pengerjaan.hasil',
                 $pengerjaan
             );
 
-            return redirect()
-                ->route(
-                    'cbt.siswa.pengerjaan.hasil',
-                    $pengerjaan
-                )
-                ->with(
-                    'info',
-                    'Waktu pengerjaan ujian telah berakhir.'
-                );
-        }
+    }
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Periksa Batas Waktu
+    |--------------------------------------------------------------------------
+    */
+
+    if (
+        $pengerjaan->batas_waktu &&
+        now()->gte(
+            $pengerjaan->batas_waktu
+        )
+    ) {
 
         /*
-         * Load data ujian.
+         * Selesaikan ujian otomatis.
          */
-        $pengerjaan->load([
-
-            'ujian.bankSoal.soals' =>
-                function ($query) {
-
-                    $query->orderBy(
-                        'nomor'
-                    );
-
-                },
-
-            'ujian.kelas',
-
-            'jawabans',
-
-        ]);
-
-
-        return view(
-            'cbt.pengerjaan.show',
-            compact(
-                'pengerjaan'
-            )
+        $this->prosesPenilaian(
+            $pengerjaan
         );
+
+
+        return redirect()
+            ->route(
+                'cbt.siswa.pengerjaan.hasil',
+                $pengerjaan
+            );
+
     }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Ambil Semua Soal
+    |--------------------------------------------------------------------------
+    |
+    | Soal dari bank soal kita ubah menjadi collection
+    | dengan ID soal sebagai key.
+    |
+    */
+
+    $semuaSoal =
+        $pengerjaan
+            ->ujian
+            ->bankSoal
+            ->soals
+            ->keyBy('id');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Ambil Urutan Soal Milik Siswa
+    |--------------------------------------------------------------------------
+    */
+
+    $urutanSoal =
+        $pengerjaan
+            ->urutan_soal
+        ?? [];
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Susun Soal Berdasarkan Urutan Acak
+    |--------------------------------------------------------------------------
+    |
+    | Contoh:
+    |
+    | urutan_soal:
+    |
+    | [4, 3, 5]
+    |
+    | Maka:
+    |
+    | Nomor tampilan 1 = Soal ID 4
+    | Nomor tampilan 2 = Soal ID 3
+    | Nomor tampilan 3 = Soal ID 5
+    |
+    */
+
+    if (
+        ! empty(
+            $urutanSoal
+        )
+    ) {
+
+        $soals =
+            collect(
+                $urutanSoal
+            )
+                ->map(
+                    function (
+                        $soalId
+                    ) use (
+                        $semuaSoal
+                    ) {
+
+                        return $semuaSoal
+                            ->get(
+                                (int) $soalId
+                            );
+
+                    }
+                )
+                ->filter()
+                ->values();
+
+    } else {
+
+        /*
+         * Fallback untuk pengerjaan lama
+         * yang belum memiliki urutan_soal.
+         */
+        $soals =
+            $semuaSoal
+                ->sortBy('nomor')
+                ->values();
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Tampilkan Halaman Ujian
+    |--------------------------------------------------------------------------
+    */
+
+    return view(
+        'cbt.pengerjaan.show',
+        compact(
+            'pengerjaan',
+            'soals'
+        )
+    );
+}
 
 
     /*

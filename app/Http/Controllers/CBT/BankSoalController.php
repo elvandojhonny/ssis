@@ -38,6 +38,15 @@ class BankSoalController extends Controller
             ->latest()
             ->paginate(10);
 
+        $bankSoals = BankSoal::where(
+                'guru_id',
+                auth()->user()->guru->id
+            )
+            ->where('is_archived', false)
+            ->withCount('soals')
+            ->latest()
+            ->paginate(10);
+
         return view(
             'cbt.bank-soal.index',
             compact('bankSoals')
@@ -975,6 +984,94 @@ public function show(BankSoal $bankSoal)
         'cbt.bank-soal.show',
         compact('bankSoal')
     );
+}
+
+public function arsip()
+{
+    $guru = auth()
+        ->user()
+        ->guru;
+
+    abort_unless($guru, 403);
+
+
+    $bankSoals = BankSoal::query()
+
+        ->where(
+            'guru_id',
+            $guru->id
+        )
+
+        ->where(
+            'is_archived',
+            true
+        )
+
+        ->withCount('soals')
+
+        ->latest('updated_at')
+
+        ->paginate(10);
+
+
+    return view(
+        'cbt.bank-soal.arsip',
+        compact('bankSoals')
+    );
+}
+
+public function archive(BankSoal $bankSoal)
+{
+    $guru = auth()
+        ->user()
+        ->guru;
+
+
+    abort_unless(
+        $guru
+        && $bankSoal->guru_id === $guru->id,
+        403
+    );
+
+
+    $bankSoal->update([
+        'is_archived' => true,
+    ]);
+
+
+    return redirect()
+        ->route('cbt.bank-soal.index')
+        ->with(
+            'success',
+            'Bank soal berhasil dipindahkan ke arsip.'
+        );
+}
+
+public function restore(BankSoal $bankSoal)
+{
+    $guru = auth()
+        ->user()
+        ->guru;
+
+
+    abort_unless(
+        $guru
+        && $bankSoal->guru_id === $guru->id,
+        403
+    );
+
+
+    $bankSoal->update([
+        'is_archived' => false,
+    ]);
+
+
+    return redirect()
+        ->route('cbt.bank-soal.arsip')
+        ->with(
+            'success',
+            'Bank soal berhasil dipulihkan.'
+        );
 }
 
 }

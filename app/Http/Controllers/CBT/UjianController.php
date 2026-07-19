@@ -26,12 +26,16 @@ class UjianController extends Controller
     {
         $ujians = Ujian::with([
                 'bankSoal.soals',
-                'bankSoal.guru',
-                'kelas.tahunAjaran',
-                'pembuat',
+                'kelas',
             ])
-            ->latest()
-            ->paginate(9);
+            ->where(
+                'waktu_selesai',
+                '>=',
+                now()->subDays(7)
+            )
+            ->orderByDesc('waktu_mulai')
+            ->paginate(9)
+            ->withQueryString();
 
         return view(
             'cbt.ujian.index',
@@ -125,6 +129,16 @@ class UjianController extends Controller
                 'min:1',
                 'max:600',
             ],
+
+            'acak_soal' => [
+                'required',
+                'boolean',
+            ],
+
+            'acak_jawaban' => [
+                'required',
+                'boolean',
+            ],
         ]);
 
         /*
@@ -180,6 +194,12 @@ class UjianController extends Controller
             'durasi_menit' =>
                 $validated['durasi_menit'],
 
+            'acak_soal' =>
+                (bool) $validated['acak_soal'],
+
+            'acak_jawaban' =>
+                (bool) $validated['acak_jawaban'],
+
             /*
              * Belum langsung tampil ke siswa.
              */
@@ -215,6 +235,231 @@ class UjianController extends Controller
             compact('ujian')
         );
     }
+
+    /*
+|--------------------------------------------------------------------------
+| Form Edit Ujian
+|--------------------------------------------------------------------------
+*/
+public function edit(Ujian $ujian)
+{
+    /*
+     * Hanya ujian draft yang dapat diedit.
+     */
+    if ($ujian->status !== 'draft') {
+
+        return redirect()
+            ->route(
+                'cbt.ujian.show',
+                $ujian
+            )
+            ->with(
+                'error',
+                'Ujian yang sudah dipublikasikan tidak dapat diedit.'
+            );
+    }
+
+
+    /*
+     * Ambil bank soal yang siap digunakan.
+     */
+    $bankSoals = BankSoal::with([
+            'guru',
+        ])
+        ->withCount('soals')
+        ->where(
+            'status',
+            'siap'
+        )
+        ->latest()
+        ->get();
+
+
+    /*
+     * Ambil kelas yang masih aktif.
+     */
+    $kelas = Kelas::with(
+            'tahunAjaran'
+        )
+        ->where(
+            'is_active',
+            true
+        )
+        ->orderBy('tingkat')
+        ->orderBy('nama')
+        ->get();
+
+
+    return view(
+        'cbt.ujian.edit',
+        compact(
+            'ujian',
+            'bankSoals',
+            'kelas'
+        )
+    );
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Update Ujian
+|--------------------------------------------------------------------------
+*/
+public function update(
+    Request $request,
+    Ujian $ujian
+) {
+    /*
+     * Keamanan backend.
+     *
+     * Walaupun URL update dipanggil manual,
+     * ujian yang sudah dipublikasikan
+     * tetap tidak boleh diubah.
+     */
+    if ($ujian->status !== 'draft') {
+
+        return redirect()
+            ->route(
+                'cbt.ujian.show',
+                $ujian
+            )
+            ->with(
+                'error',
+                'Ujian yang sudah dipublikasikan tidak dapat diedit.'
+            );
+    }
+
+
+    $validated = $request->validate([
+
+        'bank_soal_id' => [
+            'required',
+            'exists:bank_soals,id',
+        ],
+
+        'kelas_id' => [
+            'required',
+            'exists:kelas,id',
+        ],
+
+        'judul' => [
+            'required',
+            'string',
+            'max:255',
+        ],
+
+        'deskripsi' => [
+            'nullable',
+            'string',
+            'max:2000',
+        ],
+
+        'waktu_mulai' => [
+            'required',
+            'date',
+        ],
+
+        'waktu_selesai' => [
+            'required',
+            'date',
+            'after:waktu_mulai',
+        ],
+
+        'durasi_menit' => [
+            'required',
+            'integer',
+            'min:1',
+            'max:600',
+        ],
+
+        'acak_soal' => [
+            'required',
+            'boolean',
+        ],
+
+        'acak_jawaban' => [
+            'required',
+            'boolean',
+        ],
+
+    ]);
+
+
+    /*
+     * Pastikan bank soal masih siap.
+     */
+    $bankSoal = BankSoal::query()
+        ->whereKey(
+            $validated['bank_soal_id']
+        )
+        ->where(
+            'status',
+            'siap'
+        )
+        ->firstOrFail();
+
+
+    /*
+     * Pastikan kelas masih aktif.
+     */
+    $kelas = Kelas::query()
+        ->whereKey(
+            $validated['kelas_id']
+        )
+        ->where(
+            'is_active',
+            true
+        )
+        ->firstOrFail();
+
+
+    /*
+     * Update data ujian.
+     */
+    $ujian->update([
+
+        'bank_soal_id' =>
+            $bankSoal->id,
+
+        'kelas_id' =>
+            $kelas->id,
+
+        'judul' =>
+            $validated['judul'],
+
+        'deskripsi' =>
+            $validated['deskripsi']
+            ?? null,
+
+        'waktu_mulai' =>
+            $validated['waktu_mulai'],
+
+        'waktu_selesai' =>
+            $validated['waktu_selesai'],
+
+        'durasi_menit' =>
+            $validated['durasi_menit'],
+
+        'acak_soal' =>
+            (bool) $validated['acak_soal'],
+
+        'acak_jawaban' =>
+            (bool) $validated['acak_jawaban'],
+
+    ]);
+
+
+    return redirect()
+        ->route(
+            'cbt.ujian.show',
+            $ujian
+        )
+        ->with(
+            'success',
+            'Ujian berhasil diperbarui.'
+        );
+}
 
     public function publish(Ujian $ujian)
 {
@@ -289,27 +534,286 @@ class UjianController extends Controller
 */
 public function rekap()
 {
-    $ujians = Ujian::query()
-        ->with([
-            'bankSoal.guru',
-            'kelas.tahunAjaran',
-        ])
-        ->withCount([
-            'pengerjaans',
-            'pengerjaans as selesai_count' => function ($query) {
-                $query->where('status', 'selesai');
-            },
+    $ujians = Ujian::with([
+            'kelas',
+            'bankSoal',
         ])
         ->whereIn('status', [
             'dipublikasi',
             'selesai',
         ])
-        ->latest('waktu_mulai')
-        ->paginate(10);
+        ->where(
+            'waktu_selesai',
+            '>=',
+            now()->subDays(7)
+        )
+        ->withCount([
+            'pengerjaans',
+
+            'pengerjaans as selesai_count' => function ($query) {
+                $query->where('status', 'selesai');
+            },
+        ])
+        ->orderByDesc('waktu_mulai')
+        ->paginate(9)
+        ->withQueryString();
 
     return view(
         'cbt.rekap.index',
         compact('ujians')
+    );
+}
+
+public function arsip(Request $request)
+{
+    $query = Ujian::with([
+            'bankSoal.soals',
+            'kelas',
+        ])
+        ->where(
+            'waktu_selesai',
+            '<',
+            now()->subDays(7)
+        );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Pencarian
+    |--------------------------------------------------------------------------
+    */
+
+    if ($request->filled('search')) {
+
+        $search = $request->search;
+
+        $query->where(function ($q) use ($search) {
+
+            $q->where(
+                'judul',
+                'like',
+                '%' . $search . '%'
+            )
+
+            ->orWhereHas(
+                'bankSoal',
+                function ($bankSoal) use ($search) {
+
+                    $bankSoal->where(
+                        'mata_pelajaran',
+                        'like',
+                        '%' . $search . '%'
+                    );
+
+                }
+            )
+
+            ->orWhereHas(
+                'kelas',
+                function ($kelas) use ($search) {
+
+                    $kelas->where(
+                        'nama',
+                        'like',
+                        '%' . $search . '%'
+                    );
+
+                }
+            );
+
+        });
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Filter Tahun
+    |--------------------------------------------------------------------------
+    */
+
+    if ($request->filled('tahun')) {
+
+        $query->whereYear(
+            'waktu_selesai',
+            $request->tahun
+        );
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Ambil Data
+    |--------------------------------------------------------------------------
+    */
+
+    $ujians = $query
+        ->orderByDesc('waktu_selesai')
+        ->paginate(9)
+        ->withQueryString();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Tahun yang Tersedia
+    |--------------------------------------------------------------------------
+    */
+
+    $daftarTahun = Ujian::query()
+        ->where(
+            'waktu_selesai',
+            '<',
+            now()->subDays(7)
+        )
+        ->selectRaw(
+            'YEAR(waktu_selesai) as tahun'
+        )
+        ->distinct()
+        ->orderByDesc('tahun')
+        ->pluck('tahun');
+
+
+    return view(
+        'cbt.ujian.arsip',
+        compact(
+            'ujians',
+            'daftarTahun'
+        )
+    );
+}
+
+public function rekapArsip(Request $request)
+{
+    $query = Ujian::with([
+            'kelas',
+            'bankSoal',
+        ])
+        ->whereIn('status', [
+            'dipublikasi',
+            'selesai',
+        ])
+        ->where(
+            'waktu_selesai',
+            '<',
+            now()->subDays(7)
+        )
+        ->withCount([
+            'pengerjaans',
+
+            'pengerjaans as selesai_count' => function ($query) {
+                $query->where('status', 'selesai');
+            },
+        ]);
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Pencarian
+    |--------------------------------------------------------------------------
+    */
+
+    if ($request->filled('search')) {
+
+        $search = $request->search;
+
+        $query->where(function ($q) use ($search) {
+
+            $q->where(
+                'judul',
+                'like',
+                '%' . $search . '%'
+            )
+
+            ->orWhereHas(
+                'kelas',
+                function ($kelas) use ($search) {
+
+                    $kelas->where(
+                        'nama',
+                        'like',
+                        '%' . $search . '%'
+                    );
+
+                }
+            )
+
+            ->orWhereHas(
+                'bankSoal',
+                function ($bankSoal) use ($search) {
+
+                    $bankSoal->where(
+                        'mata_pelajaran',
+                        'like',
+                        '%' . $search . '%'
+                    );
+
+                }
+            );
+
+        });
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Filter Tahun
+    |--------------------------------------------------------------------------
+    */
+
+    if ($request->filled('tahun')) {
+
+        $query->whereYear(
+            'waktu_selesai',
+            $request->tahun
+        );
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Data Arsip
+    |--------------------------------------------------------------------------
+    */
+
+    $ujians = $query
+        ->orderByDesc('waktu_selesai')
+        ->paginate(9)
+        ->withQueryString();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Daftar Tahun
+    |--------------------------------------------------------------------------
+    */
+
+    $daftarTahun = Ujian::query()
+        ->whereIn('status', [
+            'dipublikasi',
+            'selesai',
+        ])
+        ->where(
+            'waktu_selesai',
+            '<',
+            now()->subDays(7)
+        )
+        ->selectRaw(
+            'YEAR(waktu_selesai) as tahun'
+        )
+        ->distinct()
+        ->orderByDesc('tahun')
+        ->pluck('tahun');
+
+
+    return view(
+        'cbt.rekap.arsip',
+        compact(
+            'ujians',
+            'daftarTahun'
+        )
     );
 }
 

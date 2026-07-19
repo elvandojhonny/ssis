@@ -17,6 +17,8 @@ class Ujian extends Model
         'waktu_mulai',
         'waktu_selesai',
         'durasi_menit',
+        'acak_soal',
+        'acak_jawaban',
         'status',
         'token',
     ];
@@ -27,6 +29,8 @@ class Ujian extends Model
             'waktu_mulai' => 'datetime',
             'waktu_selesai' => 'datetime',
             'durasi_menit' => 'integer',
+            'acak_soal' => 'boolean',
+            'acak_jawaban' => 'boolean',
         ];
     }
 

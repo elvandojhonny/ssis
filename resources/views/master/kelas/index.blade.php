@@ -264,23 +264,16 @@
                                 @method('DELETE')
 
                                 <button
-                                    type="submit"
-                                    class="
-                                        btn
-                                        btn-sm
-                                        btn-outline-danger
-                                    "
-                                    onclick="
-                                        return confirm(
-                                            'Yakin ingin menghapus kelas ini?'
-                                        )
-                                    "
+                                    type="button"
+                                    class="btn btn-sm btn-outline-danger"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#globalDeleteModal"
+                                    data-delete-action="{{ route('kelas.destroy', $item) }}"
+                                    data-delete-name="{{ $item->nama }}"
+                                    data-delete-warning="Kelas yang masih memiliki siswa atau data yang terhubung tidak dapat dihapus."
                                 >
-
                                     <i class="ti ti-trash me-1"></i>
-
                                     Hapus
-
                                 </button>
 
                             </form>

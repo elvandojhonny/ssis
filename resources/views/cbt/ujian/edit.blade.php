@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Buat Ujian')
+@section('title', 'Edit Ujian')
 
 @section('content')
 
@@ -15,11 +15,11 @@
             </div>
 
             <h2 class="page-title">
-                Buat Ujian
+                Edit Ujian
             </h2>
 
             <div class="text-secondary mt-1">
-                Pilih bank soal dan tentukan pelaksanaan ujian.
+                Ubah pengaturan ujian sebelum dipublikasikan.
             </div>
 
         </div>
@@ -27,7 +27,7 @@
         <div class="col-12 col-md-auto">
 
             <a
-                href="{{ route('cbt.ujian.index') }}"
+                href="{{ route('cbt.ujian.show', $ujian) }}"
                 class="btn btn-outline-secondary w-100"
             >
                 <i class="ti ti-arrow-left me-1"></i>
@@ -41,12 +41,16 @@
 </div>
 
 
+{{-- ========================================================= --}}
+{{-- ERROR VALIDASI --}}
+{{-- ========================================================= --}}
+
 @if($errors->any())
 
     <div class="alert alert-danger">
 
         <div class="fw-bold mb-2">
-            Data ujian belum dapat disimpan.
+            Data ujian belum dapat diperbarui.
         </div>
 
         <ul class="mb-0">
@@ -66,19 +70,55 @@
 @endif
 
 
+{{-- ========================================================= --}}
+{{-- INFORMASI DRAFT --}}
+{{-- ========================================================= --}}
+
+<div class="alert alert-info">
+
+    <div class="d-flex">
+
+        <div class="me-2">
+
+            <i class="ti ti-info-circle"></i>
+
+        </div>
+
+        <div>
+
+            <div class="fw-bold">
+                Ujian masih berstatus draft
+            </div>
+
+            <div class="mt-1">
+
+                Seluruh pengaturan ujian masih dapat diubah.
+                Setelah ujian dipublikasikan, pengaturan ujian
+                tidak dapat diedit kembali.
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
 <form
-    action="{{ route('cbt.ujian.store') }}"
+    action="{{ route('cbt.ujian.update', $ujian) }}"
     method="POST"
 >
 
     @csrf
+    @method('PUT')
 
 
     <div class="row row-cards">
 
 
         {{-- ================================================= --}}
-        {{-- BANK SOAL --}}
+        {{-- BANK SOAL DAN KELAS --}}
         {{-- ================================================= --}}
 
         <div class="col-lg-5">
@@ -95,6 +135,7 @@
 
 
                 <div class="card-body">
+
 
                     {{-- BANK SOAL --}}
 
@@ -114,12 +155,17 @@
                                 Pilih bank soal
                             </option>
 
+
                             @foreach($bankSoals as $bankSoal)
 
                                 <option
                                     value="{{ $bankSoal->id }}"
+
                                     @selected(
-                                        old('bank_soal_id')
+                                        old(
+                                            'bank_soal_id',
+                                            $ujian->bank_soal_id
+                                        )
                                         == $bankSoal->id
                                     )
                                 >
@@ -141,17 +187,18 @@
 
                         </select>
 
+
                         <div class="form-hint">
 
-                            Hanya bank soal berstatus siap yang
-                            dapat digunakan.
+                            Hanya bank soal berstatus siap
+                            yang dapat digunakan.
 
                         </div>
 
                     </div>
 
 
-                    {{-- KELAS --}}
+                    {{-- KELAS PESERTA --}}
 
                     <div class="mb-3">
 
@@ -169,12 +216,17 @@
                                 Pilih kelas
                             </option>
 
+
                             @foreach($kelas as $item)
 
                                 <option
                                     value="{{ $item->id }}"
+
                                     @selected(
-                                        old('kelas_id')
+                                        old(
+                                            'kelas_id',
+                                            $ujian->kelas_id
+                                        )
                                         == $item->id
                                     )
                                 >
@@ -197,11 +249,36 @@
 
                     </div>
 
+
+                    {{-- INFORMASI --}}
+
+                    <div class="alert alert-warning mb-0">
+
+                        <div class="d-flex">
+
+                            <div class="me-2">
+
+                                <i class="ti ti-alert-triangle"></i>
+
+                            </div>
+
+                            <div>
+
+                                Mengganti bank soal akan mengubah
+                                soal yang digunakan pada ujian ini.
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
                 </div>
 
             </div>
 
         </div>
+
 
 
         {{-- ================================================= --}}
@@ -223,6 +300,7 @@
 
                 <div class="card-body">
 
+
                     {{-- JUDUL --}}
 
                     <div class="mb-3">
@@ -235,8 +313,16 @@
                             type="text"
                             name="judul"
                             class="form-control"
-                            value="{{ old('judul') }}"
+
+                            value="{{
+                                old(
+                                    'judul',
+                                    $ujian->judul
+                                )
+                            }}"
+
                             placeholder="Contoh: Ujian Tengah Semester Matematika"
+
                             required
                         >
 
@@ -255,14 +341,23 @@
                             name="deskripsi"
                             class="form-control"
                             rows="3"
-                        >{{ old('deskripsi') }}</textarea>
+                        >{{ old(
+                            'deskripsi',
+                            $ujian->deskripsi
+                        ) }}</textarea>
 
                     </div>
 
 
-                    {{-- JADWAL --}}
+
+                    {{-- ================================================= --}}
+                    {{-- WAKTU UJIAN --}}
+                    {{-- ================================================= --}}
 
                     <div class="row g-3">
+
+
+                        {{-- WAKTU MULAI --}}
 
                         <div class="col-md-6">
 
@@ -274,12 +369,25 @@
                                 type="datetime-local"
                                 name="waktu_mulai"
                                 class="form-control"
-                                value="{{ old('waktu_mulai') }}"
+
+                                value="{{
+                                    old(
+                                        'waktu_mulai',
+                                        $ujian
+                                            ->waktu_mulai
+                                            ?->format(
+                                                'Y-m-d\TH:i'
+                                            )
+                                    )
+                                }}"
+
                                 required
                             >
 
                         </div>
 
+
+                        {{-- WAKTU SELESAI --}}
 
                         <div class="col-md-6">
 
@@ -291,12 +399,25 @@
                                 type="datetime-local"
                                 name="waktu_selesai"
                                 class="form-control"
-                                value="{{ old('waktu_selesai') }}"
+
+                                value="{{
+                                    old(
+                                        'waktu_selesai',
+                                        $ujian
+                                            ->waktu_selesai
+                                            ?->format(
+                                                'Y-m-d\TH:i'
+                                            )
+                                    )
+                                }}"
+
                                 required
                             >
 
                         </div>
 
+
+                        {{-- DURASI --}}
 
                         <div class="col-md-6">
 
@@ -310,12 +431,14 @@
                                     type="number"
                                     name="durasi_menit"
                                     class="form-control"
+
                                     value="{{
                                         old(
                                             'durasi_menit',
-                                            90
+                                            $ujian->durasi_menit
                                         )
                                     }}"
+
                                     min="1"
                                     max="600"
                                     required
@@ -332,8 +455,9 @@
                     </div>
 
 
+
                     {{-- ================================================= --}}
-                    {{-- PENGACAKAN SOAL --}}
+                    {{-- PENGACAKAN --}}
                     {{-- ================================================= --}}
 
                     <hr class="my-4">
@@ -341,9 +465,22 @@
 
                     <div class="mb-3">
 
-                        <div class="d-flex align-items-center gap-2 mb-1">
+                        <div
+                            class="
+                                d-flex
+                                align-items-center
+                                gap-2
+                                mb-1
+                            "
+                        >
 
-                            <i class="ti ti-arrows-shuffle text-primary"></i>
+                            <i
+                                class="
+                                    ti
+                                    ti-arrows-shuffle
+                                    text-primary
+                                "
+                            ></i>
 
                             <label class="form-label mb-0">
                                 Pengacakan Ujian
@@ -351,17 +488,21 @@
 
                         </div>
 
+
                         <div class="text-secondary small">
 
-                            Atur pengacakan soal dan pilihan jawaban
-                            untuk setiap peserta ujian.
+                            Atur pengacakan soal dan pilihan
+                            jawaban untuk setiap peserta ujian.
 
                         </div>
 
                     </div>
 
 
+
+                    {{-- ================================================= --}}
                     {{-- ACAK SOAL --}}
+                    {{-- ================================================= --}}
 
                     <div class="border rounded p-3 mb-3">
 
@@ -380,33 +521,49 @@
                                     Acak Urutan Soal
                                 </div>
 
-                                <div class="text-secondary small mt-1">
+                                <div
+                                    class="
+                                        text-secondary
+                                        small
+                                        mt-1
+                                    "
+                                >
 
-                                    Setiap siswa mendapatkan urutan
-                                    nomor soal yang berbeda.
+                                    Setiap siswa mendapatkan
+                                    urutan nomor soal yang berbeda.
 
                                 </div>
 
                             </div>
 
 
-                            <label class="form-check form-switch m-0">
+                            <label
+                                class="
+                                    form-check
+                                    form-switch
+                                    m-0
+                                "
+                            >
 
+                                {{-- Nilai jika switch mati --}}
                                 <input
                                     type="hidden"
                                     name="acak_soal"
                                     value="0"
                                 >
 
+
                                 <input
                                     type="checkbox"
                                     name="acak_soal"
                                     value="1"
                                     class="form-check-input"
+
                                     @checked(
+                                        (bool)
                                         old(
                                             'acak_soal',
-                                            1
+                                            $ujian->acak_soal
                                         )
                                     )
                                 >
@@ -418,7 +575,10 @@
                     </div>
 
 
+
+                    {{-- ================================================= --}}
                     {{-- ACAK JAWABAN --}}
+                    {{-- ================================================= --}}
 
                     <div class="border rounded p-3">
 
@@ -437,33 +597,50 @@
                                     Acak Pilihan Jawaban
                                 </div>
 
-                                <div class="text-secondary small mt-1">
+                                <div
+                                    class="
+                                        text-secondary
+                                        small
+                                        mt-1
+                                    "
+                                >
 
-                                    Posisi pilihan A, B, C, D, dan E
-                                    dapat berbeda pada setiap siswa.
+                                    Posisi pilihan A, B, C, D,
+                                    dan E dapat berbeda pada
+                                    setiap siswa.
 
                                 </div>
 
                             </div>
 
 
-                            <label class="form-check form-switch m-0">
+                            <label
+                                class="
+                                    form-check
+                                    form-switch
+                                    m-0
+                                "
+                            >
 
+                                {{-- Nilai jika switch mati --}}
                                 <input
                                     type="hidden"
                                     name="acak_jawaban"
                                     value="0"
                                 >
 
+
                                 <input
                                     type="checkbox"
                                     name="acak_jawaban"
                                     value="1"
                                     class="form-check-input"
+
                                     @checked(
+                                        (bool)
                                         old(
                                             'acak_jawaban',
-                                            1
+                                            $ujian->acak_jawaban
                                         )
                                     )
                                 >
@@ -474,6 +651,9 @@
 
                     </div>
 
+
+
+                    {{-- INFORMASI PENGACAKAN --}}
 
                     <div class="alert alert-info mt-3 mb-0">
 
@@ -488,9 +668,10 @@
                             <div>
 
                                 Pengacakan dilakukan secara berbeda
-                                untuk setiap peserta, tetapi urutan
-                                yang diterima satu peserta akan tetap
-                                sama selama pengerjaan berlangsung.
+                                untuk setiap peserta.
+
+                                Urutan yang diterima peserta akan
+                                tetap sama selama pengerjaan ujian.
 
                             </div>
 
@@ -501,7 +682,10 @@
                 </div>
 
 
+
+                {{-- ================================================= --}}
                 {{-- FOOTER --}}
+                {{-- ================================================= --}}
 
                 <div class="card-footer">
 
@@ -520,8 +704,8 @@
 
                             <i class="ti ti-info-circle me-1"></i>
 
-                            Ujian akan disimpan sebagai draft
-                            dan belum terlihat oleh siswa.
+                            Perubahan hanya dapat dilakukan
+                            selama ujian masih berstatus draft.
 
                         </div>
 
@@ -531,9 +715,15 @@
                             class="btn btn-primary"
                         >
 
-                            <i class="ti ti-device-floppy me-1"></i>
+                            <i
+                                class="
+                                    ti
+                                    ti-device-floppy
+                                    me-1
+                                "
+                            ></i>
 
-                            Simpan Draft Ujian
+                            Simpan Perubahan
 
                         </button>
 

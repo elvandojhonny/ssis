@@ -21,6 +21,11 @@ use App\Http\Controllers\CBT\PengerjaanUjianController;
 
 use App\Http\Controllers\CBT\PelanggaranUjianController;
 
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
+
+
 Route::middleware('guest')->group(function () {
 
     Route::get(
@@ -32,6 +37,54 @@ Route::middleware('guest')->group(function () {
         '/login',
         [LoginController::class, 'login']
     )->name('login.process');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Lupa Password
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        '/lupa-password',
+        [
+            ForgotPasswordController::class,
+            'showLinkRequestForm',
+        ]
+    )->name('password.request');
+
+
+    Route::post(
+        '/lupa-password',
+        [
+            ForgotPasswordController::class,
+            'sendResetLinkEmail',
+        ]
+    )->name('password.email');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Reset Password
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        '/reset-password/{token}',
+        [
+            ResetPasswordController::class,
+            'showResetForm',
+        ]
+    )->name('password.reset');
+
+
+    Route::post(
+        '/reset-password',
+        [
+            ResetPasswordController::class,
+            'reset',
+        ]
+    )->name('password.update');
+
 
 });
 
@@ -47,6 +100,33 @@ Route::middleware('auth')->group(function () {
         '/',
         [DashboardController::class, 'index']
     )->name('dashboard');
+
+    Route::get(
+        '/profil',
+        [ProfileController::class, 'show']
+    )->name('profile.show');
+
+    Route::get(
+        '/profil/edit',
+        [ProfileController::class, 'edit']
+    )->name('profile.edit');
+
+
+    Route::put(
+        '/profil',
+        [ProfileController::class, 'update']
+    )->name('profile.update');
+
+    Route::get(
+        '/profil/password',
+        [ProfileController::class, 'editPassword']
+    )->name('profile.password.edit');
+
+
+    Route::put(
+        '/profil/password',
+        [ProfileController::class, 'updatePassword']
+    )->name('profile.password.update');
 
 
     /*
@@ -69,10 +149,30 @@ Route::middleware('auth')->group(function () {
         Route::put('kelas/{kelas}', [KelasController::class, 'update'])->name('kelas.update');
         Route::delete('kelas/{kelas}', [KelasController::class, 'destroy'])->name('kelas.destroy');
 
+        Route::get(
+            '/guru/template-import',
+            [GuruController::class, 'downloadTemplate']
+        )->name('guru.template-import');
+
+        Route::post(
+            '/guru/import',
+            [GuruController::class, 'import']
+        )->name('guru.import');
+
         Route::resource(
             'guru',
             GuruController::class
         )->except('show');
+
+        Route::get(
+            '/siswa/template-import',
+            [SiswaController::class, 'downloadTemplate']
+        )->name('siswa.template-import');
+
+        Route::post(
+            '/siswa/import',
+            [SiswaController::class, 'import']
+        )->name('siswa.import');
 
         Route::resource(
             'siswa',
@@ -100,6 +200,10 @@ Route::middleware('auth')->group(function () {
             [UjianController::class, 'rekap']
         )->name('cbt.rekap.index');
 
+        Route::get(
+            '/rekap/arsip',
+            [UjianController::class, 'rekapArsip']
+        )->name('cbt.rekap.arsip');
 
         Route::get(
             '/cbt/rekap/{ujian}',
@@ -142,60 +246,108 @@ Route::middleware('auth')->group(function () {
     });
 
     /*
-    |--------------------------------------------------------------------------
-    | Absensi
-    |--------------------------------------------------------------------------
-    */
+|--------------------------------------------------------------------------
+| Absensi
+|--------------------------------------------------------------------------
+*/
 
-    Route::middleware('role:operator,guru')
+Route::middleware('role:operator,guru')
     ->prefix('absensi')
     ->name('absensi.')
     ->group(function () {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Sesi Absensi
+        |--------------------------------------------------------------------------
+        */
 
         Route::get(
             '/sesi',
             [SesiAbsensiController::class, 'index']
         )->name('sesi.index');
 
+
         Route::get(
             '/sesi/buka',
             [SesiAbsensiController::class, 'create']
         )->name('sesi.create');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Arsip Sesi Absensi
+        |--------------------------------------------------------------------------
+        |
+        | Harus diletakkan sebelum /sesi/{sesi}
+        | agar "arsip" tidak dianggap sebagai ID sesi.
+        |
+        */
+
+        Route::get(
+            '/sesi/arsip',
+            [SesiAbsensiController::class, 'arsip']
+        )->name('sesi.arsip');
+
 
         Route::post(
             '/sesi',
             [SesiAbsensiController::class, 'store']
         )->name('sesi.store');
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Detail Sesi
+        |--------------------------------------------------------------------------
+        */
+
         Route::get(
             '/sesi/{sesi}',
             [SesiAbsensiController::class, 'show']
         )->name('sesi.show');
+
 
         Route::patch(
             '/sesi/{sesi}/siswa/{siswa}/status',
             [SesiAbsensiController::class, 'updateStatus']
         )->name('sesi.status.update');
 
+
         Route::patch(
             '/sesi/{sesi}/tutup',
             [SesiAbsensiController::class, 'tutup']
         )->name('sesi.tutup');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Scan Absensi
+        |--------------------------------------------------------------------------
+        */
+
+        Route::post(
+            '/sesi/{sesi}/scan',
+            [ScanAbsensiController::class, 'scan']
+        )->name('sesi.scan');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Rekap Absensi
+        |--------------------------------------------------------------------------
+        */
 
         Route::get(
             '/rekap',
             [RekapAbsensiController::class, 'index']
         )->name('rekap.index');
 
+
         Route::get(
             '/rekap/export',
             [RekapAbsensiController::class, 'export']
         )->name('rekap.export');
-
-        Route::post(
-            '/sesi/{sesi}/scan',
-            [ScanAbsensiController::class, 'scan']
-        )->name('sesi.scan');
 
     });
 
@@ -232,11 +384,34 @@ Route::middleware('role:guru')
         )->name('bank-soal.store');
 
         Route::get(
+            '/bank-soal/arsip',
+            [BankSoalController::class, 'arsip']
+        )->name('bank-soal.arsip');
+
+
+        Route::patch(
+            '/bank-soal/{bankSoal}/archive',
+            [BankSoalController::class, 'archive']
+        )->name('bank-soal.archive');
+
+
+        Route::patch(
+            '/bank-soal/{bankSoal}/restore',
+            [BankSoalController::class, 'restore']
+        )->name('bank-soal.restore');
+
+        Route::get(
             '/bank-soal/{bankSoal}',
             [BankSoalController::class, 'show']
         )->name('bank-soal.show');
 
     });
+
+    /*
+|--------------------------------------------------------------------------
+| CBT - Operator
+|--------------------------------------------------------------------------
+*/
 
     Route::middleware('role:operator')
     ->prefix('cbt')
@@ -253,10 +428,38 @@ Route::middleware('role:guru')
             [UjianController::class, 'create']
         )->name('ujian.create');
 
+        Route::get(
+            '/ujian/arsip',
+            [UjianController::class, 'arsip']
+        )->name('ujian.arsip');
+
         Route::post(
             '/ujian',
             [UjianController::class, 'store']
         )->name('ujian.store');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Edit Ujian
+        |--------------------------------------------------------------------------
+        |
+        | Hanya ujian berstatus draft yang diizinkan
+        | oleh UjianController untuk diedit.
+        |
+        */
+
+        Route::get(
+            '/ujian/{ujian}/edit',
+            [UjianController::class, 'edit']
+        )->name('ujian.edit');
+
+
+        Route::put(
+            '/ujian/{ujian}',
+            [UjianController::class, 'update']
+        )->name('ujian.update');
+
 
         Route::get(
             '/ujian/{ujian}',

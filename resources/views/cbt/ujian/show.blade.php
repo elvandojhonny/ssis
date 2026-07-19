@@ -2,6 +2,192 @@
 
 @section('title', 'Detail Ujian')
 
+
+@push('styles')
+
+<style>
+
+    /*
+    |--------------------------------------------------------------------------
+    | MODAL KONFIRMASI PUBLIKASI
+    |--------------------------------------------------------------------------
+    */
+
+    .publish-confirm-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+
+        display: none;
+        align-items: center;
+        justify-content: center;
+
+        padding: 20px;
+
+        background: rgba(15, 23, 42, 0.65);
+
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+    }
+
+
+    .publish-confirm-modal {
+        width: 100%;
+        max-width: 480px;
+
+        padding: 32px;
+
+        background:
+            var(
+                --tblr-bg-surface,
+                #ffffff
+            );
+
+        border-radius: 16px;
+
+        box-shadow:
+            0 24px 70px
+            rgba(
+                0,
+                0,
+                0,
+                0.30
+            );
+
+        text-align: center;
+
+        animation:
+            publishModalShow
+            0.2s
+            ease-out;
+    }
+
+
+    .publish-confirm-icon {
+        width: 72px;
+        height: 72px;
+
+        margin:
+            0 auto
+            20px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 50%;
+
+        background:
+            rgba(
+                47,
+                179,
+                68,
+                0.14
+            );
+
+        color: #2fb344;
+
+        font-size: 34px;
+    }
+
+
+    .publish-confirm-title {
+        margin-bottom: 10px;
+
+        font-size: 24px;
+        font-weight: 700;
+    }
+
+
+    .publish-confirm-description {
+        margin-bottom: 22px;
+
+        color:
+            var(
+                --tblr-secondary,
+                #626976
+            );
+
+        line-height: 1.6;
+    }
+
+
+    .publish-confirm-warning {
+        padding: 14px 16px;
+
+        margin-bottom: 24px;
+
+        border:
+            1px solid
+            rgba(
+                245,
+                159,
+                0,
+                0.25
+            );
+
+        border-radius: 10px;
+
+        background:
+            rgba(
+                245,
+                159,
+                0,
+                0.08
+            );
+
+        text-align: left;
+    }
+
+
+    .publish-confirm-actions {
+        display: flex;
+        gap: 12px;
+    }
+
+
+    @keyframes publishModalShow {
+
+        from {
+            opacity: 0;
+
+            transform:
+                translateY(12px)
+                scale(0.97);
+        }
+
+
+        to {
+            opacity: 1;
+
+            transform:
+                translateY(0)
+                scale(1);
+        }
+
+    }
+
+
+    @media (
+        max-width: 575.98px
+    ) {
+
+        .publish-confirm-modal {
+            padding: 24px 20px;
+        }
+
+
+        .publish-confirm-actions {
+            flex-direction: column-reverse;
+        }
+
+    }
+
+</style>
+
+@endpush
+
+
 @section('content')
 
 <div class="page-header mb-4">
@@ -27,15 +213,41 @@
 
         <div class="col-12 col-md-auto">
 
+    <div class="d-flex gap-2">
+
+        @if($ujian->status === 'draft')
+
             <a
-                href="{{ route('cbt.ujian.index') }}"
-                class="btn btn-outline-secondary w-100"
+                href="{{ route(
+                    'cbt.ujian.edit',
+                    $ujian
+                ) }}"
+                class="btn btn-primary"
             >
-                <i class="ti ti-arrow-left me-1"></i>
-                Kembali
+
+                <i class="ti ti-edit me-1"></i>
+
+                Edit Ujian
+
             </a>
 
-        </div>
+        @endif
+
+
+        <a
+            href="{{ route('cbt.ujian.index') }}"
+            class="btn btn-outline-secondary"
+        >
+
+            <i class="ti ti-arrow-left me-1"></i>
+
+            Kembali
+
+        </a>
+
+    </div>
+
+</div>
 
     </div>
 
@@ -43,6 +255,7 @@
 
 
 {{-- ALERT SUCCESS --}}
+
 @if(session('success'))
 
     <div class="alert alert-success">
@@ -63,6 +276,7 @@
 
 
 {{-- ALERT ERROR --}}
+
 @if(session('error'))
 
     <div class="alert alert-danger">
@@ -108,6 +322,7 @@
 
 
                     {{-- JUDUL UJIAN --}}
+
                     <div class="col-md-6">
 
                         <div class="text-secondary small">
@@ -122,6 +337,7 @@
 
 
                     {{-- STATUS --}}
+
                     <div class="col-md-6">
 
                         <div class="text-secondary small">
@@ -156,6 +372,7 @@
 
 
                     {{-- MATA PELAJARAN --}}
+
                     <div class="col-md-6">
 
                         <div class="text-secondary small">
@@ -176,6 +393,7 @@
 
 
                     {{-- KELAS --}}
+
                     <div class="col-md-6">
 
                         <div class="text-secondary small">
@@ -203,6 +421,7 @@
 
 
                     {{-- WAKTU MULAI --}}
+
                     <div class="col-md-6">
 
                         <div class="text-secondary small">
@@ -223,6 +442,7 @@
 
 
                     {{-- WAKTU SELESAI --}}
+
                     <div class="col-md-6">
 
                         <div class="text-secondary small">
@@ -243,6 +463,7 @@
 
 
                     {{-- DURASI --}}
+
                     <div class="col-md-6">
 
                         <div class="text-secondary small">
@@ -252,7 +473,6 @@
                         <div class="fw-bold mt-1">
 
                             {{ $ujian->durasi_menit }}
-
                             menit
 
                         </div>
@@ -261,6 +481,7 @@
 
 
                     {{-- JUMLAH SOAL --}}
+
                     <div class="col-md-6">
 
                         <div class="text-secondary small">
@@ -284,8 +505,82 @@
 
                 </div>
 
+                {{-- ACAK URUTAN SOAL --}}
+
+            <div class="col-md-6">
+
+                <div class="text-secondary small">
+                    Acak Urutan Soal
+                </div>
+
+                <div class="mt-1">
+
+                    @if($ujian->acak_soal)
+
+                        <span class="badge bg-success-lt">
+
+                            <i class="ti ti-check me-1"></i>
+
+                            Aktif
+
+                        </span>
+
+                    @else
+
+                        <span class="badge bg-secondary-lt">
+
+                            <i class="ti ti-x me-1"></i>
+
+                            Tidak Aktif
+
+                        </span>
+
+                    @endif
+
+                </div>
+
+            </div>
+
+
+            {{-- ACAK PILIHAN JAWABAN --}}
+
+            <div class="col-md-6">
+
+                <div class="text-secondary small">
+                    Acak Pilihan Jawaban
+                </div>
+
+                <div class="mt-1">
+
+                    @if($ujian->acak_jawaban)
+
+                        <span class="badge bg-success-lt">
+
+                            <i class="ti ti-check me-1"></i>
+
+                            Aktif
+
+                        </span>
+
+                    @else
+
+                        <span class="badge bg-secondary-lt">
+
+                            <i class="ti ti-x me-1"></i>
+
+                            Tidak Aktif
+
+                        </span>
+
+                    @endif
+
+                </div>
+
+            </div>
+
 
                 {{-- DESKRIPSI --}}
+
                 @if($ujian->deskripsi)
 
                     <hr class="my-4">
@@ -412,9 +707,7 @@
             <div class="card-body">
 
 
-                {{-- ========================================= --}}
                 {{-- STATUS DRAFT --}}
-                {{-- ========================================= --}}
 
                 @if($ujian->status === 'draft')
 
@@ -429,7 +722,9 @@
                                 mb-3
                             "
                         >
+
                             <i class="ti ti-lock"></i>
+
                         </span>
 
 
@@ -482,6 +777,7 @@
 
 
                     <form
+                        id="formPublikasiUjian"
                         action="{{
                             route(
                                 'cbt.ujian.publish',
@@ -497,13 +793,9 @@
 
 
                         <button
-                            type="submit"
+                            type="button"
+                            id="btnBukaKonfirmasiPublikasi"
                             class="btn btn-success w-100"
-                            onclick="
-                                return confirm(
-                                    'Publikasikan ujian ini?'
-                                )
-                            "
                         >
 
                             <i class="ti ti-send me-1"></i>
@@ -516,9 +808,7 @@
 
 
 
-                {{-- ========================================= --}}
                 {{-- STATUS DIPUBLIKASI --}}
-                {{-- ========================================= --}}
 
                 @elseif($ujian->status === 'dipublikasi')
 
@@ -633,9 +923,7 @@
 
 
 
-                {{-- ========================================= --}}
                 {{-- STATUS SELESAI --}}
-                {{-- ========================================= --}}
 
                 @else
 
@@ -670,8 +958,6 @@
 
                     </div>
 
-
-                    {{-- TOKEN TETAP DITAMPILKAN SEBAGAI ARSIP --}}
 
                     @if($ujian->token)
 
@@ -722,4 +1008,378 @@
 
 </div>
 
+
+
+{{-- ========================================================= --}}
+{{-- MODAL KONFIRMASI PUBLIKASI --}}
+{{-- ========================================================= --}}
+
+@if($ujian->status === 'draft')
+
+<div
+    id="modalKonfirmasiPublikasi"
+    class="publish-confirm-overlay"
+    aria-hidden="true"
+>
+
+    <div
+        class="publish-confirm-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="judulKonfirmasiPublikasi"
+    >
+
+
+        <div class="publish-confirm-icon">
+
+            <i class="ti ti-send"></i>
+
+        </div>
+
+
+        <h2
+            id="judulKonfirmasiPublikasi"
+            class="publish-confirm-title"
+        >
+
+            Publikasikan Ujian?
+
+        </h2>
+
+
+        <p class="publish-confirm-description">
+
+            Anda akan mempublikasikan ujian
+
+            <strong class="text-body">
+                {{ $ujian->judul }}
+            </strong>.
+
+            Setelah dipublikasikan, ujian akan tersedia
+            untuk siswa pada kelas
+
+            <strong class="text-body">
+                {{ $ujian->kelas->nama }}
+            </strong>.
+
+        </p>
+
+
+        <div class="publish-confirm-warning">
+
+            <div class="d-flex">
+
+                <div class="me-3">
+
+                    <i
+                        class="
+                            ti
+                            ti-alert-triangle
+                            fs-2
+                            text-warning
+                        "
+                    ></i>
+
+                </div>
+
+
+                <div>
+
+                    <div class="fw-bold mb-1">
+
+                        Pastikan data ujian sudah benar
+
+                    </div>
+
+
+                    <div class="text-secondary small">
+
+                        Periksa kembali jadwal, kelas,
+                        durasi pengerjaan, dan bank soal
+                        sebelum ujian dipublikasikan.
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="publish-confirm-actions">
+
+            <button
+                type="button"
+                id="btnBatalPublikasi"
+                class="
+                    btn
+                    btn-outline-secondary
+                    flex-fill
+                "
+            >
+
+                <i class="ti ti-x me-1"></i>
+
+                Batal
+
+            </button>
+
+
+            <button
+                type="button"
+                id="btnKonfirmasiPublikasi"
+                class="
+                    btn
+                    btn-success
+                    flex-fill
+                "
+            >
+
+                <i class="ti ti-send me-1"></i>
+
+                Ya, Publikasikan
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+@endif
+
 @endsection
+
+
+
+@push('scripts')
+
+@if($ujian->status === 'draft')
+
+<script>
+
+document.addEventListener(
+    'DOMContentLoaded',
+    function () {
+
+        /*
+        |--------------------------------------------------------------------------
+        | ELEMENT
+        |--------------------------------------------------------------------------
+        */
+
+        const form =
+            document.getElementById(
+                'formPublikasiUjian'
+            );
+
+
+        const modal =
+            document.getElementById(
+                'modalKonfirmasiPublikasi'
+            );
+
+
+        const btnBuka =
+            document.getElementById(
+                'btnBukaKonfirmasiPublikasi'
+            );
+
+
+        const btnBatal =
+            document.getElementById(
+                'btnBatalPublikasi'
+            );
+
+
+        const btnKonfirmasi =
+            document.getElementById(
+                'btnKonfirmasiPublikasi'
+            );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | BUKA MODAL
+        |--------------------------------------------------------------------------
+        */
+
+        function bukaModal()
+        {
+            if (! modal) {
+                return;
+            }
+
+
+            modal.style.display =
+                'flex';
+
+
+            modal.setAttribute(
+                'aria-hidden',
+                'false'
+            );
+
+
+            document.body.style.overflow =
+                'hidden';
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | TUTUP MODAL
+        |--------------------------------------------------------------------------
+        */
+
+        function tutupModal()
+        {
+            if (! modal) {
+                return;
+            }
+
+
+            modal.style.display =
+                'none';
+
+
+            modal.setAttribute(
+                'aria-hidden',
+                'true'
+            );
+
+
+            document.body.style.overflow =
+                '';
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | BUKA KONFIRMASI
+        |--------------------------------------------------------------------------
+        */
+
+        btnBuka?.addEventListener(
+            'click',
+            function () {
+
+                bukaModal();
+
+            }
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | BATAL
+        |--------------------------------------------------------------------------
+        */
+
+        btnBatal?.addEventListener(
+            'click',
+            function () {
+
+                tutupModal();
+
+            }
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | KLIK AREA LUAR MODAL
+        |--------------------------------------------------------------------------
+        */
+
+        modal?.addEventListener(
+            'click',
+            function (event) {
+
+                if (
+                    event.target === modal
+                ) {
+
+                    tutupModal();
+
+                }
+
+            }
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | TOMBOL ESC
+        |--------------------------------------------------------------------------
+        */
+
+        document.addEventListener(
+            'keydown',
+            function (event) {
+
+                if (
+                    event.key === 'Escape' &&
+                    modal &&
+                    modal.style.display === 'flex'
+                ) {
+
+                    tutupModal();
+
+                }
+
+            }
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | KONFIRMASI PUBLIKASI
+        |--------------------------------------------------------------------------
+        */
+
+        btnKonfirmasi?.addEventListener(
+            'click',
+            function () {
+
+                if (! form) {
+                    return;
+                }
+
+
+                /*
+                 * Cegah klik berulang.
+                 */
+                btnKonfirmasi.disabled =
+                    true;
+
+
+                btnBatal.disabled =
+                    true;
+
+
+                btnKonfirmasi.innerHTML =
+                    '<span ' +
+                    'class="spinner-border spinner-border-sm me-2"' +
+                    '></span>' +
+                    'Mempublikasikan...';
+
+
+                /*
+                 * Kirim form publikasi.
+                 */
+                form.submit();
+
+            }
+        );
+
+    }
+);
+
+</script>
+
+@endif
+
+@endpush

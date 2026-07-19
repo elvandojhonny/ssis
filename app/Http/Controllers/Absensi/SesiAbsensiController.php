@@ -38,13 +38,23 @@ class SesiAbsensiController extends Controller
 
 
     $riwayatSesi = SesiAbsensi::with([
-            'kelas.tahunAjaran',
-            'pembuka',
-        ])
-        ->withCount('absensis')
-        ->latest('tanggal')
-        ->latest('id')
-        ->paginate(10);
+        'kelas.tahunAjaran',
+        'pembuka',
+    ])
+    ->withCount('absensis')
+
+    // Hanya 7 hari terakhir
+    ->whereDate(
+        'tanggal',
+        '>=',
+        now()->subDays(7)->toDateString()
+    )
+
+    ->orderByDesc('tanggal')
+    ->orderByDesc('id')
+
+    ->paginate(10)
+    ->withQueryString();
 
 
     return view(
@@ -316,4 +326,129 @@ public function updateStatus(
                 'Sesi berhasil ditutup. Siswa yang belum absen otomatis menjadi alpa.'
             );
     }
+
+    public function arsip(Request $request)
+{
+    $query = SesiAbsensi::with([
+            'kelas.tahunAjaran',
+            'pembuka',
+        ])
+        ->withCount('absensis')
+        ->whereDate(
+            'tanggal',
+            '<',
+            now()->subDays(7)->toDateString()
+        );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Filter Pencarian
+    |--------------------------------------------------------------------------
+    */
+
+    if ($request->filled('search')) {
+
+        $search = $request->search;
+
+        $query->whereHas('kelas', function ($q) use ($search) {
+
+            $q->where(
+                'nama',
+                'like',
+                '%' . $search . '%'
+            );
+
+        });
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Filter Jenis Absensi
+    |--------------------------------------------------------------------------
+    */
+
+    if ($request->filled('jenis')) {
+
+        $query->where(
+            'jenis',
+            $request->jenis
+        );
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Filter Bulan
+    |--------------------------------------------------------------------------
+    */
+
+    if ($request->filled('bulan')) {
+
+        $query->whereMonth(
+            'tanggal',
+            $request->bulan
+        );
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Filter Tahun
+    |--------------------------------------------------------------------------
+    */
+
+    if ($request->filled('tahun')) {
+
+        $query->whereYear(
+            'tanggal',
+            $request->tahun
+        );
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Ambil Data Arsip
+    |--------------------------------------------------------------------------
+    */
+
+    $riwayatSesi = $query
+        ->orderByDesc('tanggal')
+        ->orderByDesc('id')
+        ->paginate(20)
+        ->withQueryString();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Daftar Tahun untuk Filter
+    |--------------------------------------------------------------------------
+    */
+
+    $daftarTahun = SesiAbsensi::query()
+        ->selectRaw('YEAR(tanggal) as tahun')
+        ->whereDate(
+            'tanggal',
+            '<',
+            now()->subDays(7)->toDateString()
+        )
+        ->distinct()
+        ->orderByDesc('tahun')
+        ->pluck('tahun');
+
+
+    return view(
+        'absensi.sesi.arsip',
+        compact(
+            'riwayatSesi',
+            'daftarTahun'
+        )
+    );
+}
 }

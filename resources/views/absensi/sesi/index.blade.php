@@ -4,8 +4,14 @@
 
 @section('content')
 
+
+{{-- ========================================================= --}}
+{{-- PAGE HEADER --}}
+{{-- ========================================================= --}}
+
 <div class="page-header mb-4">
-    <div class="row align-items-center">
+
+    <div class="row align-items-center g-3">
 
         <div class="col">
 
@@ -23,26 +29,44 @@
 
         </div>
 
-        <div class="col-auto">
+
+        <div class="col-12 col-md-auto">
 
             <a
                 href="{{ route('absensi.sesi.create') }}"
-                class="btn btn-primary"
+                class="btn btn-primary w-100"
             >
                 <i class="ti ti-plus me-1"></i>
+
                 Buka Sesi Absensi
             </a>
 
         </div>
 
     </div>
+
 </div>
 
+
+
+{{-- ========================================================= --}}
+{{-- ALERT --}}
+{{-- ========================================================= --}}
 
 @if(session('success'))
 
     <div class="alert alert-success">
-        {{ session('success') }}
+
+        <div class="d-flex align-items-center">
+
+            <i class="ti ti-circle-check me-2"></i>
+
+            <div>
+                {{ session('success') }}
+            </div>
+
+        </div>
+
     </div>
 
 @endif
@@ -51,48 +75,98 @@
 @if(session('error'))
 
     <div class="alert alert-danger">
-        {{ session('error') }}
+
+        <div class="d-flex align-items-center">
+
+            <i class="ti ti-alert-circle me-2"></i>
+
+            <div>
+                {{ session('error') }}
+            </div>
+
+        </div>
+
     </div>
 
 @endif
 
 
-{{-- SESI AKTIF --}}
+
+{{-- ========================================================= --}}
+{{-- SESI AKTIF HARI INI --}}
+{{-- ========================================================= --}}
 
 <div class="mb-3">
 
-    <h3 class="page-title">
-        Sesi Aktif Hari Ini
-    </h3>
+    <div class="d-flex align-items-center gap-2">
+
+        <span class="avatar avatar-sm bg-success-lt">
+
+            <i class="ti ti-activity"></i>
+
+        </span>
+
+
+        <div>
+
+            <h3 class="page-title mb-0">
+                Sesi Aktif Hari Ini
+            </h3>
+
+            <div class="text-secondary small mt-1">
+                Sesi absensi yang sedang berlangsung.
+            </div>
+
+        </div>
+
+    </div>
 
 </div>
+
 
 
 <div class="row row-cards mb-4">
 
     @forelse($sesiAktif as $sesi)
 
-        <div class="col-md-6 col-lg-4">
+        <div class="col-12 col-md-6 col-xl-4">
 
             <div class="card h-100">
 
                 <div class="card-status-top bg-success"></div>
 
+
                 <div class="card-body">
 
+
+                    {{-- HEADER --}}
+
                     <div
-                        class="d-flex
-                               justify-content-between
-                               align-items-start"
+                        class="
+                            d-flex
+                            justify-content-between
+                            align-items-start
+                            gap-3
+                        "
                     >
 
                         <div>
 
-                            <div class="text-secondary">
-                                {{ $sesi->kelas->nama }}
+                            <div class="text-secondary small mb-1">
+
+                                <i class="ti ti-school me-1"></i>
+
+                                {{
+                                    $sesi
+                                        ->kelas
+                                        ?->nama
+                                    ?? '-'
+                                }}
+
                             </div>
 
-                            <h2 class="mb-1">
+
+                            <h2 class="mb-0">
 
                                 Absensi
                                 {{ ucfirst($sesi->jenis) }}
@@ -104,6 +178,8 @@
 
                         <span class="badge bg-success-lt">
 
+                            <i class="ti ti-circle-filled me-1"></i>
+
                             Aktif
 
                         </span>
@@ -111,26 +187,97 @@
                     </div>
 
 
+
+                    {{-- INFORMASI --}}
+
                     <div class="mt-4">
 
-                        <div class="mb-2">
 
-                            <i class="ti ti-clock me-1"></i>
+                        <div
+                            class="
+                                d-flex
+                                align-items-center
+                                mb-3
+                            "
+                        >
 
-                            {{ $sesi->waktu_mulai }}
+                            <span
+                                class="
+                                    avatar
+                                    avatar-sm
+                                    bg-blue-lt
+                                    me-3
+                                "
+                            >
 
-                            -
+                                <i class="ti ti-clock"></i>
 
-                            {{ $sesi->waktu_selesai }}
+                            </span>
+
+
+                            <div>
+
+                                <div class="text-secondary small">
+                                    Waktu Absensi
+                                </div>
+
+                                <div class="fw-bold mt-1">
+
+                                    {{ $sesi->waktu_mulai }}
+
+                                    <span class="text-secondary mx-1">
+                                        -
+                                    </span>
+
+                                    {{ $sesi->waktu_selesai }}
+
+                                </div>
+
+                            </div>
 
                         </div>
 
 
-                        <div class="text-secondary">
 
-                            Dibuka oleh:
+                        <div
+                            class="
+                                d-flex
+                                align-items-center
+                            "
+                        >
 
-                            {{ $sesi->pembuka->name }}
+                            <span
+                                class="
+                                    avatar
+                                    avatar-sm
+                                    bg-secondary-lt
+                                    me-3
+                                "
+                            >
+
+                                <i class="ti ti-user"></i>
+
+                            </span>
+
+
+                            <div>
+
+                                <div class="text-secondary small">
+                                    Dibuka Oleh
+                                </div>
+
+                                <div class="fw-bold mt-1">
+
+                                    {{
+                                        $sesi
+                                            ->pembuka
+                                            ?->name
+                                        ?? '-'
+                                    }}
+
+                                </div>
+
+                            </div>
 
                         </div>
 
@@ -139,15 +286,22 @@
                 </div>
 
 
+
+                {{-- FOOTER --}}
+
                 <div class="card-footer">
 
                     <a
-                        href="{{ route(
-                            'absensi.sesi.show',
-                            $sesi
-                        ) }}"
+                        href="{{
+                            route(
+                                'absensi.sesi.show',
+                                $sesi
+                            )
+                        }}"
                         class="btn btn-primary w-100"
                     >
+
+                        <i class="ti ti-scan me-1"></i>
 
                         Buka Sesi
 
@@ -167,13 +321,38 @@
             <div class="card">
 
                 <div
-                    class="card-body
-                           text-center
-                           text-secondary
-                           py-5"
+                    class="
+                        card-body
+                        text-center
+                        py-5
+                    "
                 >
 
-                    Belum ada sesi absensi aktif hari ini.
+                    <span
+                        class="
+                            avatar
+                            avatar-xl
+                            bg-secondary-lt
+                            mb-3
+                        "
+                    >
+
+                        <i class="ti ti-calendar-off"></i>
+
+                    </span>
+
+
+                    <h3 class="mb-1">
+                        Belum Ada Sesi Aktif
+                    </h3>
+
+
+                    <div class="text-secondary">
+
+                        Belum ada sesi absensi yang sedang
+                        berlangsung hari ini.
+
+                    </div>
 
                 </div>
 
@@ -186,77 +365,160 @@
 </div>
 
 
-{{-- RIWAYAT --}}
 
 {{-- ========================================================= --}}
-{{-- RIWAYAT SESI ABSENSI --}}
+{{-- RIWAYAT SESI TERBARU --}}
 {{-- ========================================================= --}}
 
 <div class="card">
 
+
+    {{-- ===================================================== --}}
+    {{-- HEADER --}}
+    {{-- ===================================================== --}}
+
     <div class="card-header">
 
-        <h3 class="card-title">
-            Riwayat Sesi Absensi
-        </h3>
+        <div class="row align-items-center w-100 g-3">
+
+            <div class="col">
+
+                <h3 class="card-title mb-1">
+
+                    <i class="ti ti-history me-2"></i>
+
+                    Riwayat Sesi Terbaru
+
+                </h3>
+
+
+                <div class="text-secondary small">
+
+                    Menampilkan sesi absensi
+                    7 hari terakhir.
+
+                </div>
+
+            </div>
+
+
+            <div class="col-12 col-sm-auto">
+
+                <a
+                    href="{{ route('absensi.sesi.arsip') }}"
+                    class="btn btn-outline-secondary w-100"
+                >
+
+                    <i class="ti ti-archive me-1"></i>
+
+                    Lihat Arsip
+
+                </a>
+
+            </div>
+
+        </div>
 
     </div>
 
 
-    <div class="table-responsive ssis-mobile-table">
 
-        <table class="table table-vcenter card-table">
+    {{-- ===================================================== --}}
+    {{-- DESKTOP / LAPTOP --}}
+    {{-- ===================================================== --}}
 
-            <thead>
+    <div class="d-none d-md-block">
 
-                <tr>
-                    <th>Tanggal</th>
-                    <th>Kelas</th>
-                    <th>Jenis</th>
-                    <th>Waktu</th>
-                    <th>Jumlah Absensi</th>
-                    <th>Status</th>
-                    <th class="w-1">Aksi</th>
-                </tr>
+        <div class="table-responsive">
 
-            </thead>
+            <table
+                class="
+                    table
+                    table-vcenter
+                    card-table
+                    mb-0
+                "
+            >
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Tanggal
+                        </th>
+
+                        <th>
+                            Kelas
+                        </th>
+
+                        <th>
+                            Jenis
+                        </th>
+
+                        <th>
+                            Waktu
+                        </th>
+
+                        <th>
+                            Jumlah Absensi
+                        </th>
+
+                        <th>
+                            Status
+                        </th>
+
+                        <th class="w-1">
+                            Aksi
+                        </th>
+
+                    </tr>
+
+                </thead>
 
 
-            <tbody>
+                <tbody>
 
-            @forelse($riwayatSesi as $sesi)
+                @forelse($riwayatSesi as $sesi)
 
-                <tr>
-
-                    {{-- Tanggal --}}
-                    <td data-label="Tanggal">
-
-                        <span>
-
-                            <i
-                                class="
-                                    ti
-                                    ti-calendar
-                                    me-1
-                                    text-secondary
-                                "
-                            ></i>
-
-                            {{
-                                $sesi
-                                    ->tanggal
-                                    ->format('d/m/Y')
-                            }}
-
-                        </span>
-
-                    </td>
+                    <tr>
 
 
-                    {{-- Kelas --}}
-                    <td data-label="Kelas">
+                        {{-- TANGGAL --}}
 
-                        <div class="text-end text-md-start">
+                        <td>
+
+                            <div class="d-flex align-items-center">
+
+                                <i
+                                    class="
+                                        ti
+                                        ti-calendar
+                                        me-2
+                                        text-secondary
+                                    "
+                                ></i>
+
+
+                                <span>
+
+                                    {{
+                                        $sesi
+                                            ->tanggal
+                                            ->format('d/m/Y')
+                                    }}
+
+                                </span>
+
+                            </div>
+
+                        </td>
+
+
+
+                        {{-- KELAS --}}
+
+                        <td>
 
                             <div class="fw-bold">
 
@@ -268,6 +530,7 @@
                                 }}
 
                             </div>
+
 
                             <div class="text-secondary small">
 
@@ -281,52 +544,369 @@
 
                             </div>
 
-                        </div>
-
-                    </td>
+                        </td>
 
 
-                    {{-- Jenis --}}
-                    <td data-label="Jenis">
 
-                        @if($sesi->jenis === 'pagi')
+                        {{-- JENIS --}}
 
-                            <span class="badge bg-yellow-lt">
+                        <td>
 
-                                <i class="ti ti-sun me-1"></i>
+                            @if($sesi->jenis === 'pagi')
 
-                                Pagi
+                                <span class="badge bg-yellow-lt">
+
+                                    <i class="ti ti-sun me-1"></i>
+
+                                    Pagi
+
+                                </span>
+
+                            @else
+
+                                <span class="badge bg-blue-lt">
+
+                                    <i class="ti ti-sunset me-1"></i>
+
+                                    Siang
+
+                                </span>
+
+                            @endif
+
+                        </td>
+
+
+
+                        {{-- WAKTU --}}
+
+                        <td>
+
+                            <span class="text-nowrap">
+
+                                <i
+                                    class="
+                                        ti
+                                        ti-clock
+                                        me-1
+                                        text-secondary
+                                    "
+                                ></i>
+
+                                {{ $sesi->waktu_mulai }}
+
+                                -
+
+                                {{ $sesi->waktu_selesai }}
 
                             </span>
 
-                        @else
+                        </td>
 
-                            <span class="badge bg-blue-lt">
 
-                                <i class="ti ti-sunset me-1"></i>
 
-                                Siang
+                        {{-- JUMLAH ABSENSI --}}
+
+                        <td>
+
+                            <span class="text-nowrap">
+
+                                <i
+                                    class="
+                                        ti
+                                        ti-users
+                                        me-1
+                                        text-secondary
+                                    "
+                                ></i>
+
+                                {{ $sesi->absensis_count }}
+
+                                siswa
 
                             </span>
 
-                        @endif
-
-                    </td>
+                        </td>
 
 
-                    {{-- Waktu --}}
-                    <td data-label="Waktu">
 
-                        <span>
+                        {{-- STATUS --}}
+
+                        <td>
+
+                            @if($sesi->status === 'aktif')
+
+                                <span class="badge bg-success-lt">
+
+                                    <i
+                                        class="
+                                            ti
+                                            ti-circle-check
+                                            me-1
+                                        "
+                                    ></i>
+
+                                    Aktif
+
+                                </span>
+
+                            @else
+
+                                <span class="badge bg-secondary-lt">
+
+                                    <i
+                                        class="
+                                            ti
+                                            ti-circle-check
+                                            me-1
+                                        "
+                                    ></i>
+
+                                    Selesai
+
+                                </span>
+
+                            @endif
+
+                        </td>
+
+
+
+                        {{-- AKSI --}}
+
+                        <td>
+
+                            <a
+                                href="{{
+                                    route(
+                                        'absensi.sesi.show',
+                                        $sesi
+                                    )
+                                }}"
+                                class="
+                                    btn
+                                    btn-sm
+                                    btn-outline-primary
+                                "
+                            >
+
+                                <i class="ti ti-eye me-1"></i>
+
+                                Detail
+
+                            </a>
+
+                        </td>
+
+                    </tr>
+
+
+                @empty
+
+                    <tr>
+
+                        <td
+                            colspan="7"
+                            class="
+                                text-center
+                                text-secondary
+                                py-5
+                            "
+                        >
 
                             <i
                                 class="
                                     ti
-                                    ti-clock
-                                    me-1
-                                    text-secondary
+                                    ti-history
+                                    fs-1
+                                    d-block
+                                    mb-2
                                 "
                             ></i>
+
+
+                            Belum ada riwayat sesi absensi.
+
+                        </td>
+
+                    </tr>
+
+                @endforelse
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+
+    {{-- ===================================================== --}}
+    {{-- MOBILE --}}
+    {{-- ===================================================== --}}
+
+    <div class="d-md-none">
+
+        @forelse($riwayatSesi as $sesi)
+
+            <div
+                class="
+                    p-3
+                    border-bottom
+                    ssis-session-mobile
+                "
+            >
+
+
+                {{-- HEADER --}}
+
+                <div
+                    class="
+                        d-flex
+                        justify-content-between
+                        align-items-start
+                        gap-3
+                        mb-3
+                    "
+                >
+
+                    <div class="min-w-0">
+
+
+                        {{-- KELAS --}}
+
+                        <div class="fw-bold fs-3">
+
+                            {{
+                                $sesi
+                                    ->kelas
+                                    ?->nama
+                                ?? '-'
+                            }}
+
+                        </div>
+
+
+                        {{-- TAHUN AJARAN --}}
+
+                        <div
+                            class="
+                                text-secondary
+                                small
+                                mt-1
+                            "
+                        >
+
+                            {{
+                                $sesi
+                                    ->kelas
+                                    ?->tahunAjaran
+                                    ?->nama
+                                ?? '-'
+                            }}
+
+                        </div>
+
+                    </div>
+
+
+
+                    {{-- JENIS --}}
+
+                    @if($sesi->jenis === 'pagi')
+
+                        <span
+                            class="
+                                badge
+                                bg-yellow-lt
+                                flex-shrink-0
+                            "
+                        >
+
+                            <i class="ti ti-sun me-1"></i>
+
+                            Pagi
+
+                        </span>
+
+                    @else
+
+                        <span
+                            class="
+                                badge
+                                bg-blue-lt
+                                flex-shrink-0
+                            "
+                        >
+
+                            <i class="ti ti-sunset me-1"></i>
+
+                            Siang
+
+                        </span>
+
+                    @endif
+
+                </div>
+
+
+
+                {{-- TANGGAL --}}
+
+                <div
+                    class="
+                        d-flex
+                        align-items-center
+                        text-secondary
+                        small
+                        mb-3
+                    "
+                >
+
+                    <i class="ti ti-calendar me-2"></i>
+
+
+                    {{
+                        $sesi
+                            ->tanggal
+                            ->format('d/m/Y')
+                    }}
+
+                </div>
+
+
+
+                {{-- DETAIL --}}
+
+                <div
+                    class="
+                        row
+                        g-3
+                        py-3
+                        border-top
+                        border-bottom
+                    "
+                >
+
+
+                    {{-- WAKTU --}}
+
+                    <div class="col-6">
+
+                        <div
+                            class="
+                                text-secondary
+                                small
+                                mb-1
+                            "
+                        >
+                            Waktu
+                        </div>
+
+
+                        <div class="fw-bold">
 
                             {{ $sesi->waktu_mulai }}
 
@@ -334,15 +914,28 @@
 
                             {{ $sesi->waktu_selesai }}
 
-                        </span>
+                        </div>
 
-                    </td>
+                    </div>
 
 
-                    {{-- Jumlah Absensi --}}
-                    <td data-label="Jumlah Absensi">
 
-                        <span>
+                    {{-- JUMLAH --}}
+
+                    <div class="col-6">
+
+                        <div
+                            class="
+                                text-secondary
+                                small
+                                mb-1
+                            "
+                        >
+                            Jumlah Absensi
+                        </div>
+
+
+                        <div class="fw-bold">
 
                             <i
                                 class="
@@ -354,15 +947,40 @@
                             ></i>
 
                             {{ $sesi->absensis_count }}
+
                             siswa
 
-                        </span>
+                        </div>
 
-                    </td>
+                    </div>
+
+                </div>
 
 
-                    {{-- Status --}}
-                    <td data-label="Status">
+
+                {{-- STATUS --}}
+
+                <div
+                    class="
+                        d-flex
+                        justify-content-between
+                        align-items-center
+                        mt-3
+                    "
+                >
+
+                    <div>
+
+                        <div
+                            class="
+                                text-secondary
+                                small
+                                mb-1
+                            "
+                        >
+                            Status Sesi
+                        </div>
+
 
                         @if($sesi->status === 'aktif')
 
@@ -398,89 +1016,89 @@
 
                         @endif
 
-                    </td>
+                    </div>
+
+                </div>
 
 
-                    {{-- Aksi --}}
-                    <td data-label="Aksi">
 
-                        <div
-                            class="
-                                d-flex
-                                justify-content-end
-                                ssis-table-actions
-                            "
-                        >
+                {{-- AKSI --}}
 
-                            <a
-                                href="{{
-                                    route(
-                                        'absensi.sesi.show',
-                                        $sesi
-                                    )
-                                }}"
-                                class="
-                                    btn
-                                    btn-sm
-                                    btn-outline-primary
-                                "
-                            >
+                <a
+                    href="{{
+                        route(
+                            'absensi.sesi.show',
+                            $sesi
+                        )
+                    }}"
+                    class="
+                        btn
+                        btn-outline-primary
+                        w-100
+                        mt-3
+                    "
+                >
 
-                                <i
-                                    class="
-                                        ti
-                                        ti-eye
-                                        me-1
-                                    "
-                                ></i>
+                    <i class="ti ti-eye me-1"></i>
 
-                                Detail
+                    Lihat Detail Sesi
 
-                            </a>
+                </a>
 
-                        </div>
-
-                    </td>
-
-                </tr>
+            </div>
 
 
-            @empty
+        @empty
 
-                <tr class="ssis-empty-row">
+            <div
+                class="
+                    text-center
+                    text-secondary
+                    py-5
+                    px-3
+                "
+            >
 
-                    <td
-                        colspan="7"
-                        class="
-                            text-center
-                            text-secondary
-                            py-5
-                        "
-                    >
+                <span
+                    class="
+                        avatar
+                        avatar-xl
+                        bg-secondary-lt
+                        mb-3
+                    "
+                >
 
-                        <i
-                            class="ti ti-history"
-                            style="font-size: 40px;"
-                        ></i>
+                    <i class="ti ti-history"></i>
 
-                        <div class="mt-2">
-                            Belum ada riwayat sesi absensi.
-                        </div>
+                </span>
 
-                    </td>
 
-                </tr>
+                <div class="fw-bold text-body mb-1">
 
-            @endforelse
+                    Belum Ada Riwayat
 
-            </tbody>
+                </div>
 
-        </table>
+
+                <div>
+
+                    Belum ada riwayat sesi absensi
+                    yang tersedia.
+
+                </div>
+
+            </div>
+
+        @endforelse
 
     </div>
 
 
-    {{-- Pagination --}}
+
+    {{-- ===================================================== --}}
+    {{-- PAGINATION --}}
+    {{-- ===================================================== --}}
+
     @if($riwayatSesi->hasPages())
 
         <div class="card-footer">

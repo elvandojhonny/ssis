@@ -8,6 +8,8 @@ use App\Models\TahunAjaran;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
+use Illuminate\Support\Facades\DB;
+
 class KelasController extends Controller
 {
     public function index()
@@ -117,18 +119,35 @@ class KelasController extends Controller
     }
 
     public function destroy(Kelas $kelas)
-    {
-        if ($kelas->siswa()->exists()) {
-            return back()->with(
-                'error',
-                'Kelas tidak dapat dihapus karena masih memiliki siswa.'
-            );
-        }
+{
+    $punyaSiswa = $kelas->siswa()->exists();
 
-        $kelas->delete();
+    $punyaSesiAbsensi = DB::table('sesi_absensis')
+        ->where('kelas_id', $kelas->id)
+        ->exists();
 
-        return redirect()
-            ->route('kelas.index')
-            ->with('success', 'Kelas berhasil dihapus.');
+    $punyaUjian = DB::table('ujians')
+        ->where('kelas_id', $kelas->id)
+        ->exists();
+
+    if (
+        $punyaSiswa ||
+        $punyaSesiAbsensi ||
+        $punyaUjian
+    ) {
+        return back()->with(
+            'error',
+            'Kelas tidak dapat dihapus karena sudah digunakan oleh data siswa, absensi, atau ujian.'
+        );
     }
+
+    $kelas->delete();
+
+    return redirect()
+        ->route('kelas.index')
+        ->with(
+            'success',
+            'Kelas berhasil dihapus.'
+        );
+}
 }

@@ -837,9 +837,40 @@ public function export(Request $request): StreamedResponse
              * mempunyai kolom keterangan,
              * bagian ini bisa disesuaikan.
              */
+            /*
+            * Keterangan.
+            *
+            * Gabungkan keterangan sesi pagi
+            * dan sesi siang jika tersedia.
+            */
+            $keterangan = [];
+
+            if (
+                $pagi &&
+                ! empty($pagi->keterangan)
+            ) {
+                $keterangan[] =
+                    'Pagi: '
+                    . $pagi->keterangan;
+            }
+
+            if (
+                $siang &&
+                ! empty($siang->keterangan)
+            ) {
+                $keterangan[] =
+                    'Siang: '
+                    . $siang->keterangan;
+            }
+
             $detailSheet->setCellValue(
                 'J' . $detailRow,
-                '-'
+                ! empty($keterangan)
+                    ? implode(
+                        ' | ',
+                        $keterangan
+                    )
+                    : '-'
             );
 
             $detailRow++;

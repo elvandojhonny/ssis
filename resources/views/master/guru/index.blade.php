@@ -21,17 +21,39 @@
         </div>
 
 
-        <div class="col-auto">
+        <div class="col-12 col-md-auto">
 
-            <a
-                href="{{ route('guru.create') }}"
-                class="btn btn-primary"
-            >
-                <i class="ti ti-plus me-1"></i>
-                Tambah Guru
-            </a>
+    <div class="d-flex flex-wrap gap-2">
 
-        </div>
+        <a
+            href="{{ route('guru.template-import') }}"
+            class="btn btn-outline-success"
+        >
+            <i class="ti ti-file-spreadsheet me-1"></i>
+            Download Template
+        </a>
+
+        <button
+            type="button"
+            class="btn btn-outline-primary"
+            data-bs-toggle="modal"
+            data-bs-target="#modalImportGuru"
+        >
+            <i class="ti ti-file-upload me-1"></i>
+            Import Excel
+        </button>
+
+        <a
+            href="{{ route('guru.create') }}"
+            class="btn btn-primary"
+        >
+            <i class="ti ti-plus me-1"></i>
+            Tambah Guru
+        </a>
+
+    </div>
+
+</div>
 
     </div>
 
@@ -52,6 +74,59 @@
 
             <div>
                 {{ session('success') }}
+            </div>
+
+        </div>
+
+        <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+            aria-label="Close"
+        ></button>
+
+    </div>
+
+@endif
+
+@if(session('import_errors'))
+
+    <div class="alert alert-warning">
+
+        <div class="fw-bold mb-2">
+            <i class="ti ti-alert-triangle me-1"></i>
+            Beberapa data tidak berhasil diimport:
+        </div>
+
+        <ul class="mb-0">
+
+            @foreach(session('import_errors') as $error)
+
+                <li>
+                    {{ $error }}
+                </li>
+
+            @endforeach
+
+        </ul>
+
+    </div>
+
+@endif
+
+@if(session('warning'))
+
+    <div
+        class="alert alert-warning alert-dismissible"
+        role="alert"
+    >
+
+        <div class="d-flex align-items-center">
+
+            <i class="ti ti-alert-triangle me-2"></i>
+
+            <div>
+                {{ session('warning') }}
             </div>
 
         </div>
@@ -284,24 +359,17 @@
                                 @method('DELETE')
 
                                 <button
-                                    type="submit"
-                                    class="
-                                        btn
-                                        btn-sm
-                                        btn-outline-danger
-                                    "
-                                    onclick="
-                                        return confirm(
-                                            'Yakin ingin menghapus guru dan akun login ini?'
-                                        )
-                                    "
-                                >
-
-                                    <i class="ti ti-trash me-1"></i>
-
-                                    Hapus
-
-                                </button>
+                                type="button"
+                                class="btn btn-sm btn-outline-danger"
+                                data-bs-toggle="modal"
+                                data-bs-target="#globalDeleteModal"
+                                data-delete-action="{{ route('guru.destroy', $guru) }}"
+                                data-delete-name="{{ $guru->nama }}"
+                                data-delete-warning="Jika guru sudah memiliki bank soal atau riwayat ujian, data tidak akan dihapus permanen dan akun akan dinonaktifkan."
+                            >
+                                <i class="ti ti-trash me-1"></i>
+                                Hapus
+                            </button>
 
                             </form>
 
@@ -357,6 +425,109 @@
         </div>
 
     @endif
+
+</div>
+
+<div
+    class="modal modal-blur fade"
+    id="modalImportGuru"
+    tabindex="-1"
+    aria-hidden="true"
+>
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <form
+                action="{{ route('guru.import') }}"
+                method="POST"
+                enctype="multipart/form-data"
+            >
+
+                @csrf
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title">
+                        Import Data Guru
+                    </h5>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                    ></button>
+
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+
+                        <label class="form-label required">
+                            File Excel
+                        </label>
+
+                        <input
+                            type="file"
+                            name="file_import"
+                            class="form-control"
+                            accept=".xlsx,.xls"
+                            required
+                        >
+
+                        <div class="form-hint mt-2">
+                            Gunakan template guru yang telah
+                            disediakan agar format data sesuai.
+                        </div>
+
+                    </div>
+
+                    <div class="alert alert-info mb-0">
+
+                        <div class="d-flex">
+
+                            <div class="me-2">
+                                <i class="ti ti-info-circle"></i>
+                            </div>
+
+                            <div>
+                                Setiap baris akan otomatis membuat
+                                akun login dengan role guru sekaligus
+                                data profil guru.
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal"
+                    >
+                        Batal
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        <i class="ti ti-upload me-1"></i>
+                        Import Data
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
 
 </div>
 

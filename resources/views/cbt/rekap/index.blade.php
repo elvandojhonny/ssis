@@ -6,7 +6,7 @@
 
 <div class="page-header mb-4">
 
-    <div class="row align-items-center">
+    <div class="row align-items-center g-3">
 
         <div class="col">
 
@@ -19,8 +19,21 @@
             </h2>
 
             <div class="text-secondary mt-1">
-                Pantau peserta dan hasil ujian yang telah dipublikasikan.
+                Pantau peserta dan hasil ujian terbaru.
             </div>
+
+        </div>
+
+
+        <div class="col-12 col-md-auto">
+
+            <a
+                href="{{ route('cbt.rekap.arsip') }}"
+                class="btn btn-outline-secondary w-100"
+            >
+                <i class="ti ti-archive me-1"></i>
+                Arsip Rekap
+            </a>
 
         </div>
 

@@ -102,9 +102,9 @@
 
                     </div>
 
-                    <div class="mb-3">
+                    <div class="mb-3 d-flex justify-content-between align-items-center">
 
-                        <label class="form-check">
+                        <label class="form-check mb-0">
 
                             <input
                                 type="checkbox"
@@ -117,6 +117,13 @@
                             </span>
 
                         </label>
+
+                        <a
+                            href="{{ route('password.request') }}"
+                            class="text-decoration-none"
+                        >
+                            Lupa Password?
+                        </a>
 
                     </div>
 

@@ -14,6 +14,8 @@ class PengerjaanUjian extends Model
         'waktu_mulai',
         'waktu_selesai',
         'batas_waktu',
+        'urutan_soal',
+        'urutan_jawaban',
         'status',
         'nilai',
 
@@ -34,6 +36,9 @@ class PengerjaanUjian extends Model
             'nilai' => 'decimal:2',
             'jumlah_pelanggaran' => 'integer',
             'dibuka_blokir_oleh' => 'integer',
+
+            'urutan_soal' => 'array',
+            'urutan_jawaban' => 'array',
         ];
     }
 

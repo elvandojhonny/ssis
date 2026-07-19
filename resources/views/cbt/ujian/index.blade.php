@@ -27,16 +27,26 @@
 
         <div class="col-12 col-md-auto">
 
-            <a
-                href="{{ route('cbt.ujian.create') }}"
-                class="btn btn-primary w-100"
-            >
+            <div class="d-flex flex-column flex-sm-row gap-2">
 
-                <i class="ti ti-plus me-1"></i>
+                <a
+                    href="{{ route('cbt.ujian.arsip') }}"
+                    class="btn btn-outline-secondary"
+                >
+                    <i class="ti ti-archive me-1"></i>
+                    Arsip Ujian
+                </a>
 
-                Buat Ujian
 
-            </a>
+                <a
+                    href="{{ route('cbt.ujian.create') }}"
+                    class="btn btn-primary"
+                >
+                    <i class="ti ti-plus me-1"></i>
+                    Buat Ujian
+                </a>
+
+            </div>
 
         </div>
 
