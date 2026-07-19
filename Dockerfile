@@ -36,6 +36,8 @@ RUN composer install \
     --no-interaction \
     --no-scripts
 
+RUN rm -f public/hot
+
 RUN npm ci
 
 RUN npm run build
