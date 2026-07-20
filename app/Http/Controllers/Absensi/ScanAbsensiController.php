@@ -97,15 +97,19 @@ class ScanAbsensiController extends Controller
          * Pastikan siswa berasal dari
          * kelas sesi yang sedang dibuka.
          */
-        if (
-            (int) $siswa->kelas_id
-            !== (int) $sesi->kelas_id
-        ) {
-            return response()->json([
-                'message' =>
-                    'Siswa bukan anggota kelas pada sesi absensi ini.',
-            ], 403);
-        }
+        $siswa->loadMissing('kelas');
+
+if (
+    ! $siswa->kelas ||
+    $siswa->kelas->tingkat !== $sesi->tingkat
+) {
+    return response()->json([
+        'message' =>
+            'Siswa bukan anggota tingkat '
+            . $sesi->tingkat
+            . ' pada sesi absensi ini.',
+    ], 403);
+}
 
         /*
          * Pastikan sesi untuk hari ini.
