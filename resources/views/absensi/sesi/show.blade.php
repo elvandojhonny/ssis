@@ -9,7 +9,7 @@
 
         <div class="col">
             <div class="page-pretitle">
-                {{ $sesi->kelas->nama }}
+                Tingkat {{ $sesi->tingkat }}
             </div>
 
             <h2 class="page-title">
@@ -41,18 +41,19 @@
                         @csrf
                         @method('PATCH')
 
-                        <button
-                            type="submit"
-                            class="btn btn-danger"
-                            onclick="
-                                return confirm(
-                                    'Tutup sesi absensi ini? Siswa yang belum absen akan otomatis menjadi alpa.'
-                                )
-                            "
-                        >
-                            <i class="ti ti-lock me-1"></i>
-                            Tutup Sesi
-                        </button>
+                        @if($sesi->status === 'aktif')
+
+                            <button
+                                type="button"
+                                class="btn btn-danger"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalTutupSesi"
+                            >
+                                <i class="ti ti-lock me-1"></i>
+                                Tutup Sesi
+                            </button>
+
+                        @endif
                     </form>
 
                 @endif
@@ -62,6 +63,82 @@
 
     </div>
 </div>
+
+@if($sesi->status === 'aktif')
+
+<div
+    class="modal modal-blur fade"
+    id="modalTutupSesi"
+    tabindex="-1"
+    aria-hidden="true"
+>
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-body text-center py-4">
+
+                <span class="avatar avatar-xl bg-danger-lt mb-3">
+                    <i class="ti ti-alert-triangle fs-1"></i>
+                </span>
+
+                <h3>
+                    Tutup Sesi Absensi?
+                </h3>
+
+                <div class="text-secondary">
+                    Sesi absensi akan ditutup dan siswa yang belum
+                    melakukan absensi akan otomatis tercatat sebagai
+                    <strong>Alpa</strong>.
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <div class="row w-100 g-2">
+
+                    <div class="col">
+
+                        <button
+                            type="button"
+                            class="btn w-100"
+                            data-bs-dismiss="modal"
+                        >
+                            Batal
+                        </button>
+
+                    </div>
+
+                    <div class="col">
+
+                        <form
+                            action="{{ route('absensi.sesi.tutup', $sesi) }}"
+                            method="POST"
+                        >
+                            @csrf
+                            @method('PATCH')
+
+                            <button
+                                type="submit"
+                                class="btn btn-danger w-100"
+                            >
+                                <i class="ti ti-lock me-1"></i>
+                                Ya, Tutup
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@endif
 
 
 {{-- ALERT --}}
@@ -133,20 +210,41 @@
             {{-- HASIL SCAN --}}
             <div class="col-lg-5">
 
-                <div
-                    id="scan-result"
-                    class="alert alert-info"
-                >
-                    <div class="d-flex align-items-center">
+                <div class="scanner-wrapper">
 
-                        <i class="ti ti-scan me-2"></i>
+                        <div
+                            id="reader"
+                            class="scanner-reader"
+                        ></div>
 
-                        <span>
-                            Scanner siap digunakan.
-                        </span>
+                        {{-- POPUP HASIL SCAN --}}
+                        <div
+                            id="scan-popup"
+                            class="scan-popup"
+                        >
+                            <div
+                                id="scan-popup-icon"
+                                class="scan-popup-icon"
+                            >
+                                <i class="ti ti-check"></i>
+                            </div>
+
+                            <div
+                                id="scan-popup-title"
+                                class="scan-popup-title"
+                            >
+                                Berhasil
+                            </div>
+
+                            <div
+                                id="scan-popup-message"
+                                class="scan-popup-message"
+                            >
+                                Absensi berhasil dicatat.
+                            </div>
+                        </div>
 
                     </div>
-                </div>
 
 
                 <div class="card bg-light">
@@ -268,11 +366,11 @@
                     <div class="col-sm-6">
 
                         <div class="text-secondary small">
-                            Kelas
+                            Tingkat
                         </div>
 
                         <div class="fw-bold mt-1">
-                            {{ $sesi->kelas->nama }}
+                            Kelas {{ $sesi->tingkat }}
                         </div>
 
                     </div>
@@ -281,11 +379,11 @@
                     <div class="col-sm-6">
 
                         <div class="text-secondary small">
-                            Tahun Ajaran
+                            Cakupan Absensi
                         </div>
 
                         <div class="fw-bold mt-1">
-                            {{ $sesi->kelas->tahunAjaran->nama }}
+                            Seluruh Kelas Tingkat {{ $sesi->tingkat }}
                         </div>
 
                     </div>
@@ -549,7 +647,7 @@
             <div class="text-secondary small mt-1">
 
                 Seluruh siswa aktif yang terdaftar
-                pada kelas ini.
+                pada tingkat ini.
 
             </div>
 
@@ -573,6 +671,8 @@
                     <th>Siswa</th>
 
                     <th>NIS</th>
+
+                    <th>Kelas</th>
 
                     <th>Waktu Absen</th>
 
@@ -666,6 +766,12 @@
 
                             {{ $siswa->nis }}
 
+                        </td>
+
+                        {{-- KELAS --}}
+
+                        <td>
+                            {{ $siswa->kelas->nama ?? '-' }}
                         </td>
 
 
@@ -888,7 +994,7 @@
                     <tr>
 
                         <td
-                            colspan="7"
+                            colspan="8"
                             class="
                                 text-center
                                 text-secondary
@@ -907,7 +1013,7 @@
                             ></i>
 
                             Belum ada siswa aktif yang
-                            terdaftar di kelas ini.
+                            terdaftar di tingkat ini.
 
                         </td>
 
@@ -1024,6 +1130,14 @@
                                 NIS:
 
                                 {{ $siswa->nis }}
+
+                            </div>
+
+                            <div class="text-secondary small mt-1">
+
+                                <i class="ti ti-school me-1"></i>
+
+                                {{ $siswa->kelas->nama ?? '-' }}
 
                             </div>
 
@@ -1658,10 +1772,19 @@ document.addEventListener(
         let sedangMemproses = false;
 
 
-        const resultBox =
-            document.getElementById(
-                'scan-result'
-            );
+        const scanPopup =
+            document.getElementById('scan-popup');
+
+        const scanPopupIcon =
+            document.getElementById('scan-popup-icon');
+
+        const scanPopupTitle =
+            document.getElementById('scan-popup-title');
+
+        const scanPopupMessage =
+            document.getElementById('scan-popup-message');
+
+        let popupTimeout;
 
         const studentName =
             document.getElementById(
@@ -1685,21 +1808,62 @@ document.addEventListener(
 
 
         function tampilkanHasil(
-            message,
-            type = 'info'
-        ) {
+                message,
+                type = 'info'
+            ) {
 
-            resultBox.className =
-                'alert alert-' + type;
+                clearTimeout(popupTimeout);
 
-            resultBox.innerHTML =
-                '<div class="d-flex align-items-center">'
-                + '<span>'
-                + escapeHtml(message)
-                + '</span>'
-                + '</div>';
+                scanPopup.className =
+                    'scan-popup show scan-popup-' + type;
 
-        }
+                let icon = 'ti-info-circle';
+                let title = 'Informasi';
+
+
+                if (type === 'success') {
+
+                    icon = 'ti-circle-check';
+                    title = 'Absensi Berhasil';
+
+                }
+
+                else if (type === 'warning') {
+
+                    icon = 'ti-alert-triangle';
+                    title = 'Perhatian';
+
+                }
+
+                else if (type === 'danger') {
+
+                    icon = 'ti-circle-x';
+                    title = 'Absensi Gagal';
+
+                }
+
+
+                scanPopupIcon.innerHTML =
+                    '<i class="ti ' + icon + '"></i>';
+
+                scanPopupTitle.textContent =
+                    title;
+
+                scanPopupMessage.textContent =
+                    message;
+
+
+                popupTimeout = setTimeout(
+                    function () {
+
+                        scanPopup.classList.remove('show');
+
+                    },
+
+                    2500
+                );
+
+            }
 
 
         function escapeHtml(value) {
@@ -2163,6 +2327,144 @@ document.addEventListener(
 @push('styles')
 
 <style>
+
+.scanner-wrapper {
+    position: relative;
+}
+
+
+.scan-popup {
+
+    position: absolute;
+
+    top: 50%;
+    left: 50%;
+
+    width: calc(100% - 40px);
+    max-width: 360px;
+
+    padding: 24px;
+
+    text-align: center;
+
+    background: rgba(255, 255, 255, 0.96);
+
+    border-radius: 16px;
+
+    box-shadow:
+        0 15px 50px
+        rgba(0, 0, 0, 0.25);
+
+    transform:
+        translate(-50%, -50%)
+        scale(0.85);
+
+    opacity: 0;
+
+    visibility: hidden;
+
+    z-index: 20;
+
+    transition:
+        opacity .2s ease,
+        transform .2s ease,
+        visibility .2s ease;
+
+}
+
+
+.scan-popup.show {
+
+    opacity: 1;
+
+    visibility: visible;
+
+    transform:
+        translate(-50%, -50%)
+        scale(1);
+
+}
+
+
+.scan-popup-icon {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 64px;
+    height: 64px;
+
+    margin: 0 auto 14px;
+
+    border-radius: 50%;
+
+    font-size: 34px;
+
+}
+
+
+.scan-popup-success
+.scan-popup-icon {
+
+    background: var(--tblr-success-lt);
+
+    color: var(--tblr-success);
+
+}
+
+
+.scan-popup-warning
+.scan-popup-icon {
+
+    background: var(--tblr-warning-lt);
+
+    color: var(--tblr-warning);
+
+}
+
+
+.scan-popup-danger
+.scan-popup-icon {
+
+    background: var(--tblr-danger-lt);
+
+    color: var(--tblr-danger);
+
+}
+
+
+.scan-popup-info
+.scan-popup-icon {
+
+    background: var(--tblr-primary-lt);
+
+    color: var(--tblr-primary);
+
+}
+
+
+.scan-popup-title {
+
+    margin-bottom: 6px;
+
+    font-size: 1.15rem;
+
+    font-weight: 700;
+
+    color: var(--tblr-body-color);
+
+}
+
+
+.scan-popup-message {
+
+    font-size: .875rem;
+
+    color: var(--tblr-secondary);
+
+}
 
 .scanner-wrapper {
 
