@@ -67,103 +67,127 @@ class SesiAbsensiController extends Controller
 }
 
     public function create()
-    {
-        $kelas = Kelas::with('tahunAjaran')
-            ->where('is_active', true)
-            ->orderBy('tingkat')
-            ->orderBy('nama')
-            ->get();
+{
+    $tingkats = ['X', 'XI', 'XII'];
 
-        return view(
-            'absensi.sesi.create',
-            compact('kelas')
-        );
-    }
+    return view(
+        'absensi.sesi.create',
+        compact('tingkats')
+    );
+}
 
     public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'kelas_id' => [
-                'required',
-                'exists:kelas,id',
-            ],
+{
+    $validated = $request->validate([
+        'tingkat' => [
+            'required',
+            Rule::in(['X', 'XI', 'XII']),
+        ],
 
-            'jenis' => [
-                'required',
-                Rule::in(['pagi', 'siang']),
-            ],
+        'jenis' => [
+            'required',
+            Rule::in(['pagi', 'siang']),
+        ],
 
-            'waktu_mulai' => [
-                'required',
-                'date_format:H:i',
-            ],
+        'waktu_mulai' => [
+            'required',
+            'date_format:H:i',
+        ],
 
-            'batas_terlambat' => [
-                'nullable',
-                'date_format:H:i',
-                'after_or_equal:waktu_mulai',
-            ],
+        'batas_terlambat' => [
+            'nullable',
+            'date_format:H:i',
+            'after_or_equal:waktu_mulai',
+        ],
 
-            'waktu_selesai' => [
-                'required',
-                'date_format:H:i',
-                'after:waktu_mulai',
-            ],
-        ]);
+        'waktu_selesai' => [
+            'required',
+            'date_format:H:i',
+            'after:waktu_mulai',
+        ],
+    ]);
 
-        $kelas = Kelas::whereKey($validated['kelas_id'])
-            ->where('is_active', true)
-            ->firstOrFail();
+    /*
+     * Pastikan tingkat tersebut benar-benar
+     * memiliki kelas aktif.
+     */
+    $kelasTersedia = Kelas::where(
+            'tingkat',
+            $validated['tingkat']
+        )
+        ->where('is_active', true)
+        ->exists();
 
-        $sudahAda = SesiAbsensi::where(
-                'kelas_id',
-                $kelas->id
-            )
-            ->whereDate('tanggal', today())
-            ->where('jenis', $validated['jenis'])
-            ->exists();
-
-        if ($sudahAda) {
-            return back()
-                ->withInput()
-                ->with(
-                    'error',
-                    'Sesi absensi '
-                    . $validated['jenis']
-                    . ' untuk kelas tersebut sudah dibuat hari ini.'
-                );
-        }
-
-        $sesi = DB::transaction(function () use ($validated) {
-            return SesiAbsensi::create([
-                'kelas_id' => $validated['kelas_id'],
-
-                'dibuka_oleh' => auth()->id(),
-
-                'tanggal' => today(),
-
-                'jenis' => $validated['jenis'],
-
-                'waktu_mulai' =>
-                    $validated['waktu_mulai'],
-
-                'batas_terlambat' =>
-                    $validated['batas_terlambat'] ?? null,
-
-                'waktu_selesai' =>
-                    $validated['waktu_selesai'],
-
-                'status' => 'aktif',
-            ]);
-        });
-
-        return redirect()
-            ->route('absensi.sesi.show', $sesi)
+    if (! $kelasTersedia) {
+        return back()
+            ->withInput()
             ->with(
-                'success',
-                'Sesi absensi berhasil dibuka.'
+                'error',
+                'Tidak ada kelas aktif untuk tingkat '
+                . $validated['tingkat']
+                . '.'
             );
     }
+
+    /*
+     * Satu tingkat hanya memiliki satu sesi
+     * pagi atau siang dalam satu hari.
+     */
+    $sudahAda = SesiAbsensi::where(
+            'tingkat',
+            $validated['tingkat']
+        )
+        ->whereDate('tanggal', today())
+        ->where('jenis', $validated['jenis'])
+        ->exists();
+
+    if ($sudahAda) {
+        return back()
+            ->withInput()
+            ->with(
+                'error',
+                'Sesi absensi '
+                . $validated['jenis']
+                . ' untuk tingkat '
+                . $validated['tingkat']
+                . ' sudah dibuat hari ini.'
+            );
+    }
+
+    $sesi = DB::transaction(function () use ($validated) {
+        return SesiAbsensi::create([
+            'kelas_id' => null,
+
+            'tingkat' => $validated['tingkat'],
+
+            'dibuka_oleh' => auth()->id(),
+
+            'tanggal' => today(),
+
+            'jenis' => $validated['jenis'],
+
+            'waktu_mulai' =>
+                $validated['waktu_mulai'],
+
+            'batas_terlambat' =>
+                $validated['batas_terlambat'] ?? null,
+
+            'waktu_selesai' =>
+                $validated['waktu_selesai'],
+
+            'status' => 'aktif',
+        ]);
+    });
+
+    return redirect()
+        ->route('absensi.sesi.show', $sesi)
+        ->with(
+            'success',
+            'Sesi absensi tingkat '
+            . $validated['tingkat']
+            . ' berhasil dibuka.'
+        );
+}
 
    public function show(
     SesiAbsensi $sesi,
@@ -186,21 +210,30 @@ class SesiAbsensiController extends Controller
         'absensis.siswa.user',
     ]);
 
-    $daftarSiswa = Siswa::with('user')
-        ->where('kelas_id', $sesi->kelas_id)
-        ->where('is_active', true)
-        ->orderBy('nis')
-        ->get()
-        ->map(function ($siswa) use ($sesi) {
+    $daftarSiswa = Siswa::with([
+        'user',
+        'kelas',
+    ])
+    ->where('is_active', true)
+    ->whereHas('kelas', function ($query) use ($sesi) {
+        $query->where(
+            'tingkat',
+            $sesi->tingkat
+        );
+    })
+    ->orderBy('kelas_id')
+    ->orderBy('nis')
+    ->get()
+    ->map(function ($siswa) use ($sesi) {
 
-            $siswa->data_absensi =
-                $sesi->absensis->firstWhere(
-                    'siswa_id',
-                    $siswa->id
-                );
+        $siswa->data_absensi =
+            $sesi->absensis->firstWhere(
+                'siswa_id',
+                $siswa->id
+            );
 
-            return $siswa;
-        });
+        return $siswa;
+    });
 
     $totalSiswa = $daftarSiswa->count();
 
@@ -247,11 +280,13 @@ public function updateStatus(
      * Pastikan siswa memang berasal
      * dari kelas sesi tersebut.
      */
+    $siswa->loadMissing('kelas');
+
     abort_unless(
-        (int) $siswa->kelas_id
-        === (int) $sesi->kelas_id,
+        $siswa->kelas
+        && $siswa->kelas->tingkat === $sesi->tingkat,
         403,
-        'Siswa bukan anggota kelas ini.'
+        'Siswa bukan anggota tingkat ini.'
     );
 
     $validated = $request->validate([

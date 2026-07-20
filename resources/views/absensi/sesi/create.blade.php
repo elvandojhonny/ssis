@@ -17,7 +17,7 @@
         </h2>
 
         <div class="text-secondary mt-1">
-            Pilih kelas dan jenis absensi yang akan dibuka.
+            Pilih tingkat dan jenis absensi yang akan dibuka.
         </div>
 
     </div>
@@ -28,6 +28,8 @@
 @if(session('error'))
 
     <div class="alert alert-danger">
+
+        <i class="ti ti-alert-circle me-2"></i>
 
         {{ session('error') }}
 
@@ -57,61 +59,75 @@
             @csrf
 
 
-            {{-- KELAS --}}
+            {{-- TINGKAT --}}
 
-            <div class="mb-3">
+            <div class="mb-4">
 
                 <label class="form-label">
 
-                    Kelas
+                    Tingkat
 
                     <span class="text-danger">*</span>
 
                 </label>
 
 
-                <select
-                    name="kelas_id"
-                    class="form-select
-                           @error('kelas_id')
-                           is-invalid
-                           @enderror"
-                    required
-                >
+                <div class="row g-3">
 
-                    <option value="">
+                    @foreach($tingkats as $tingkat)
 
-                        Pilih Kelas
+                        <div class="col-12 col-md-4">
 
-                    </option>
+                            <label
+                                class="form-selectgroup-item w-100"
+                            >
+
+                                <input
+                                    type="radio"
+                                    name="tingkat"
+                                    value="{{ $tingkat }}"
+                                    class="form-selectgroup-input"
+                                    @checked(
+                                        old('tingkat') === $tingkat
+                                    )
+                                    required
+                                >
 
 
-                    @foreach($kelas as $item)
+                                <span
+                                    class="
+                                        form-selectgroup-label
+                                        d-flex
+                                        align-items-center
+                                        justify-content-center
+                                        py-3
+                                    "
+                                >
 
-                        <option
-                            value="{{ $item->id }}"
-                            @selected(
-                                old('kelas_id')
-                                == $item->id
-                            )
-                        >
+                                    <i
+                                        class="
+                                            ti
+                                            ti-school
+                                            me-2
+                                        "
+                                    ></i>
 
-                            {{ $item->nama }}
+                                    Kelas {{ $tingkat }}
 
-                            —
+                                </span>
 
-                            {{ $item->tahunAjaran->nama }}
+                            </label>
 
-                        </option>
+                        </div>
 
                     @endforeach
 
-                </select>
+                </div>
 
 
-                @error('kelas_id')
+                @error('tingkat')
 
-                    <div class="invalid-feedback">
+                    <div class="text-danger small mt-2">
 
                         {{ $message }}
 
@@ -119,12 +135,20 @@
 
                 @enderror
 
+
+                <div class="form-hint mt-2">
+
+                    Sesi berlaku untuk seluruh jurusan pada tingkat
+                    yang dipilih.
+
+                </div>
+
             </div>
 
 
-            {{-- JENIS --}}
+            {{-- JENIS ABSENSI --}}
 
-            <div class="mb-3">
+            <div class="mb-4">
 
                 <label class="form-label">
 
@@ -135,14 +159,15 @@
                 </label>
 
 
-                <div class="row">
+                <div class="row g-3">
 
 
-                    <div class="col-md-6">
+                    {{-- PAGI --}}
+
+                    <div class="col-12 col-md-6">
 
                         <label
-                            class="form-selectgroup-item
-                                   w-100"
+                            class="form-selectgroup-item w-100"
                         >
 
                             <input
@@ -151,23 +176,27 @@
                                 value="pagi"
                                 class="form-selectgroup-input"
                                 @checked(
-                                    old('jenis')
-                                    === 'pagi'
+                                    old('jenis') === 'pagi'
                                 )
                                 required
                             >
 
 
                             <span
-                                class="form-selectgroup-label
-                                       d-flex
-                                       align-items-center"
+                                class="
+                                    form-selectgroup-label
+                                    d-flex
+                                    align-items-center
+                                    py-3
+                                "
                             >
 
                                 <i
-                                    class="ti
-                                           ti-sun
-                                           me-2"
+                                    class="
+                                        ti
+                                        ti-sun
+                                        me-2
+                                    "
                                 ></i>
 
                                 Absensi Pagi
@@ -179,11 +208,12 @@
                     </div>
 
 
-                    <div class="col-md-6">
+                    {{-- SIANG --}}
+
+                    <div class="col-12 col-md-6">
 
                         <label
-                            class="form-selectgroup-item
-                                   w-100"
+                            class="form-selectgroup-item w-100"
                         >
 
                             <input
@@ -192,23 +222,27 @@
                                 value="siang"
                                 class="form-selectgroup-input"
                                 @checked(
-                                    old('jenis')
-                                    === 'siang'
+                                    old('jenis') === 'siang'
                                 )
                                 required
                             >
 
 
                             <span
-                                class="form-selectgroup-label
-                                       d-flex
-                                       align-items-center"
+                                class="
+                                    form-selectgroup-label
+                                    d-flex
+                                    align-items-center
+                                    py-3
+                                "
                             >
 
                                 <i
-                                    class="ti
-                                           ti-sunset
-                                           me-2"
+                                    class="
+                                        ti
+                                        ti-sunset
+                                        me-2
+                                    "
                                 ></i>
 
                                 Absensi Siang
@@ -235,16 +269,20 @@
             </div>
 
 
-            {{-- WAKTU --}}
+            {{-- PENGATURAN WAKTU --}}
 
             <div class="row">
 
 
-                <div class="col-md-4 mb-3">
+                {{-- WAKTU MULAI --}}
+
+                <div class="col-12 col-md-4 mb-3">
 
                     <label class="form-label">
 
                         Waktu Mulai
+
+                        <span class="text-danger">*</span>
 
                     </label>
 
@@ -258,14 +296,32 @@
                                 '07:00'
                             )
                         }}"
-                        class="form-control"
+                        class="
+                            form-control
+                            @error('waktu_mulai')
+                            is-invalid
+                            @enderror
+                        "
                         required
                     >
+
+
+                    @error('waktu_mulai')
+
+                        <div class="invalid-feedback">
+
+                            {{ $message }}
+
+                        </div>
+
+                    @enderror
 
                 </div>
 
 
-                <div class="col-md-4 mb-3">
+                {{-- BATAS TERLAMBAT --}}
+
+                <div class="col-12 col-md-4 mb-3">
 
                     <label class="form-label">
 
@@ -283,17 +339,37 @@
                                 '07:15'
                             )
                         }}"
-                        class="form-control"
+                        class="
+                            form-control
+                            @error('batas_terlambat')
+                            is-invalid
+                            @enderror
+                        "
                     >
+
+
+                    @error('batas_terlambat')
+
+                        <div class="invalid-feedback">
+
+                            {{ $message }}
+
+                        </div>
+
+                    @enderror
 
                 </div>
 
 
-                <div class="col-md-4 mb-3">
+                {{-- WAKTU SELESAI --}}
+
+                <div class="col-12 col-md-4 mb-3">
 
                     <label class="form-label">
 
                         Waktu Selesai
+
+                        <span class="text-danger">*</span>
 
                     </label>
 
@@ -307,26 +383,77 @@
                                 '07:30'
                             )
                         }}"
-                        class="form-control"
+                        class="
+                            form-control
+                            @error('waktu_selesai')
+                            is-invalid
+                            @enderror
+                        "
                         required
                     >
+
+
+                    @error('waktu_selesai')
+
+                        <div class="invalid-feedback">
+
+                            {{ $message }}
+
+                        </div>
+
+                    @enderror
 
                 </div>
 
             </div>
 
 
-            <div class="alert alert-info">
+            {{-- INFORMASI --}}
 
-                <i class="ti ti-info-circle me-2"></i>
+            <div class="alert alert-info mt-2">
 
-                Setiap kelas hanya dapat memiliki satu sesi
-                pagi dan satu sesi siang dalam satu hari.
+                <div class="d-flex">
+
+                    <i
+                        class="
+                            ti
+                            ti-info-circle
+                            me-2
+                            mt-1
+                        "
+                    ></i>
+
+                    <div>
+
+                        <div class="fw-bold mb-1">
+                            Satu sesi untuk seluruh jurusan
+                        </div>
+
+                        <div>
+                            Jika membuka sesi untuk Kelas X,
+                            seluruh siswa Kelas X dapat melakukan
+                            absensi menggunakan QR yang sama,
+                            termasuk siswa X IPA dan X IPS.
+                        </div>
+
+                    </div>
+
+                </div>
 
             </div>
 
 
-            <div class="mt-4">
+            {{-- ACTION --}}
+
+            <div
+                class="
+                    mt-4
+                    d-flex
+                    flex-column
+                    flex-sm-row
+                    gap-2
+                "
+            >
 
                 <button
                     type="submit"
@@ -341,11 +468,7 @@
 
 
                 <a
-                    href="{{
-                        route(
-                            'absensi.sesi.index'
-                        )
-                    }}"
+                    href="{{ route('absensi.sesi.index') }}"
                     class="btn btn-outline-secondary"
                 >
 

@@ -8,6 +8,7 @@ class SesiAbsensi extends Model
 {
     protected $fillable = [
         'kelas_id',
+        'tingkat',
         'dibuka_oleh',
         'tanggal',
         'jenis',
