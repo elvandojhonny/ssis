@@ -192,10 +192,38 @@
 
                 <div class="scanner-wrapper">
 
+                    {{-- HANYA SATU SCANNER --}}
                     <div
                         id="reader"
                         class="scanner-reader"
                     ></div>
+
+                    {{-- POPUP HASIL SCAN --}}
+                    <div
+                        id="scan-popup"
+                        class="scan-popup"
+                    >
+                        <div
+                            id="scan-popup-icon"
+                            class="scan-popup-icon"
+                        >
+                            <i class="ti ti-check"></i>
+                        </div>
+
+                        <div
+                            id="scan-popup-title"
+                            class="scan-popup-title"
+                        >
+                            Berhasil
+                        </div>
+
+                        <div
+                            id="scan-popup-message"
+                            class="scan-popup-message"
+                        >
+                            Absensi berhasil dicatat.
+                        </div>
+                    </div>
 
                 </div>
 
@@ -210,43 +238,6 @@
             {{-- HASIL SCAN --}}
             <div class="col-lg-5">
 
-                <div class="scanner-wrapper">
-
-                        <div
-                            id="reader"
-                            class="scanner-reader"
-                        ></div>
-
-                        {{-- POPUP HASIL SCAN --}}
-                        <div
-                            id="scan-popup"
-                            class="scan-popup"
-                        >
-                            <div
-                                id="scan-popup-icon"
-                                class="scan-popup-icon"
-                            >
-                                <i class="ti ti-check"></i>
-                            </div>
-
-                            <div
-                                id="scan-popup-title"
-                                class="scan-popup-title"
-                            >
-                                Berhasil
-                            </div>
-
-                            <div
-                                id="scan-popup-message"
-                                class="scan-popup-message"
-                            >
-                                Absensi berhasil dicatat.
-                            </div>
-                        </div>
-
-                    </div>
-
-
                 <div class="card bg-light">
 
                     <div class="card-body">
@@ -259,12 +250,7 @@
 
                             <div
                                 id="last-student-avatar"
-                                class="
-                                    avatar
-                                    avatar-lg
-                                    me-3
-                                    bg-primary-lt
-                                "
+                                class="avatar avatar-lg me-3 bg-primary-lt"
                             >
                                 -
                             </div>
@@ -288,7 +274,6 @@
                             </div>
 
                         </div>
-
 
                         <div class="mt-4">
 
