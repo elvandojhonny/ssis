@@ -21,38 +21,58 @@ use PhpOffice\PhpSpreadsheet\Cell\DataValidation;
 class SiswaController extends Controller
 {
     public function index()
-    {
-        $siswas = Siswa::query()
-            ->with([
-                'user',
-                'kelas.tahunAjaran',
-            ])
-            ->whereHas('kelas.tahunAjaran', function ($query) {
-                $query->where('is_active', true);
-            })
-            ->get()
-            ->groupBy(function ($siswa) {
-                return strtoupper(
-                    trim($siswa->kelas?->nama ?? 'Tanpa Kelas')
-                );
-            });
+{
+    $siswas = Siswa::query()
+        ->with([
+            'user',
+            'kelas.tahunAjaran',
+        ])
 
-        return view(
-            'master.siswa.index',
-            compact('siswas')
-        );
-    }
+        ->whereHas('kelas', function ($query) {
+            $query->where('is_active', true);
+        })
+
+        ->whereHas('kelas.tahunAjaran', function ($query) {
+            $query->where('is_active', true);
+        })
+
+        ->orderBy('nama')
+
+        ->get()
+
+        ->groupBy(function ($siswa) {
+            return $siswa->kelas?->tingkat ?? 'Tanpa Kelas';
+        });
+
+    return view(
+        'master.siswa.index',
+        compact('siswas')
+    );
+}
 
     public function create()
-    {
-        $kelas = Kelas::with('tahunAjaran')
-            ->where('is_active', true)
-            ->orderBy('tingkat')
-            ->orderBy('nama')
-            ->get();
+{
+    $kelas = Kelas::with('tahunAjaran')
+        ->where('is_active', true)
+        ->whereHas('tahunAjaran', function ($query) {
+            $query->where('is_active', true);
+        })
+        ->orderByRaw("
+            CASE tingkat
+                WHEN 'X' THEN 1
+                WHEN 'XI' THEN 2
+                WHEN 'XII' THEN 3
+                ELSE 4
+            END
+        ")
+        ->orderBy('nama')
+        ->get();
 
-        return view('master.siswa.create', compact('kelas'));
-    }
+    return view(
+        'master.siswa.create',
+        compact('kelas')
+    );
+}
 
     public function store(Request $request)
     {
@@ -88,20 +108,30 @@ class SiswaController extends Controller
     }
 
     public function edit(Siswa $siswa)
-    {
-        $siswa->load('user');
+{
+    $siswa->load('user', 'kelas.tahunAjaran');
 
-        $kelas = Kelas::with('tahunAjaran')
-            ->where('is_active', true)
-            ->orderBy('tingkat')
-            ->orderBy('nama')
-            ->get();
+    $kelas = Kelas::with('tahunAjaran')
+        ->where('is_active', true)
+        ->whereHas('tahunAjaran', function ($query) {
+            $query->where('is_active', true);
+        })
+        ->orderByRaw("
+            CASE tingkat
+                WHEN 'X' THEN 1
+                WHEN 'XI' THEN 2
+                WHEN 'XII' THEN 3
+                ELSE 4
+            END
+        ")
+        ->orderBy('nama')
+        ->get();
 
-        return view(
-            'master.siswa.edit',
-            compact('siswa', 'kelas')
-        );
-    }
+    return view(
+        'master.siswa.edit',
+        compact('siswa', 'kelas')
+    );
+}
 
     public function update(Request $request, Siswa $siswa)
     {
@@ -273,23 +303,24 @@ public function downloadTemplate()
 {
     /*
     |--------------------------------------------------------------------------
-    | Ambil Kelas Tahun Ajaran Aktif
+    | Ambil Kelas Aktif dari Tahun Ajaran Aktif
     |--------------------------------------------------------------------------
     */
 
     $kelas = Kelas::query()
         ->with('tahunAjaran')
-        ->whereHas(
-            'tahunAjaran',
-            function ($query) {
-
-                $query->where(
-                    'is_active',
-                    true
-                );
-
-            }
-        )
+        ->where('is_active', true)
+        ->whereHas('tahunAjaran', function ($query) {
+            $query->where('is_active', true);
+        })
+        ->orderByRaw("
+            CASE tingkat
+                WHEN 'X' THEN 1
+                WHEN 'XI' THEN 2
+                WHEN 'XII' THEN 3
+                ELSE 4
+            END
+        ")
         ->orderBy('nama')
         ->get();
 
@@ -300,17 +331,11 @@ public function downloadTemplate()
     |--------------------------------------------------------------------------
     */
 
-    $spreadsheet =
-        new Spreadsheet();
+    $spreadsheet = new Spreadsheet();
 
+    $sheet = $spreadsheet->getActiveSheet();
 
-    $sheet =
-        $spreadsheet->getActiveSheet();
-
-
-    $sheet->setTitle(
-        'Data Siswa'
-    );
+    $sheet->setTitle('Data Siswa');
 
 
     /*
@@ -320,46 +345,26 @@ public function downloadTemplate()
     */
 
     $headers = [
-
         'Nama Siswa',
-
         'Kelas',
-
         'NIS',
-
         'NISN',
-
         'Jenis Kelamin',
-
         'Alamat',
-
         'Username',
-
         'Email',
-
         'Password',
-
         'Status',
-
     ];
 
+    foreach ($headers as $index => $header) {
 
-    foreach (
-        $headers as
-        $index => $header
-    ) {
-
-        $column =
-            chr(
-                65 + $index
-            );
-
+        $column = chr(65 + $index);
 
         $sheet->setCellValue(
             $column . '1',
             $header
         );
-
     }
 
 
@@ -370,42 +375,27 @@ public function downloadTemplate()
     */
 
     $sheet
-        ->getStyle(
-            'A1:J1'
-        )
+        ->getStyle('A1:J1')
         ->getFont()
-        ->setBold(
-            true
-        );
-
+        ->setBold(true);
 
     $sheet
-        ->getStyle(
-            'A1:J1'
-        )
+        ->getStyle('A1:J1')
         ->getAlignment()
         ->setHorizontal(
             \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER
         );
 
-
     $sheet
-        ->getStyle(
-            'A1:J1'
-        )
+        ->getStyle('A1:J1')
         ->getAlignment()
         ->setVertical(
             \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
         );
 
-
     $sheet
-        ->getRowDimension(
-            1
-        )
-        ->setRowHeight(
-            25
-        );
+        ->getRowDimension(1)
+        ->setRowHeight(25);
 
 
     /*
@@ -414,9 +404,7 @@ public function downloadTemplate()
     |--------------------------------------------------------------------------
     */
 
-    $sheet->freezePane(
-        'A2'
-    );
+    $sheet->freezePane('A2');
 
 
     /*
@@ -426,43 +414,23 @@ public function downloadTemplate()
     */
 
     $columnWidths = [
-
         'A' => 28,
-
         'B' => 22,
-
         'C' => 18,
-
         'D' => 20,
-
         'E' => 18,
-
         'F' => 35,
-
         'G' => 22,
-
         'H' => 30,
-
         'I' => 22,
-
         'J' => 18,
-
     ];
 
-
-    foreach (
-        $columnWidths as
-        $column => $width
-    ) {
+    foreach ($columnWidths as $column => $width) {
 
         $sheet
-            ->getColumnDimension(
-                $column
-            )
-            ->setWidth(
-                $width
-            );
-
+            ->getColumnDimension($column)
+            ->setWidth($width);
     }
 
 
@@ -470,25 +438,12 @@ public function downloadTemplate()
     |--------------------------------------------------------------------------
     | Format NIS dan NISN sebagai Text
     |--------------------------------------------------------------------------
-    |
-    | Ini penting supaya angka seperti:
-    |
-    | 0012345678
-    |
-    | tidak berubah menjadi:
-    |
-    | 12345678
-    |
     */
 
     $sheet
-        ->getStyle(
-            'C2:D1000'
-        )
+        ->getStyle('C2:D1000')
         ->getNumberFormat()
-        ->setFormatCode(
-            '@'
-        );
+        ->setFormatCode('@');
 
 
     /*
@@ -497,20 +452,25 @@ public function downloadTemplate()
     |--------------------------------------------------------------------------
     */
 
-    $referensi =
-        $spreadsheet
-            ->createSheet();
+    $referensi = $spreadsheet->createSheet();
 
-
-    $referensi->setTitle(
-        'Referensi'
-    );
+    $referensi->setTitle('Referensi');
 
 
     /*
     |--------------------------------------------------------------------------
     | Daftar Kelas
     |--------------------------------------------------------------------------
+    |
+    | Contoh:
+    |
+    | X-1
+    | X-2
+    | X-3
+    | XI-1
+    | XI-2
+    | XII-1
+    |
     */
 
     $referensi->setCellValue(
@@ -518,17 +478,12 @@ public function downloadTemplate()
         'Daftar Kelas'
     );
 
-
-    foreach (
-        $kelas as
-        $index => $item
-    ) {
+    foreach ($kelas as $index => $item) {
 
         $referensi->setCellValue(
             'A' . ($index + 2),
             $item->nama
         );
-
     }
 
 
@@ -543,12 +498,10 @@ public function downloadTemplate()
         'Jenis Kelamin'
     );
 
-
     $referensi->setCellValue(
         'B2',
         'L'
     );
-
 
     $referensi->setCellValue(
         'B3',
@@ -567,12 +520,10 @@ public function downloadTemplate()
         'Status'
     );
 
-
     $referensi->setCellValue(
         'C2',
         'Aktif'
     );
-
 
     $referensi->setCellValue(
         'C3',
@@ -582,7 +533,7 @@ public function downloadTemplate()
 
     /*
     |--------------------------------------------------------------------------
-    | Keterangan
+    | Petunjuk Pengisian
     |--------------------------------------------------------------------------
     */
 
@@ -591,81 +542,49 @@ public function downloadTemplate()
         'Petunjuk Pengisian'
     );
 
-
     $petunjuk = [
-
         'Nama Siswa wajib diisi.',
-
-        'Kelas wajib dipilih dari daftar.',
-
+        'Kelas wajib dipilih dari daftar kelas aktif.',
         'NIS wajib diisi dan harus unik.',
-
         'NISN boleh dikosongkan.',
-
         'Jenis Kelamin: L atau P.',
-
         'Alamat boleh dikosongkan.',
-
         'Username wajib diisi dan harus unik.',
-
         'Email boleh dikosongkan.',
-
         'Password wajib minimal 8 karakter.',
-
         'Status wajib dipilih.',
-
     ];
 
-
-    foreach (
-        $petunjuk as
-        $index => $text
-    ) {
+    foreach ($petunjuk as $index => $text) {
 
         $referensi->setCellValue(
             'E' . ($index + 2),
-            ($index + 1)
-            . '. '
-            . $text
+            ($index + 1) . '. ' . $text
         );
-
     }
 
 
-    $referensi
-        ->getColumnDimension(
-            'A'
-        )
-        ->setWidth(
-            25
-        );
-
+    /*
+    |--------------------------------------------------------------------------
+    | Lebar Kolom Sheet Referensi
+    |--------------------------------------------------------------------------
+    */
 
     $referensi
-        ->getColumnDimension(
-            'B'
-        )
-        ->setWidth(
-            20
-        );
-
+        ->getColumnDimension('A')
+        ->setWidth(25);
 
     $referensi
-        ->getColumnDimension(
-            'C'
-        )
-        ->setWidth(
-            20
-        );
-
+        ->getColumnDimension('B')
+        ->setWidth(20);
 
     $referensi
-        ->getColumnDimension(
-            'E'
-        )
-        ->setWidth(
-            55
-        );
+        ->getColumnDimension('C')
+        ->setWidth(20);
+
+    $referensi
+        ->getColumnDimension('E')
+        ->setWidth(55);
 
 
     /*
@@ -674,69 +593,43 @@ public function downloadTemplate()
     |--------------------------------------------------------------------------
     */
 
-    if (
-        $kelas->isNotEmpty()
-    ) {
+    if ($kelas->isNotEmpty()) {
 
         $barisTerakhirKelas =
             $kelas->count() + 1;
 
+        for ($row = 2; $row <= 1000; $row++) {
 
-        for (
-            $row = 2;
-            $row <= 1000;
-            $row++
-        ) {
-
-            $validation =
-                $sheet
-                    ->getCell(
-                        'B' . $row
-                    )
-                    ->getDataValidation();
-
+            $validation = $sheet
+                ->getCell('B' . $row)
+                ->getDataValidation();
 
             $validation->setType(
                 DataValidation::TYPE_LIST
             );
 
-
             $validation->setErrorStyle(
                 DataValidation::STYLE_STOP
             );
 
+            $validation->setAllowBlank(false);
 
-            $validation->setAllowBlank(
-                false
-            );
+            $validation->setShowDropDown(true);
 
-
-            $validation->setShowDropDown(
-                true
-            );
-
-
-            $validation->setShowErrorMessage(
-                true
-            );
-
+            $validation->setShowErrorMessage(true);
 
             $validation->setErrorTitle(
                 'Kelas tidak valid'
             );
 
-
             $validation->setError(
                 'Pilih kelas dari daftar yang tersedia.'
             );
 
-
             $validation->setFormula1(
                 "'Referensi'!\$A\$2:\$A\$$barisTerakhirKelas"
             );
-
         }
-
     }
 
 
@@ -746,59 +639,37 @@ public function downloadTemplate()
     |--------------------------------------------------------------------------
     */
 
-    for (
-        $row = 2;
-        $row <= 1000;
-        $row++
-    ) {
+    for ($row = 2; $row <= 1000; $row++) {
 
-        $validation =
-            $sheet
-                ->getCell(
-                    'E' . $row
-                )
-                ->getDataValidation();
-
+        $validation = $sheet
+            ->getCell('E' . $row)
+            ->getDataValidation();
 
         $validation->setType(
             DataValidation::TYPE_LIST
         );
 
-
         $validation->setErrorStyle(
             DataValidation::STYLE_STOP
         );
 
+        $validation->setAllowBlank(true);
 
-        $validation->setAllowBlank(
-            true
-        );
+        $validation->setShowDropDown(true);
 
-
-        $validation->setShowDropDown(
-            true
-        );
-
-
-        $validation->setShowErrorMessage(
-            true
-        );
-
+        $validation->setShowErrorMessage(true);
 
         $validation->setErrorTitle(
             'Jenis kelamin tidak valid'
         );
 
-
         $validation->setError(
             'Pilih L untuk laki-laki atau P untuk perempuan.'
         );
 
-
         $validation->setFormula1(
             '"L,P"'
         );
-
     }
 
 
@@ -808,122 +679,83 @@ public function downloadTemplate()
     |--------------------------------------------------------------------------
     */
 
-    for (
-        $row = 2;
-        $row <= 1000;
-        $row++
-    ) {
+    for ($row = 2; $row <= 1000; $row++) {
 
-        $validation =
-            $sheet
-                ->getCell(
-                    'J' . $row
-                )
-                ->getDataValidation();
-
+        $validation = $sheet
+            ->getCell('J' . $row)
+            ->getDataValidation();
 
         $validation->setType(
             DataValidation::TYPE_LIST
         );
 
-
         $validation->setErrorStyle(
             DataValidation::STYLE_STOP
         );
 
+        $validation->setAllowBlank(false);
 
-        $validation->setAllowBlank(
-            false
-        );
+        $validation->setShowDropDown(true);
 
-
-        $validation->setShowDropDown(
-            true
-        );
-
-
-        $validation->setShowErrorMessage(
-            true
-        );
-
+        $validation->setShowErrorMessage(true);
 
         $validation->setErrorTitle(
             'Status tidak valid'
         );
 
-
         $validation->setError(
             'Pilih Aktif atau Tidak Aktif.'
         );
 
-
         $validation->setFormula1(
             '"Aktif,Tidak Aktif"'
         );
-
     }
 
 
     /*
     |--------------------------------------------------------------------------
-    | Tambahkan Catatan Pada Header
+    | Catatan Header
     |--------------------------------------------------------------------------
     */
 
     $sheet
-        ->getComment(
-            'B1'
-        )
+        ->getComment('B1')
         ->getText()
         ->createTextRun(
             'Pilih kelas menggunakan dropdown yang tersedia.'
         );
 
-
     $sheet
-        ->getComment(
-            'C1'
-        )
+        ->getComment('C1')
         ->getText()
         ->createTextRun(
             'NIS wajib unik untuk setiap siswa.'
         );
 
-
     $sheet
-        ->getComment(
-            'D1'
-        )
+        ->getComment('D1')
         ->getText()
         ->createTextRun(
             'NISN boleh dikosongkan.'
         );
 
-
     $sheet
-        ->getComment(
-            'E1'
-        )
+        ->getComment('E1')
         ->getText()
         ->createTextRun(
             'Gunakan L untuk laki-laki dan P untuk perempuan.'
         );
 
-
     $sheet
-        ->getComment(
-            'H1'
-        )
+        ->getComment('H1')
         ->getText()
         ->createTextRun(
             'Email boleh dikosongkan.'
         );
 
-
     $sheet
-        ->getComment(
-            'I1'
-        )
+        ->getComment('I1')
         ->getText()
         ->createTextRun(
             'Password minimal 8 karakter.'
@@ -936,10 +768,7 @@ public function downloadTemplate()
     |--------------------------------------------------------------------------
     */
 
-    $spreadsheet
-        ->setActiveSheetIndex(
-            0
-        );
+    $spreadsheet->setActiveSheetIndex(0);
 
 
     /*
@@ -953,38 +782,28 @@ public function downloadTemplate()
         . date('Y-m-d')
         . '.xlsx';
 
+    $writer = new Xlsx(
+        $spreadsheet
+    );
 
-    $writer =
-        new Xlsx(
-            $spreadsheet
-        );
-
-
-    $tempFile =
-        tempnam(
-            sys_get_temp_dir(),
-            'template_siswa_'
-        );
-
+    $tempFile = tempnam(
+        sys_get_temp_dir(),
+        'template_siswa_'
+    );
 
     $writer->save(
         $tempFile
     );
-
 
     return response()
         ->download(
             $tempFile,
             $filename
         )
-        ->deleteFileAfterSend(
-            true
-        );
+        ->deleteFileAfterSend(true);
 }
 
-public function import(
-    Request $request
-)
+public function import(Request $request)
 {
     /*
     |--------------------------------------------------------------------------
@@ -993,14 +812,12 @@ public function import(
     */
 
     $request->validate([
-
         'file_import' => [
             'required',
             'file',
             'mimes:xlsx,xls',
             'max:10240',
         ],
-
     ]);
 
 
@@ -1012,44 +829,28 @@ public function import(
 
     try {
 
-        $spreadsheet =
-            IOFactory::load(
-                $request
-                    ->file(
-                        'file_import'
-                    )
-                    ->getRealPath()
-            );
+        $spreadsheet = IOFactory::load(
+            $request
+                ->file('file_import')
+                ->getRealPath()
+        );
 
+        $sheet = $spreadsheet->getSheetByName('Data Siswa')
+            ?? $spreadsheet->getActiveSheet();
 
-        $sheet =
-            $spreadsheet
-                ->getSheetByName(
-                    'Data Siswa'
-                )
-            ?? $spreadsheet
-                ->getActiveSheet();
+        $rows = $sheet->toArray(
+            null,
+            true,
+            true,
+            true
+        );
 
+    } catch (\Throwable $error) {
 
-        $rows =
-            $sheet
-                ->toArray(
-                    null,
-                    true,
-                    true,
-                    true
-                );
-
-    } catch (
-        \Throwable $error
-    ) {
-
-        return back()
-            ->with(
-                'error',
-                'File Excel tidak dapat dibaca.'
-            );
-
+        return back()->with(
+            'error',
+            'File Excel tidak dapat dibaca.'
+        );
     }
 
 
@@ -1059,109 +860,72 @@ public function import(
     |--------------------------------------------------------------------------
     */
 
-    $berhasil =
-        0;
+    $berhasil = 0;
+    $gagal = [];
 
 
-    $gagal =
-        [];
-
-
-    foreach (
-        $rows as
-        $nomorBaris => $row
-    ) {
+    foreach ($rows as $nomorBaris => $row) {
 
         /*
          * Lewati header.
          */
-
-        if (
-            $nomorBaris === 1
-        ) {
-
+        if ($nomorBaris === 1) {
             continue;
-
         }
 
 
         /*
-         * Ambil data.
-         */
+        |--------------------------------------------------------------------------
+        | Ambil Data Excel
+        |--------------------------------------------------------------------------
+        */
 
-        $nama =
+        $nama = trim(
+            (string) ($row['A'] ?? '')
+        );
+
+        $namaKelas = trim(
+            (string) ($row['B'] ?? '')
+        );
+
+        $nis = trim(
+            (string) ($row['C'] ?? '')
+        );
+
+        $nisn = trim(
+            (string) ($row['D'] ?? '')
+        );
+
+        $jenisKelamin = strtoupper(
             trim(
-                (string)
-                ($row['A'] ?? '')
-            );
+                (string) ($row['E'] ?? '')
+            )
+        );
 
+        $alamat = trim(
+            (string) ($row['F'] ?? '')
+        );
 
-        $namaKelas =
-            trim(
-                (string)
-                ($row['B'] ?? '')
-            );
+        $username = trim(
+            (string) ($row['G'] ?? '')
+        );
 
+        $email = trim(
+            (string) ($row['H'] ?? '')
+        );
 
-        $nis =
-            trim(
-                (string)
-                ($row['C'] ?? '')
-            );
+        $password = (string) ($row['I'] ?? '');
 
-
-        $nisn =
-            trim(
-                (string)
-                ($row['D'] ?? '')
-            );
-
-
-        $jenisKelamin =
-            strtoupper(
-                trim(
-                    (string)
-                    ($row['E'] ?? '')
-                )
-            );
-
-
-        $alamat =
-            trim(
-                (string)
-                ($row['F'] ?? '')
-            );
-
-
-        $username =
-            trim(
-                (string)
-                ($row['G'] ?? '')
-            );
-
-
-        $email =
-            trim(
-                (string)
-                ($row['H'] ?? '')
-            );
-
-
-        $password =
-            (string)
-            ($row['I'] ?? '');
-
-
-        $status =
-            trim(
-                (string)
-                ($row['J'] ?? '')
-            );
+        $status = trim(
+            (string) ($row['J'] ?? '')
+        );
 
 
         /*
-         * Lewati baris kosong.
-         */
+        |--------------------------------------------------------------------------
+        | Lewati Baris Kosong
+        |--------------------------------------------------------------------------
+        */
 
         if (
             $nama === '' &&
@@ -1169,167 +933,149 @@ public function import(
             $nis === '' &&
             $username === ''
         ) {
-
             continue;
-
         }
 
 
         /*
         |--------------------------------------------------------------------------
-        | Cari Kelas Aktif
+        | Cari Kelas Aktif pada Tahun Ajaran Aktif
         |--------------------------------------------------------------------------
+        |
+        | Contoh nama kelas:
+        |
+        | X-1
+        | X-2
+        | XI-1
+        | XI-2
+        | XII-1
+        |
         */
 
-        $kelas =
-            Kelas::query()
-                ->where(
-                    'nama',
-                    $namaKelas
-                )
-                ->whereHas(
-                    'tahunAjaran',
-                    function ($query) {
-
-                        $query->where(
-                            'is_active',
-                            true
-                        );
-
-                    }
-                )
-                ->first();
+        $kelas = Kelas::query()
+            ->where('nama', $namaKelas)
+            ->where('is_active', true)
+            ->whereHas('tahunAjaran', function ($query) {
+                $query->where('is_active', true);
+            })
+            ->first();
 
 
-        if (
-            ! $kelas
-        ) {
+        if (! $kelas) {
 
             $gagal[] =
-                "Baris {$nomorBaris}: kelas '{$namaKelas}' tidak ditemukan pada tahun ajaran aktif.";
-
+                "Baris {$nomorBaris}: kelas '{$namaKelas}' tidak ditemukan atau tidak aktif pada tahun ajaran aktif.";
 
             continue;
-
         }
 
 
         /*
         |--------------------------------------------------------------------------
-        | Validasi Data
+        | Validasi Data Siswa
         |--------------------------------------------------------------------------
         */
 
-        $validator =
-            Validator::make(
-                [
+        $validator = Validator::make(
+            [
+                'nama' => $nama,
 
-                    'nama' =>
-                        $nama,
+                'nis' => $nis,
 
-                    'nis' =>
-                        $nis,
+                'nisn' => $nisn !== ''
+                    ? $nisn
+                    : null,
 
-                    'nisn' =>
-                        $nisn !== ''
-                            ? $nisn
-                            : null,
+                'jenis_kelamin' => $jenisKelamin !== ''
+                    ? $jenisKelamin
+                    : null,
 
-                    'jenis_kelamin' =>
-                        $jenisKelamin !== ''
-                            ? $jenisKelamin
-                            : null,
+                'alamat' => $alamat !== ''
+                    ? $alamat
+                    : null,
 
-                    'alamat' =>
-                        $alamat !== ''
-                            ? $alamat
-                            : null,
+                'username' => $username,
 
-                    'username' =>
-                        $username,
+                'email' => $email !== ''
+                    ? $email
+                    : null,
 
-                    'email' =>
-                        $email !== ''
-                            ? $email
-                            : null,
+                'password' => $password,
 
-                    'password' =>
-                        $password,
-
-                    'status' =>
-                        $status,
-
+                'status' => $status,
+            ],
+            [
+                'nama' => [
+                    'required',
+                    'string',
+                    'max:255',
                 ],
-                [
 
-                    'nama' => [
-                        'required',
-                        'string',
-                        'max:255',
-                    ],
+                'nis' => [
+                    'required',
+                    'string',
+                    'max:50',
+                    'unique:siswa,nis',
+                ],
 
-                    'nis' => [
-                        'required',
-                        'string',
-                        'max:50',
-                        'unique:siswa,nis',
-                    ],
+                'nisn' => [
+                    'nullable',
+                    'string',
+                    'max:50',
+                    'unique:siswa,nisn',
+                ],
 
-                    'nisn' => [
-                        'nullable',
-                        'string',
-                        'max:50',
-                        'unique:siswa,nisn',
-                    ],
+                'jenis_kelamin' => [
+                    'nullable',
+                    Rule::in([
+                        'L',
+                        'P',
+                    ]),
+                ],
 
-                    'jenis_kelamin' => [
-                        'nullable',
-                        Rule::in([
-                            'L',
-                            'P',
-                        ]),
-                    ],
+                'alamat' => [
+                    'nullable',
+                    'string',
+                ],
 
-                    'alamat' => [
-                        'nullable',
-                        'string',
-                    ],
+                'username' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    'unique:users,username',
+                ],
 
-                    'username' => [
-                        'required',
-                        'string',
-                        'max:255',
-                        'unique:users,username',
-                    ],
+                'email' => [
+                    'nullable',
+                    'email',
+                    'max:255',
+                    'unique:users,email',
+                ],
 
-                    'email' => [
-                        'nullable',
-                        'email',
-                        'max:255',
-                        'unique:users,email',
-                    ],
+                'password' => [
+                    'required',
+                    'string',
+                    'min:8',
+                ],
 
-                    'password' => [
-                        'required',
-                        'string',
-                        'min:8',
-                    ],
-
-                    'status' => [
-                        'required',
-                        Rule::in([
-                            'Aktif',
-                            'Tidak Aktif',
-                        ]),
-                    ],
-
-                ]
-            );
+                'status' => [
+                    'required',
+                    Rule::in([
+                        'Aktif',
+                        'Tidak Aktif',
+                    ]),
+                ],
+            ]
+        );
 
 
-        if (
-            $validator->fails()
-        ) {
+        /*
+        |--------------------------------------------------------------------------
+        | Jika Validasi Gagal
+        |--------------------------------------------------------------------------
+        */
+
+        if ($validator->fails()) {
 
             $gagal[] =
                 "Baris {$nomorBaris}: "
@@ -1340,9 +1086,7 @@ public function import(
                         ->all()
                 );
 
-
             continue;
-
         }
 
 
@@ -1369,87 +1113,68 @@ public function import(
                 ) {
 
                     /*
-                     * Buat akun user.
-                     */
+                    |--------------------------------------------------------------------------
+                    | Buat Akun User
+                    |--------------------------------------------------------------------------
+                    */
 
-                    $user =
-                        User::create([
+                    $user = User::create([
+                        'name' => $nama,
 
-                            'name' =>
-                                $nama,
+                        'username' => $username,
 
-                            'username' =>
-                                $username,
+                        'email' => $email !== ''
+                            ? $email
+                            : null,
 
-                            'email' =>
-                                $email !== ''
-                                    ? $email
-                                    : null,
+                        'password' => Hash::make(
+                            $password
+                        ),
 
-                            'password' =>
-                                Hash::make(
-                                    $password
-                                ),
-
-                            'role' =>
-                                'siswa',
-
-                        ]);
+                        'role' => 'siswa',
+                    ]);
 
 
                     /*
-                     * Buat data siswa.
-                     */
+                    |--------------------------------------------------------------------------
+                    | Buat Data Siswa
+                    |--------------------------------------------------------------------------
+                    */
 
                     Siswa::create([
+                        'user_id' => $user->id,
 
-                        'user_id' =>
-                            $user->id,
+                        'kelas_id' => $kelas->id,
 
-                        'kelas_id' =>
-                            $kelas->id,
+                        'nama' => $nama,
 
-                        'nama' =>
-                            $nama,
+                        'nis' => $nis,
 
-                        'nis' =>
-                            $nis,
+                        'nisn' => $nisn !== ''
+                            ? $nisn
+                            : null,
 
-                        'nisn' =>
-                            $nisn !== ''
-                                ? $nisn
-                                : null,
+                        'jenis_kelamin' => $jenisKelamin !== ''
+                            ? $jenisKelamin
+                            : null,
 
-                        'jenis_kelamin' =>
-                            $jenisKelamin !== ''
-                                ? $jenisKelamin
-                                : null,
+                        'alamat' => $alamat !== ''
+                            ? $alamat
+                            : null,
 
-                        'alamat' =>
-                            $alamat !== ''
-                                ? $alamat
-                                : null,
-
-                        'is_active' =>
-                            $status === 'Aktif',
-
+                        'is_active' => $status === 'Aktif',
                     ]);
-
                 }
             );
 
 
             $berhasil++;
 
-        } catch (
-            \Throwable $error
-        ) {
+        } catch (\Throwable $error) {
 
             $gagal[] =
                 "Baris {$nomorBaris}: gagal menyimpan data.";
-
         }
-
     }
 
 
@@ -1473,14 +1198,11 @@ public function import(
                 'import_errors',
                 $gagal
             );
-
     }
 
 
     return redirect()
-        ->route(
-            'siswa.index'
-        )
+        ->route('siswa.index')
         ->with(
             'success',
             "{$berhasil} data siswa berhasil diimport."

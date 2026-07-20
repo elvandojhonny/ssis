@@ -9,1018 +9,1636 @@ use Illuminate\Http\Request;
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-use Symfony\Component\HttpFoundation\StreamedResponse;
-
 use PhpOffice\PhpSpreadsheet\Style\Border;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class RekapAbsensiController extends Controller
 {
+    /*
+    |--------------------------------------------------------------------------
+    | HALAMAN REKAP ABSENSI
+    |--------------------------------------------------------------------------
+    */
+
     public function index(Request $request)
-{
-    $bulan = (int) $request->input(
-        'bulan',
-        now()->month
-    );
+    {
+        $bulan = (int) $request->input(
+            'bulan',
+            now()->month
+        );
 
-    $tahun = (int) $request->input(
-        'tahun',
-        now()->year
-    );
+        $tahun = (int) $request->input(
+            'tahun',
+            now()->year
+        );
 
-    /*
-     * Jika tingkat kosong,
-     * semua tingkat ditampilkan,
-     * tetapi tetap dipisahkan per bagian.
-     */
-    $tingkat = $request->input('tingkat');
+        /*
+         * Jika tingkat kosong:
+         * semua tingkat ditampilkan.
+         *
+         * Jika tingkat dipilih:
+         * hanya tingkat tersebut yang ditampilkan.
+         */
+        $tingkat = $request->input('tingkat');
 
-    /*
-     * Ambil tingkat yang tersedia.
-     *
-     * Contoh:
-     * X
-     * XI
-     * XII
-     */
-    $daftarTingkat = Kelas::query()
-        ->where('is_active', true)
-        ->select('tingkat')
-        ->distinct()
-        ->pluck('tingkat');
 
-    /*
-     * Ambil data absensi periode terpilih.
-     */
-    $absensis = Absensi::with([
-            'siswa.user',
-            'siswa.kelas',
-            'sesiAbsensi.kelas',
-        ])
-        ->whereHas(
-            'sesiAbsensi',
-            function ($query) use (
-                $bulan,
-                $tahun,
-                $tingkat
-            ) {
-                $query
-                    ->whereMonth(
-                        'tanggal',
-                        $bulan
-                    )
-                    ->whereYear(
-                        'tanggal',
-                        $tahun
-                    );
+        /*
+        |--------------------------------------------------------------------------
+        | Daftar Tingkat
+        |--------------------------------------------------------------------------
+        |
+        | Contoh:
+        | X
+        | XI
+        | XII
+        |
+        */
 
-                if ($tingkat) {
+        $daftarTingkat = Kelas::query()
+    ->where('is_active', true)
+    ->whereHas('tahunAjaran', function ($query) {
+        $query->where('is_active', true);
+    })
+    ->whereNotNull('tingkat')
+    ->select('tingkat')
+    ->distinct()
+    ->orderByRaw("
+        CASE tingkat
+            WHEN 'X' THEN 1
+            WHEN 'XI' THEN 2
+            WHEN 'XII' THEN 3
+            ELSE 4
+        END
+    ")
+    ->pluck('tingkat');
 
-                    $query->whereHas(
-                        'kelas',
-                        function ($q) use (
+
+        /*
+        |--------------------------------------------------------------------------
+        | Ambil Data Absensi
+        |--------------------------------------------------------------------------
+        |
+        | Sesi sekarang menggunakan tingkat.
+        |
+        | Contoh:
+        |
+        | Sesi Tingkat X
+        | ├── X 
+        | ├── X 
+        | └── X 
+        |
+        */
+
+        $absensis = Absensi::with([
+                'siswa.user',
+                'siswa.kelas',
+                'sesiAbsensi',
+            ])
+            ->whereHas(
+                'sesiAbsensi',
+                function ($query) use (
+                    $bulan,
+                    $tahun,
+                    $tingkat
+                ) {
+
+                    $query
+                        ->whereMonth(
+                            'tanggal',
+                            $bulan
+                        )
+                        ->whereYear(
+                            'tanggal',
+                            $tahun
+                        );
+
+
+                    /*
+                     * Filter langsung berdasarkan
+                     * kolom tingkat pada sesi_absensis.
+                     */
+                    if ($tingkat) {
+
+                        $query->where(
+                            'tingkat',
                             $tingkat
-                        ) {
-                            $q->where(
-                                'tingkat',
-                                $tingkat
-                            );
-                        }
-                    );
+                        );
+                    }
                 }
-            }
-        )
-        ->get();
+            )
+            ->get();
 
-    /*
-     * Kelompokkan data berdasarkan tingkat.
-     *
-     * Hasil:
-     *
-     * X
-     * ├── X IPA 1
-     * └── X IPS 1
-     *
-     * XI
-     * └── XI IPA 1
-     */
-    $rekapPerTingkat = $absensis
-        ->groupBy(
-            fn ($absensi) =>
-                $absensi
-                    ->siswa
-                    ->kelas
-                    ->tingkat
-        )
-        ->map(function ($absensiTingkat) {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Kelompokkan Rekap Berdasarkan Tingkat
+        |--------------------------------------------------------------------------
+        */
+
+        $rekapPerTingkat = $absensis
 
             /*
-             * Rekap siswa dalam tingkat tersebut.
+             * Kelompokkan berdasarkan tingkat
+             * siswa saat ini.
              */
-            $rekapSiswa = $absensiTingkat
-    ->groupBy('siswa_id')
-    ->map(function ($items) {
+            ->groupBy(
+                fn ($absensi) =>
+                    $absensi
+                        ->siswa
+                        ?->kelas
+                        ?->tingkat
+            )
 
-        $siswa = $items->first()->siswa;
+            ->filter(
+                fn ($items, $key) =>
+                    ! empty($key)
+            )
 
-        /*
-         * Riwayat absensi siswa
-         * dikelompokkan berdasarkan tanggal.
-         */
-        $riwayat = $items
-            ->groupBy(function ($absensi) {
-                return $absensi
-                    ->sesiAbsensi
-                    ->tanggal
-                    ->format('Y-m-d');
-            })
-            ->map(function ($absensiTanggal, $tanggal) {
+            ->map(function ($absensiTingkat) {
+
 
                 /*
-                 * Cari absensi sesi pagi.
-                 */
-                $pagi = $absensiTanggal
-                    ->first(function ($item) {
-                        return strtolower(
-                            $item->sesiAbsensi->jenis
-                        ) === 'pagi';
-                    });
+                |--------------------------------------------------------------------------
+                | Rekap Per Siswa
+                |--------------------------------------------------------------------------
+                */
+
+                $rekapSiswa = $absensiTingkat
+
+                    ->groupBy('siswa_id')
+
+                    ->map(function ($items) {
+
+                        $siswa =
+                            $items
+                                ->first()
+                                ->siswa;
+
+
+                        /*
+                        |--------------------------------------------------------------------------
+                        | Riwayat Absensi Per Tanggal
+                        |--------------------------------------------------------------------------
+                        */
+
+                        $riwayat = $items
+
+                            ->groupBy(
+                                function ($absensi) {
+
+                                    return $absensi
+                                        ->sesiAbsensi
+                                        ->tanggal
+                                        ->format(
+                                            'Y-m-d'
+                                        );
+                                }
+                            )
+
+                            ->map(
+                                function (
+                                    $absensiTanggal,
+                                    $tanggal
+                                ) {
+
+
+                                    /*
+                                     * Cari sesi pagi.
+                                     */
+                                    $pagi =
+                                        $absensiTanggal
+                                            ->first(
+                                                function (
+                                                    $item
+                                                ) {
+
+                                                    return strtolower(
+                                                        $item
+                                                            ->sesiAbsensi
+                                                            ->jenis
+                                                    ) === 'pagi';
+                                                }
+                                            );
+
+
+                                    /*
+                                     * Cari sesi siang.
+                                     */
+                                    $siang =
+                                        $absensiTanggal
+                                            ->first(
+                                                function (
+                                                    $item
+                                                ) {
+
+                                                    return strtolower(
+                                                        $item
+                                                            ->sesiAbsensi
+                                                            ->jenis
+                                                    ) === 'siang';
+                                                }
+                                            );
+
+
+                                    return [
+
+                                        'tanggal' =>
+                                            $tanggal,
+
+
+                                        'pagi' =>
+                                            $pagi
+                                                ? [
+                                                    'status' =>
+                                                        $pagi
+                                                            ->status,
+
+                                                    'waktu' =>
+                                                        $pagi
+                                                            ->waktu_absen
+                                                            ?->format(
+                                                                'H:i'
+                                                            ),
+                                                ]
+                                                : null,
+
+
+                                        'siang' =>
+                                            $siang
+                                                ? [
+                                                    'status' =>
+                                                        $siang
+                                                            ->status,
+
+                                                    'waktu' =>
+                                                        $siang
+                                                            ->waktu_absen
+                                                            ?->format(
+                                                                'H:i'
+                                                            ),
+                                                ]
+                                                : null,
+                                    ];
+                                }
+                            )
+
+                            ->sortBy('tanggal')
+
+                            ->values();
+
+
+                        /*
+                        |--------------------------------------------------------------------------
+                        | Statistik Per Siswa
+                        |--------------------------------------------------------------------------
+                        */
+
+                        return [
+
+                            'siswa' =>
+                                $siswa,
+
+
+                            'hadir' =>
+                                $items
+                                    ->where(
+                                        'status',
+                                        'hadir'
+                                    )
+                                    ->count(),
+
+
+                            'terlambat' =>
+                                $items
+                                    ->where(
+                                        'status',
+                                        'terlambat'
+                                    )
+                                    ->count(),
+
+
+                            'izin' =>
+                                $items
+                                    ->where(
+                                        'status',
+                                        'izin'
+                                    )
+                                    ->count(),
+
+
+                            'sakit' =>
+                                $items
+                                    ->where(
+                                        'status',
+                                        'sakit'
+                                    )
+                                    ->count(),
+
+
+                            'alpa' =>
+                                $items
+                                    ->where(
+                                        'status',
+                                        'alpa'
+                                    )
+                                    ->count(),
+
+
+                            'total' =>
+                                $items
+                                    ->count(),
+
+
+                            'riwayat' =>
+                                $riwayat,
+                        ];
+                    })
+
+
+                    /*
+                     * Urutkan berdasarkan kelas
+                     * kemudian nama siswa.
+                     */
+                    ->sortBy(
+                        function ($item) {
+
+                            return
+                                (
+                                    $item['siswa']
+                                        ->kelas
+                                        ?->nama
+                                    ?? ''
+                                )
+                                . '-'
+                                .
+                                (
+                                    $item['siswa']
+                                        ->user
+                                        ?->name
+                                    ?? ''
+                                );
+                        }
+                    )
+
+                    ->values();
+
 
                 /*
-                 * Cari absensi sesi siang.
-                 */
-                $siang = $absensiTanggal
-                    ->first(function ($item) {
-                        return strtolower(
-                            $item->sesiAbsensi->jenis
-                        ) === 'siang';
-                    });
+                |--------------------------------------------------------------------------
+                | Rekap Harian
+                |--------------------------------------------------------------------------
+                */
+
+                $rekapHarian = $absensiTingkat
+
+                    ->groupBy(
+                        function ($absensi) {
+
+                            return $absensi
+                                ->sesiAbsensi
+                                ->tanggal
+                                ->format(
+                                    'Y-m-d'
+                                );
+                        }
+                    )
+
+                    ->map(
+                        function (
+                            $items,
+                            $tanggal
+                        ) {
+
+
+                            /*
+                             * Data sesi pagi.
+                             */
+                            $sesiPagi =
+                                $items->filter(
+                                    fn ($item) =>
+                                        strtolower(
+                                            $item
+                                                ->sesiAbsensi
+                                                ->jenis
+                                        ) === 'pagi'
+                                );
+
+
+                            /*
+                             * Data sesi siang.
+                             */
+                            $sesiSiang =
+                                $items->filter(
+                                    fn ($item) =>
+                                        strtolower(
+                                            $item
+                                                ->sesiAbsensi
+                                                ->jenis
+                                        ) === 'siang'
+                                );
+
+
+                            return [
+
+                                'tanggal' =>
+                                    $tanggal,
+
+
+                                'pagi_terisi' =>
+                                    $sesiPagi
+                                        ->isNotEmpty(),
+
+
+                                'siang_terisi' =>
+                                    $sesiSiang
+                                        ->isNotEmpty(),
+
+
+                                'hadir' =>
+                                    $items
+                                        ->where(
+                                            'status',
+                                            'hadir'
+                                        )
+                                        ->count(),
+
+
+                                'terlambat' =>
+                                    $items
+                                        ->where(
+                                            'status',
+                                            'terlambat'
+                                        )
+                                        ->count(),
+
+
+                                'izin' =>
+                                    $items
+                                        ->where(
+                                            'status',
+                                            'izin'
+                                        )
+                                        ->count(),
+
+
+                                'sakit' =>
+                                    $items
+                                        ->where(
+                                            'status',
+                                            'sakit'
+                                        )
+                                        ->count(),
+
+
+                                'alpa' =>
+                                    $items
+                                        ->where(
+                                            'status',
+                                            'alpa'
+                                        )
+                                        ->count(),
+
+
+                                'total' =>
+                                    $items
+                                        ->count(),
+                            ];
+                        }
+                    )
+
+                    ->sortBy('tanggal')
+
+                    ->values();
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Data Akhir Per Tingkat
+                |--------------------------------------------------------------------------
+                */
 
                 return [
-                    'tanggal' => $tanggal,
 
-                    'pagi' => $pagi
-                        ? [
-                            'status' => $pagi->status,
-                            'waktu' => $pagi->waktu_absen
-                                ?->format('H:i'),
-                        ]
-                        : null,
+                    'rekap_siswa' =>
+                        $rekapSiswa,
 
-                    'siang' => $siang
-                        ? [
-                            'status' => $siang->status,
-                            'waktu' => $siang->waktu_absen
-                                ?->format('H:i'),
-                        ]
-                        : null,
+
+                    'rekap_harian' =>
+                        $rekapHarian,
+
+
+                    'statistik' => [
+
+                        'hadir' =>
+                            $absensiTingkat
+                                ->where(
+                                    'status',
+                                    'hadir'
+                                )
+                                ->count(),
+
+
+                        'terlambat' =>
+                            $absensiTingkat
+                                ->where(
+                                    'status',
+                                    'terlambat'
+                                )
+                                ->count(),
+
+
+                        'izin' =>
+                            $absensiTingkat
+                                ->where(
+                                    'status',
+                                    'izin'
+                                )
+                                ->count(),
+
+
+                        'sakit' =>
+                            $absensiTingkat
+                                ->where(
+                                    'status',
+                                    'sakit'
+                                )
+                                ->count(),
+
+
+                        'alpa' =>
+                            $absensiTingkat
+                                ->where(
+                                    'status',
+                                    'alpa'
+                                )
+                                ->count(),
+                    ],
                 ];
-            })
-            ->sortBy('tanggal')
-            ->values();
+            });
 
-        return [
-            'siswa' => $siswa,
-
-            'hadir' => $items
-                ->where('status', 'hadir')
-                ->count(),
-
-            'terlambat' => $items
-                ->where('status', 'terlambat')
-                ->count(),
-
-            'izin' => $items
-                ->where('status', 'izin')
-                ->count(),
-
-            'sakit' => $items
-                ->where('status', 'sakit')
-                ->count(),
-
-            'alpa' => $items
-                ->where('status', 'alpa')
-                ->count(),
-
-            'total' => $items->count(),
-
-            'riwayat' => $riwayat,
-        ];
-    })
-    ->sortBy([
-        fn ($a, $b) => strcmp(
-            $a['siswa']->kelas->nama,
-            $b['siswa']->kelas->nama
-        ),
-
-        fn ($a, $b) => strcmp(
-            $a['siswa']->user->name,
-            $b['siswa']->user->name
-        ),
-    ])
-    ->values();
-
-                /*
- * Rekap absensi berdasarkan tanggal.
- */
-$rekapHarian = $absensiTingkat
-    ->groupBy(function ($absensi) {
-        return $absensi
-            ->sesiAbsensi
-            ->tanggal
-            ->format('Y-m-d');
-    })
-    ->map(function ($items, $tanggal) {
 
         /*
-         * Kelompokkan juga berdasarkan sesi.
-         * Karena satu hari bisa memiliki
-         * sesi pagi dan siang.
-         */
-        $sesiPagi = $items->filter(
-            fn ($item) =>
-                $item->sesiAbsensi->jenis === 'pagi'
+        |--------------------------------------------------------------------------
+        | Tampilkan View
+        |--------------------------------------------------------------------------
+        */
+
+        return view(
+            'absensi.rekap.index',
+            compact(
+                'bulan',
+                'tahun',
+                'tingkat',
+                'daftarTingkat',
+                'rekapPerTingkat'
+            )
         );
+    }
 
-        $sesiSiang = $items->filter(
-            fn ($item) =>
-                $item->sesiAbsensi->jenis === 'siang'
-        );
 
-        return [
-            'tanggal' => $tanggal,
+    /*
+    |--------------------------------------------------------------------------
+    | EXPORT EXCEL
+    |--------------------------------------------------------------------------
+    */
 
-            'pagi_terisi' =>
-                $sesiPagi->isNotEmpty(),
+    public function export(
+        Request $request
+    ): StreamedResponse
+    {
 
-            'siang_terisi' =>
-                $sesiSiang->isNotEmpty(),
+        /*
+        |--------------------------------------------------------------------------
+        | Validasi
+        |--------------------------------------------------------------------------
+        */
 
-            'hadir' =>
-                $items
-                    ->where('status', 'hadir')
-                    ->count(),
+        $validated =
+            $request->validate([
 
-            'terlambat' =>
-                $items
-                    ->where('status', 'terlambat')
-                    ->count(),
+                'bulan' => [
+                    'required',
+                    'integer',
+                    'between:1,12',
+                ],
 
-            'izin' =>
-                $items
-                    ->where('status', 'izin')
-                    ->count(),
+                'tahun' => [
+                    'required',
+                    'integer',
+                    'min:2020',
+                    'max:2100',
+                ],
 
-            'sakit' =>
-                $items
-                    ->where('status', 'sakit')
-                    ->count(),
+                'tingkat' => [
+                    'required',
+                    'string',
+                    'max:20',
+                ],
+            ]);
 
-            'alpa' =>
-                $items
-                    ->where('status', 'alpa')
-                    ->count(),
 
-            'total' =>
-                $items->count(),
-        ];
-    })
-    ->sortBy('tanggal')
-    ->values();
+        $bulan =
+            (int) $validated['bulan'];
 
-            return [
-                'rekap_siswa' => $rekapSiswa,
+        $tahun =
+            (int) $validated['tahun'];
 
-                'rekap_harian' => $rekapHarian,
+        $tingkat =
+            $validated['tingkat'];
 
-                'statistik' => [
 
-                
+        /*
+        |--------------------------------------------------------------------------
+        | Ambil Data Absensi
+        |--------------------------------------------------------------------------
+        |
+        | Filter langsung menggunakan tingkat
+        | dari tabel sesi_absensis.
+        |
+        */
+
+        $absensis = Absensi::with([
+
+                'siswa.user',
+
+                'siswa.kelas',
+
+                'sesiAbsensi',
+
+            ])
+
+            ->whereHas(
+
+                'sesiAbsensi',
+
+                function ($query) use (
+                    $bulan,
+                    $tahun,
+                    $tingkat
+                ) {
+
+                    $query
+
+                        ->whereMonth(
+                            'tanggal',
+                            $bulan
+                        )
+
+                        ->whereYear(
+                            'tanggal',
+                            $tahun
+                        )
+
+                        ->where(
+                            'tingkat',
+                            $tingkat
+                        );
+                }
+            )
+
+            ->get();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Rekap Per Siswa
+        |--------------------------------------------------------------------------
+        */
+
+        $rekapSiswa = $absensis
+
+            ->groupBy('siswa_id')
+
+            ->map(function ($items) {
+
+                $siswa =
+                    $items
+                        ->first()
+                        ->siswa;
+
+
+                return [
+
+                    'siswa' =>
+                        $siswa,
+
 
                     'hadir' =>
-                        $absensiTingkat
+                        $items
                             ->where(
                                 'status',
                                 'hadir'
                             )
                             ->count(),
 
+
                     'terlambat' =>
-                        $absensiTingkat
+                        $items
                             ->where(
                                 'status',
                                 'terlambat'
                             )
                             ->count(),
 
+
                     'izin' =>
-                        $absensiTingkat
+                        $items
                             ->where(
                                 'status',
                                 'izin'
                             )
                             ->count(),
 
+
                     'sakit' =>
-                        $absensiTingkat
+                        $items
                             ->where(
                                 'status',
                                 'sakit'
                             )
                             ->count(),
 
+
                     'alpa' =>
-                        $absensiTingkat
+                        $items
                             ->where(
                                 'status',
                                 'alpa'
                             )
                             ->count(),
-                ],
-            ];
-        });
 
-    return view(
-        'absensi.rekap.index',
-        compact(
-            'bulan',
-            'tahun',
-            'tingkat',
-            'daftarTingkat',
-            'rekapPerTingkat'
-        )
-    );
-}
 
-public function export(Request $request): StreamedResponse
-{
-    $validated = $request->validate([
-        'bulan' => [
-            'required',
-            'integer',
-            'between:1,12',
-        ],
+                    'total' =>
+                        $items
+                            ->count(),
 
-        'tahun' => [
-            'required',
-            'integer',
-            'min:2020',
-            'max:2100',
-        ],
 
-        'tingkat' => [
-            'required',
-            'string',
-            'max:20',
-        ],
-    ]);
+                    /*
+                     * Detail riwayat
+                     * berdasarkan tanggal.
+                     */
+                    'riwayat' =>
+                        $items
 
-    $bulan = (int) $validated['bulan'];
-    $tahun = (int) $validated['tahun'];
-    $tingkat = $validated['tingkat'];
+                            ->groupBy(
+                                function ($item) {
 
-    /*
-    |--------------------------------------------------------------------------
-    | Ambil Data Absensi
-    |--------------------------------------------------------------------------
-    */
-
-    $absensis = Absensi::with([
-            'siswa.user',
-            'siswa.kelas',
-            'sesiAbsensi',
-        ])
-        ->whereHas(
-            'sesiAbsensi',
-            function ($query) use (
-                $bulan,
-                $tahun,
-                $tingkat
-            ) {
-                $query
-                    ->whereMonth('tanggal', $bulan)
-                    ->whereYear('tanggal', $tahun)
-                    ->whereHas(
-                        'kelas',
-                        function ($q) use ($tingkat) {
-                            $q->where(
-                                'tingkat',
-                                $tingkat
-                            );
-                        }
-                    );
-            }
-        )
-        ->get();
-
-    /*
-    |--------------------------------------------------------------------------
-    | Rekap Per Siswa
-    |--------------------------------------------------------------------------
-    */
-
-    $rekapSiswa = $absensis
-        ->groupBy('siswa_id')
-        ->map(function ($items) {
-
-            $siswa = $items->first()->siswa;
-
-            return [
-                'siswa' => $siswa,
-
-                'hadir' => $items
-                    ->where('status', 'hadir')
-                    ->count(),
-
-                'terlambat' => $items
-                    ->where('status', 'terlambat')
-                    ->count(),
-
-                'izin' => $items
-                    ->where('status', 'izin')
-                    ->count(),
-
-                'sakit' => $items
-                    ->where('status', 'sakit')
-                    ->count(),
-
-                'alpa' => $items
-                    ->where('status', 'alpa')
-                    ->count(),
-
-                'total' => $items->count(),
-
-                /*
-                 * Detail riwayat per tanggal.
-                 */
-                'riwayat' => $items
-                    ->groupBy(function ($item) {
-                        return $item
-                            ->sesiAbsensi
-                            ->tanggal
-                            ->format('Y-m-d');
-                    })
-                    ->map(function (
-                        $absensiTanggal,
-                        $tanggal
-                    ) {
-
-                        $pagi = $absensiTanggal
-                            ->first(function ($item) {
-                                return strtolower(
-                                    $item
+                                    return $item
                                         ->sesiAbsensi
-                                        ->jenis
-                                ) === 'pagi';
-                            });
+                                        ->tanggal
+                                        ->format(
+                                            'Y-m-d'
+                                        );
+                                }
+                            )
 
-                        $siang = $absensiTanggal
-                            ->first(function ($item) {
-                                return strtolower(
-                                    $item
-                                        ->sesiAbsensi
-                                        ->jenis
-                                ) === 'siang';
-                            });
+                            ->map(
+                                function (
+                                    $absensiTanggal,
+                                    $tanggal
+                                ) {
 
-                        return [
-                            'tanggal' => $tanggal,
 
-                            'pagi' => $pagi,
+                                    $pagi =
+                                        $absensiTanggal
+                                            ->first(
+                                                function (
+                                                    $item
+                                                ) {
 
-                            'siang' => $siang,
-                        ];
-                    })
-                    ->sortBy('tanggal')
-                    ->values(),
-            ];
-        })
-        ->sortBy(function ($item) {
-            return
-                $item['siswa']->kelas->nama
-                . '-'
-                . $item['siswa']->user->name;
-        })
-        ->values();
+                                                    return strtolower(
+                                                        $item
+                                                            ->sesiAbsensi
+                                                            ->jenis
+                                                    ) === 'pagi';
+                                                }
+                                            );
 
-    /*
-    |--------------------------------------------------------------------------
-    | Nama Bulan
-    |--------------------------------------------------------------------------
-    */
 
-    $namaBulan = [
-        1 => 'Januari',
-        2 => 'Februari',
-        3 => 'Maret',
-        4 => 'April',
-        5 => 'Mei',
-        6 => 'Juni',
-        7 => 'Juli',
-        8 => 'Agustus',
-        9 => 'September',
-        10 => 'Oktober',
-        11 => 'November',
-        12 => 'Desember',
-    ];
+                                    $siang =
+                                        $absensiTanggal
+                                            ->first(
+                                                function (
+                                                    $item
+                                                ) {
 
-    /*
-    |--------------------------------------------------------------------------
-    | Buat Spreadsheet
-    |--------------------------------------------------------------------------
-    */
+                                                    return strtolower(
+                                                        $item
+                                                            ->sesiAbsensi
+                                                            ->jenis
+                                                    ) === 'siang';
+                                                }
+                                            );
 
-    $spreadsheet = new Spreadsheet();
 
-    /*
-    |--------------------------------------------------------------------------
-    | SHEET 1 — REKAP BULANAN
-    |--------------------------------------------------------------------------
-    */
+                                    return [
 
-    $sheet = $spreadsheet->getActiveSheet();
+                                        'tanggal' =>
+                                            $tanggal,
 
-    $sheet->setTitle('Rekap Bulanan');
+                                        'pagi' =>
+                                            $pagi,
 
-    $sheet->setCellValue(
-        'A1',
-        'REKAP ABSENSI SISWA'
-    );
+                                        'siang' =>
+                                            $siang,
+                                    ];
+                                }
+                            )
 
-    $sheet->setCellValue(
-        'A2',
-        'Kelas ' . $tingkat
-    );
+                            ->sortBy('tanggal')
 
-    $sheet->setCellValue(
-        'A3',
-        'Periode '
-        . $namaBulan[$bulan]
-        . ' '
-        . $tahun
-    );
+                            ->values(),
+                ];
+            })
 
-    $sheet->mergeCells('A1:J1');
-    $sheet->mergeCells('A2:J2');
-    $sheet->mergeCells('A3:J3');
 
-    /*
-     * Header.
-     */
-    $headers = [
-        'No',
-        'Nama Siswa',
-        'NIS',
-        'Kelas',
-        'Hadir',
-        'Terlambat',
-        'Izin',
-        'Sakit',
-        'Alpa',
-        'Total',
-    ];
+            /*
+             * Urut berdasarkan kelas
+             * kemudian nama siswa.
+             */
+            ->sortBy(
+                function ($item) {
 
-    $column = 'A';
+                    return
+                        (
+                            $item['siswa']
+                                ->kelas
+                                ?->nama
+                            ?? ''
+                        )
+                        . '-'
+                        .
+                        (
+                            $item['siswa']
+                                ->user
+                                ?->name
+                            ?? ''
+                        );
+                }
+            )
 
-    foreach ($headers as $header) {
+            ->values();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Nama Bulan
+        |--------------------------------------------------------------------------
+        */
+
+        $namaBulan = [
+
+            1 => 'Januari',
+
+            2 => 'Februari',
+
+            3 => 'Maret',
+
+            4 => 'April',
+
+            5 => 'Mei',
+
+            6 => 'Juni',
+
+            7 => 'Juli',
+
+            8 => 'Agustus',
+
+            9 => 'September',
+
+            10 => 'Oktober',
+
+            11 => 'November',
+
+            12 => 'Desember',
+        ];
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Buat Spreadsheet
+        |--------------------------------------------------------------------------
+        */
+
+        $spreadsheet =
+            new Spreadsheet();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | SHEET 1 — REKAP BULANAN
+        |--------------------------------------------------------------------------
+        */
+
+        $sheet =
+            $spreadsheet
+                ->getActiveSheet();
+
+
+        $sheet->setTitle(
+            'Rekap Bulanan'
+        );
+
 
         $sheet->setCellValue(
-            $column . '5',
-            $header
+            'A1',
+            'REKAP ABSENSI SISWA'
         );
 
-        $column++;
-    }
-
-    /*
-     * Data siswa.
-     */
-    $row = 6;
-
-    foreach (
-        $rekapSiswa
-        as $index => $rekap
-    ) {
 
         $sheet->setCellValue(
-            'A' . $row,
-            $index + 1
+            'A2',
+            'Tingkat ' . $tingkat
         );
+
 
         $sheet->setCellValue(
-            'B' . $row,
-            $rekap['siswa']
-                ->user
-                ->name
+            'A3',
+            'Periode '
+            . $namaBulan[$bulan]
+            . ' '
+            . $tahun
         );
 
-        $sheet->setCellValue(
-            'C' . $row,
-            $rekap['siswa']->nis
+
+        $sheet->mergeCells(
+            'A1:J1'
         );
 
-        $sheet->setCellValue(
-            'D' . $row,
-            $rekap['siswa']
-                ->kelas
-                ->nama
+        $sheet->mergeCells(
+            'A2:J2'
         );
 
-        $sheet->setCellValue(
-            'E' . $row,
-            $rekap['hadir']
+        $sheet->mergeCells(
+            'A3:J3'
         );
 
-        $sheet->setCellValue(
-            'F' . $row,
-            $rekap['terlambat']
-        );
 
-        $sheet->setCellValue(
-            'G' . $row,
-            $rekap['izin']
-        );
+        /*
+        |--------------------------------------------------------------------------
+        | Header Rekap
+        |--------------------------------------------------------------------------
+        */
 
-        $sheet->setCellValue(
-            'H' . $row,
-            $rekap['sakit']
-        );
+        $headers = [
 
-        $sheet->setCellValue(
-            'I' . $row,
-            $rekap['alpa']
-        );
+            'No',
 
-        $sheet->setCellValue(
-            'J' . $row,
-            $rekap['total']
-        );
+            'Nama Siswa',
 
-        $row++;
-    }
+            'NIS',
 
-    /*
-    |--------------------------------------------------------------------------
-    | SHEET 2 — DETAIL HARIAN
-    |--------------------------------------------------------------------------
-    */
+            'Kelas',
 
-    $detailSheet = $spreadsheet
-        ->createSheet();
+            'Hadir',
 
-    $detailSheet->setTitle(
-        'Detail Harian'
-    );
+            'Terlambat',
 
-    $detailSheet->setCellValue(
-        'A1',
-        'DETAIL ABSENSI HARIAN SISWA'
-    );
+            'Izin',
 
-    $detailSheet->setCellValue(
-        'A2',
-        'Kelas ' . $tingkat
-    );
+            'Sakit',
 
-    $detailSheet->setCellValue(
-        'A3',
-        'Periode '
-        . $namaBulan[$bulan]
-        . ' '
-        . $tahun
-    );
+            'Alpa',
 
-    $detailSheet->mergeCells(
-        'A1:J1'
-    );
+            'Total',
+        ];
 
-    $detailSheet->mergeCells(
-        'A2:J2'
-    );
 
-    $detailSheet->mergeCells(
-        'A3:J3'
-    );
+        $column = 'A';
 
-    /*
-     * Header detail.
-     */
-    $detailHeaders = [
-        'No',
-        'Tanggal',
-        'Nama Siswa',
-        'NIS',
-        'Kelas',
-        'Status Pagi',
-        'Waktu Pagi',
-        'Status Siang',
-        'Waktu Siang',
-        'Keterangan',
-    ];
-
-    $column = 'A';
-
-    foreach (
-        $detailHeaders
-        as $header
-    ) {
-
-        $detailSheet->setCellValue(
-            $column . '5',
-            $header
-        );
-
-        $column++;
-    }
-
-    /*
-     * Isi detail.
-     */
-    $detailRow = 6;
-    $nomorDetail = 1;
-
-    foreach ($rekapSiswa as $rekap) {
 
         foreach (
-            $rekap['riwayat']
-            as $riwayat
+            $headers
+            as $header
         ) {
 
-            $pagi =
-                $riwayat['pagi'];
-
-            $siang =
-                $riwayat['siang'];
-
-            $detailSheet->setCellValue(
-                'A' . $detailRow,
-                $nomorDetail
+            $sheet->setCellValue(
+                $column . '5',
+                $header
             );
 
-            $detailSheet->setCellValue(
-                'B' . $detailRow,
-                \Carbon\Carbon::parse(
-                    $riwayat['tanggal']
-                )->format('d/m/Y')
+            $column++;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Data Rekap Siswa
+        |--------------------------------------------------------------------------
+        */
+
+        $row = 6;
+
+
+        foreach (
+            $rekapSiswa
+            as $index => $rekap
+        ) {
+
+
+            $sheet->setCellValue(
+                'A' . $row,
+                $index + 1
             );
 
-            $detailSheet->setCellValue(
-                'C' . $detailRow,
+
+            $sheet->setCellValue(
+                'B' . $row,
                 $rekap['siswa']
                     ->user
-                    ->name
+                    ?->name
+                ?? '-'
             );
 
-            $detailSheet->setCellValue(
-                'D' . $detailRow,
-                $rekap['siswa']->nis
+
+            $sheet->setCellValue(
+                'C' . $row,
+                $rekap['siswa']
+                    ->nis
             );
 
-            $detailSheet->setCellValue(
-                'E' . $detailRow,
+
+            $sheet->setCellValue(
+                'D' . $row,
                 $rekap['siswa']
                     ->kelas
-                    ->nama
+                    ?->nama
+                ?? '-'
             );
 
-            /*
-             * Status pagi.
-             */
-            $detailSheet->setCellValue(
-                'F' . $detailRow,
-                $pagi
-                    ? ucfirst(
-                        $pagi->status
-                    )
-                    : '-'
+
+            $sheet->setCellValue(
+                'E' . $row,
+                $rekap['hadir']
             );
 
-            /*
-             * Waktu pagi.
-             */
-            $detailSheet->setCellValue(
-                'G' . $detailRow,
-                $pagi
-                    ? $pagi
-                        ->waktu_absen
-                        ?->format('H:i')
-                    : '-'
+
+            $sheet->setCellValue(
+                'F' . $row,
+                $rekap['terlambat']
             );
 
-            /*
-             * Status siang.
-             */
-            $detailSheet->setCellValue(
-                'H' . $detailRow,
-                $siang
-                    ? ucfirst(
-                        $siang->status
-                    )
-                    : '-'
+
+            $sheet->setCellValue(
+                'G' . $row,
+                $rekap['izin']
             );
 
-            /*
-             * Waktu siang.
-             */
-            $detailSheet->setCellValue(
-                'I' . $detailRow,
-                $siang
-                    ? $siang
-                        ->waktu_absen
-                        ?->format('H:i')
-                    : '-'
+
+            $sheet->setCellValue(
+                'H' . $row,
+                $rekap['sakit']
             );
 
-            /*
-             * Keterangan.
-             *
-             * Jika tabel absensis kamu
-             * mempunyai kolom keterangan,
-             * bagian ini bisa disesuaikan.
-             */
-            /*
-            * Keterangan.
-            *
-            * Gabungkan keterangan sesi pagi
-            * dan sesi siang jika tersedia.
-            */
-            $keterangan = [];
 
-            if (
-                $pagi &&
-                ! empty($pagi->keterangan)
-            ) {
-                $keterangan[] =
-                    'Pagi: '
-                    . $pagi->keterangan;
-            }
-
-            if (
-                $siang &&
-                ! empty($siang->keterangan)
-            ) {
-                $keterangan[] =
-                    'Siang: '
-                    . $siang->keterangan;
-            }
-
-            $detailSheet->setCellValue(
-                'J' . $detailRow,
-                ! empty($keterangan)
-                    ? implode(
-                        ' | ',
-                        $keterangan
-                    )
-                    : '-'
+            $sheet->setCellValue(
+                'I' . $row,
+                $rekap['alpa']
             );
 
-            $detailRow++;
-            $nomorDetail++;
+
+            $sheet->setCellValue(
+                'J' . $row,
+                $rekap['total']
+            );
+
+
+            $row++;
         }
-    }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Styling Kedua Sheet
-    |--------------------------------------------------------------------------
-    */
-
-    foreach (
-        [$sheet, $detailSheet]
-        as $worksheet
-    ) {
 
         /*
-         * Judul.
-         */
-        $worksheet
-            ->getStyle('A1:J1')
-            ->getFont()
-            ->setBold(true)
-            ->setSize(16);
+        |--------------------------------------------------------------------------
+        | SHEET 2 — DETAIL HARIAN
+        |--------------------------------------------------------------------------
+        */
 
-        $worksheet
-            ->getStyle('A1:J3')
-            ->getAlignment()
-            ->setHorizontal('center');
+        $detailSheet =
+            $spreadsheet
+                ->createSheet();
+
+
+        $detailSheet->setTitle(
+            'Detail Harian'
+        );
+
+
+        $detailSheet->setCellValue(
+            'A1',
+            'DETAIL ABSENSI HARIAN SISWA'
+        );
+
+
+        $detailSheet->setCellValue(
+            'A2',
+            'Tingkat ' . $tingkat
+        );
+
+
+        $detailSheet->setCellValue(
+            'A3',
+            'Periode '
+            . $namaBulan[$bulan]
+            . ' '
+            . $tahun
+        );
+
+
+        $detailSheet->mergeCells(
+            'A1:J1'
+        );
+
+        $detailSheet->mergeCells(
+            'A2:J2'
+        );
+
+        $detailSheet->mergeCells(
+            'A3:J3'
+        );
+
 
         /*
-         * Header tabel.
-         */
-        $worksheet
-            ->getStyle('A5:J5')
-            ->getFont()
-            ->setBold(true);
+        |--------------------------------------------------------------------------
+        | Header Detail
+        |--------------------------------------------------------------------------
+        */
 
-        $worksheet
-            ->getStyle('A5:J5')
-            ->getAlignment()
-            ->setHorizontal('center');
+        $detailHeaders = [
 
-        /*
-         * Auto size.
-         */
+            'No',
+
+            'Tanggal',
+
+            'Nama Siswa',
+
+            'NIS',
+
+            'Kelas',
+
+            'Status Pagi',
+
+            'Waktu Pagi',
+
+            'Status Siang',
+
+            'Waktu Siang',
+
+            'Keterangan',
+        ];
+
+
+        $column = 'A';
+
+
         foreach (
-            range('A', 'J')
-            as $column
+            $detailHeaders
+            as $header
         ) {
 
-            $worksheet
-                ->getColumnDimension(
-                    $column
-                )
-                ->setAutoSize(true);
+            $detailSheet
+                ->setCellValue(
+                    $column . '5',
+                    $header
+                );
+
+            $column++;
         }
 
-        /*
-         * Freeze header.
-         */
-        $worksheet
-            ->freezePane('A6');
 
         /*
-         * Filter.
-         */
-        $worksheet
-            ->setAutoFilter(
-                'A5:J5'
+        |--------------------------------------------------------------------------
+        | Isi Detail Harian
+        |--------------------------------------------------------------------------
+        */
+
+        $detailRow = 6;
+
+        $nomorDetail = 1;
+
+
+        foreach (
+            $rekapSiswa
+            as $rekap
+        ) {
+
+
+            foreach (
+                $rekap['riwayat']
+                as $riwayat
+            ) {
+
+
+                $pagi =
+                    $riwayat['pagi'];
+
+
+                $siang =
+                    $riwayat['siang'];
+
+
+                $detailSheet->setCellValue(
+                    'A' . $detailRow,
+                    $nomorDetail
+                );
+
+
+                $detailSheet->setCellValue(
+                    'B' . $detailRow,
+                    \Carbon\Carbon::parse(
+                        $riwayat['tanggal']
+                    )->format(
+                        'd/m/Y'
+                    )
+                );
+
+
+                $detailSheet->setCellValue(
+                    'C' . $detailRow,
+                    $rekap['siswa']
+                        ->user
+                        ?->name
+                    ?? '-'
+                );
+
+
+                $detailSheet->setCellValue(
+                    'D' . $detailRow,
+                    $rekap['siswa']
+                        ->nis
+                );
+
+
+                $detailSheet->setCellValue(
+                    'E' . $detailRow,
+                    $rekap['siswa']
+                        ->kelas
+                        ?->nama
+                    ?? '-'
+                );
+
+
+                /*
+                 * Status Pagi
+                 */
+                $detailSheet->setCellValue(
+                    'F' . $detailRow,
+                    $pagi
+                        ? ucfirst(
+                            $pagi->status
+                        )
+                        : '-'
+                );
+
+
+                /*
+                 * Waktu Pagi
+                 */
+                $detailSheet->setCellValue(
+                    'G' . $detailRow,
+                    $pagi
+                        ? (
+                            $pagi
+                                ->waktu_absen
+                                ?->format(
+                                    'H:i'
+                                )
+                            ?? '-'
+                        )
+                        : '-'
+                );
+
+
+                /*
+                 * Status Siang
+                 */
+                $detailSheet->setCellValue(
+                    'H' . $detailRow,
+                    $siang
+                        ? ucfirst(
+                            $siang->status
+                        )
+                        : '-'
+                );
+
+
+                /*
+                 * Waktu Siang
+                 */
+                $detailSheet->setCellValue(
+                    'I' . $detailRow,
+                    $siang
+                        ? (
+                            $siang
+                                ->waktu_absen
+                                ?->format(
+                                    'H:i'
+                                )
+                            ?? '-'
+                        )
+                        : '-'
+                );
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Keterangan
+                |--------------------------------------------------------------------------
+                */
+
+                $keterangan = [];
+
+
+                if (
+                    $pagi &&
+                    ! empty(
+                        $pagi->keterangan
+                    )
+                ) {
+
+                    $keterangan[] =
+                        'Pagi: '
+                        . $pagi
+                            ->keterangan;
+                }
+
+
+                if (
+                    $siang &&
+                    ! empty(
+                        $siang->keterangan
+                    )
+                ) {
+
+                    $keterangan[] =
+                        'Siang: '
+                        . $siang
+                            ->keterangan;
+                }
+
+
+                $detailSheet->setCellValue(
+                    'J' . $detailRow,
+
+                    ! empty($keterangan)
+
+                        ? implode(
+                            ' | ',
+                            $keterangan
+                        )
+
+                        : '-'
+                );
+
+
+                $detailRow++;
+
+                $nomorDetail++;
+            }
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Styling Kedua Sheet
+        |--------------------------------------------------------------------------
+        */
+
+        foreach (
+            [
+                $sheet,
+                $detailSheet,
+            ]
+            as $worksheet
+        ) {
+
+
+            /*
+             * Judul.
+             */
+            $worksheet
+
+                ->getStyle(
+                    'A1:J1'
+                )
+
+                ->getFont()
+
+                ->setBold(true)
+
+                ->setSize(16);
+
+
+            $worksheet
+
+                ->getStyle(
+                    'A1:J3'
+                )
+
+                ->getAlignment()
+
+                ->setHorizontal(
+                    'center'
+                );
+
+
+            /*
+             * Header tabel.
+             */
+            $worksheet
+
+                ->getStyle(
+                    'A5:J5'
+                )
+
+                ->getFont()
+
+                ->setBold(true);
+
+
+            $worksheet
+
+                ->getStyle(
+                    'A5:J5'
+                )
+
+                ->getAlignment()
+
+                ->setHorizontal(
+                    'center'
+                );
+
+
+            /*
+             * Auto Size.
+             */
+            foreach (
+                range(
+                    'A',
+                    'J'
+                )
+                as $column
+            ) {
+
+                $worksheet
+
+                    ->getColumnDimension(
+                        $column
+                    )
+
+                    ->setAutoSize(
+                        true
+                    );
+            }
+
+
+            /*
+             * Freeze Header.
+             */
+            $worksheet
+                ->freezePane(
+                    'A6'
+                );
+
+
+            /*
+             * Filter.
+             */
+            $worksheet
+                ->setAutoFilter(
+                    'A5:J5'
+                );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Border Rekap Bulanan
+        |--------------------------------------------------------------------------
+        */
+
+        $lastRekapRow =
+            max(
+                5,
+                $row - 1
             );
-    }
 
-    /*
-     * Border Rekap Bulanan.
-     */
-    $lastRekapRow =
-        max(5, $row - 1);
 
-    $sheet
-        ->getStyle(
-            'A5:J' . $lastRekapRow
-        )
-        ->getBorders()
-        ->getAllBorders()
-        ->setBorderStyle(Border::BORDER_THIN);
+        $sheet
 
-    /*
-     * Border Detail.
-     */
-    $lastDetailRow =
-        max(5, $detailRow - 1);
+            ->getStyle(
+                'A5:J'
+                . $lastRekapRow
+            )
 
-    $detailSheet
-        ->getStyle(
-            'A5:J' . $lastDetailRow
-        )
-        ->getBorders()
-        ->getAllBorders()
-        ->setBorderStyle(Border::BORDER_THIN);
+            ->getBorders()
 
-    /*
-     * Kembali ke sheet pertama.
-     */
-    $spreadsheet
-        ->setActiveSheetIndex(0);
+            ->getAllBorders()
 
-    /*
-    |--------------------------------------------------------------------------
-    | Download
-    |--------------------------------------------------------------------------
-    */
+            ->setBorderStyle(
+                Border::BORDER_THIN
+            );
 
-    $namaFile =
-        'Rekap-Absensi-Kelas-'
-        . $tingkat
-        . '-'
-        . str_pad(
-            $bulan,
-            2,
-            '0',
-            STR_PAD_LEFT
-        )
-        . '-'
-        . $tahun
-        . '.xlsx';
 
-    return response()->streamDownload(
-        function () use ($spreadsheet) {
+        /*
+        |--------------------------------------------------------------------------
+        | Border Detail Harian
+        |--------------------------------------------------------------------------
+        */
 
-            $writer = new Xlsx(
+        $lastDetailRow =
+            max(
+                5,
+                $detailRow - 1
+            );
+
+
+        $detailSheet
+
+            ->getStyle(
+                'A5:J'
+                . $lastDetailRow
+            )
+
+            ->getBorders()
+
+            ->getAllBorders()
+
+            ->setBorderStyle(
+                Border::BORDER_THIN
+            );
+
+
+        /*
+         * Kembali ke sheet pertama.
+         */
+        $spreadsheet
+            ->setActiveSheetIndex(0);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Nama File
+        |--------------------------------------------------------------------------
+        */
+
+        $namaFile =
+
+            'Rekap-Absensi-Tingkat-'
+
+            . $tingkat
+
+            . '-'
+
+            . str_pad(
+                $bulan,
+                2,
+                '0',
+                STR_PAD_LEFT
+            )
+
+            . '-'
+
+            . $tahun
+
+            . '.xlsx';
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Download Excel
+        |--------------------------------------------------------------------------
+        */
+
+        return response()->streamDownload(
+
+            function () use (
                 $spreadsheet
-            );
+            ) {
 
-            $writer->save(
-                'php://output'
-            );
+                $writer =
+                    new Xlsx(
+                        $spreadsheet
+                    );
 
-            $spreadsheet
-                ->disconnectWorksheets();
 
-        },
-        $namaFile,
-        [
-            'Content-Type' =>
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        ]
-    );
-}
+                $writer->save(
+                    'php://output'
+                );
 
+
+                $spreadsheet
+                    ->disconnectWorksheets();
+            },
+
+            $namaFile,
+
+            [
+
+                'Content-Type' =>
+
+                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+
+            ]
+        );
+    }
 }

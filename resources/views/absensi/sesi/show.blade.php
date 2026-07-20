@@ -484,118 +484,131 @@
 
 
     {{-- STATISTIK --}}
-    <div class="col-lg-7">
+    {{-- STATUS ABSENSI --}}
+<div class="col-lg-7">
 
-        <div class="card h-100">
+    @php
+        $sudahAbsen = $hadir + $terlambat;
 
-            <div class="card-header">
+        $persentaseAbsen = $totalSiswa > 0
+            ? round(($sudahAbsen / $totalSiswa) * 100)
+            : 0;
+    @endphp
 
+    <div class="card h-100">
+
+        <div class="card-header">
+
+            <div>
                 <h3 class="card-title">
-                    <i class="ti ti-chart-bar me-2"></i>
-                    Statistik Kehadiran
+                    <i class="ti ti-users-check me-2"></i>
+                    Status Absensi Saat Ini
                 </h3>
 
+                <div class="text-secondary small mt-1">
+                    Progres absensi seluruh siswa Tingkat {{ $sesi->tingkat }}.
+                </div>
             </div>
 
-            <div class="card-body">
+        </div>
 
-                <div class="row g-3">
+        <div class="card-body">
 
-                    {{-- TOTAL --}}
-                    <div class="col-sm-6 col-xl-3">
+            <div class="row g-3">
 
-                        <div class="stat-card">
+                {{-- TOTAL SISWA --}}
+                <div class="col-sm-6 col-xl-3">
 
-                            <div class="text-secondary small">
-                                Total Siswa
-                            </div>
+                    <div class="stat-card">
 
-                            <div
-                                id="stat-total"
-                                class="stat-number"
-                            >
-                                {{ $totalSiswa }}
-                            </div>
+                        <div class="text-secondary small">
+                            Total Siswa
+                        </div>
 
-                            <div class="text-secondary small">
-                                siswa
-                            </div>
+                        <div
+                            id="stat-total"
+                            class="stat-number"
+                        >
+                            {{ $totalSiswa }}
+                        </div>
 
+                        <div class="text-secondary small">
+                            siswa terdaftar
                         </div>
 
                     </div>
 
+                </div>
 
-                    {{-- HADIR --}}
-                    <div class="col-sm-6 col-xl-3">
 
-                        <div class="stat-card">
+                {{-- SUDAH ABSEN --}}
+                <div class="col-sm-6 col-xl-3">
 
-                            <div class="text-secondary small">
-                                Hadir
-                            </div>
+                    <div class="stat-card">
 
-                            <div
-                                id="stat-hadir"
-                                class="stat-number text-success"
-                            >
-                                {{ $hadir }}
-                            </div>
+                        <div class="text-secondary small">
+                            Sudah Absen
+                        </div>
 
-                            <div class="text-secondary small">
-                                siswa
-                            </div>
+                        <div
+                            id="stat-sudah"
+                            class="stat-number text-success"
+                        >
+                            {{ $sudahAbsen }}
+                        </div>
 
+                        <div class="text-secondary small">
+                            siswa
                         </div>
 
                     </div>
 
+                </div>
 
-                    {{-- TERLAMBAT --}}
-                    <div class="col-sm-6 col-xl-3">
 
-                        <div class="stat-card">
+                {{-- BELUM ABSEN --}}
+                <div class="col-sm-6 col-xl-3">
 
-                            <div class="text-secondary small">
-                                Terlambat
-                            </div>
+                    <div class="stat-card">
 
-                            <div
-                                id="stat-terlambat"
-                                class="stat-number text-warning"
-                            >
-                                {{ $terlambat }}
-                            </div>
+                        <div class="text-secondary small">
+                            Belum Absen
+                        </div>
 
-                            <div class="text-secondary small">
-                                siswa
-                            </div>
+                        <div
+                            id="stat-belum"
+                            class="stat-number text-warning"
+                        >
+                            {{ $belumAbsen }}
+                        </div>
 
+                        <div class="text-secondary small">
+                            siswa
                         </div>
 
                     </div>
 
+                </div>
 
-                    {{-- BELUM --}}
-                    <div class="col-sm-6 col-xl-3">
 
-                        <div class="stat-card">
+                {{-- PROGRES --}}
+                <div class="col-sm-6 col-xl-3">
 
-                            <div class="text-secondary small">
-                                Belum Absen
-                            </div>
+                    <div class="stat-card">
 
-                            <div
-                                id="stat-belum"
-                                class="stat-number text-secondary"
-                            >
-                                {{ $belumAbsen }}
-                            </div>
+                        <div class="text-secondary small">
+                            Progres Absensi
+                        </div>
 
-                            <div class="text-secondary small">
-                                siswa
-                            </div>
+                        <div
+                            id="stat-progress"
+                            class="stat-number text-primary"
+                        >
+                            {{ $persentaseAbsen }}%
+                        </div>
 
+                        <div class="text-secondary small">
+                            telah melakukan absensi
                         </div>
 
                     </div>
@@ -604,9 +617,43 @@
 
             </div>
 
+
+            {{-- PROGRESS BAR --}}
+            <div class="mt-4">
+
+                <div class="d-flex justify-content-between mb-2">
+
+                    <span class="text-secondary small">
+                        Progres keseluruhan
+                    </span>
+
+                    <span
+                        id="stat-progress-label"
+                        class="fw-bold small"
+                    >
+                        {{ $sudahAbsen }} dari {{ $totalSiswa }} siswa
+                    </span>
+
+                </div>
+
+                <div class="progress">
+
+                    <div
+                        id="stat-progress-bar"
+                        class="progress-bar"
+                        style="width: {{ $persentaseAbsen }}%"
+                        role="progressbar"
+                    ></div>
+
+                </div>
+
+            </div>
+
         </div>
 
     </div>
+
+</div>
 
 </div>
 
@@ -2037,58 +2084,73 @@ document.addEventListener(
 
         function updateStatistik(status) {
 
-            const hadirElement =
-                document.getElementById(
-                    'stat-hadir'
-                );
+    const totalElement =
+        document.getElementById('stat-total');
 
-            const terlambatElement =
-                document.getElementById(
-                    'stat-terlambat'
-                );
+    const sudahElement =
+        document.getElementById('stat-sudah');
 
-            const belumElement =
-                document.getElementById(
-                    'stat-belum'
-                );
+    const belumElement =
+        document.getElementById('stat-belum');
 
+    const progressElement =
+        document.getElementById('stat-progress');
 
-            if (status === 'hadir') {
+    const progressLabel =
+        document.getElementById('stat-progress-label');
 
-                hadirElement.textContent =
-                    parseInt(
-                        hadirElement.textContent
-                    ) + 1;
-
-            }
+    const progressBar =
+        document.getElementById('stat-progress-bar');
 
 
-            if (
-                status === 'terlambat'
-            ) {
+    const total =
+        parseInt(totalElement.textContent) || 0;
 
-                terlambatElement.textContent =
-                    parseInt(
-                        terlambatElement.textContent
-                    ) + 1;
+    let sudah =
+        parseInt(sudahElement.textContent) || 0;
 
-            }
+    let belum =
+        parseInt(belumElement.textContent) || 0;
 
 
-            const jumlahBelum =
-                parseInt(
-                    belumElement.textContent
-                );
+    /*
+     * Scan berhasil berarti siswa
+     * telah melakukan absensi.
+     */
+    sudah++;
 
 
-            if (jumlahBelum > 0) {
+    if (belum > 0) {
+        belum--;
+    }
 
-                belumElement.textContent =
-                    jumlahBelum - 1;
 
-            }
+    const persentase =
+        total > 0
+            ? Math.round(
+                (sudah / total) * 100
+            )
+            : 0;
 
-        }
+
+    sudahElement.textContent =
+        sudah;
+
+    belumElement.textContent =
+        belum;
+
+    progressElement.textContent =
+        persentase + '%';
+
+    progressLabel.textContent =
+        sudah
+        + ' dari '
+        + total
+        + ' siswa';
+
+    progressBar.style.width =
+        persentase + '%';
+}
 
 
         async function prosesScan(

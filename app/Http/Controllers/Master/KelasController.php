@@ -122,22 +122,14 @@ class KelasController extends Controller
 {
     $punyaSiswa = $kelas->siswa()->exists();
 
-    $punyaSesiAbsensi = DB::table('sesi_absensis')
-        ->where('kelas_id', $kelas->id)
-        ->exists();
-
     $punyaUjian = DB::table('ujians')
         ->where('kelas_id', $kelas->id)
         ->exists();
 
-    if (
-        $punyaSiswa ||
-        $punyaSesiAbsensi ||
-        $punyaUjian
-    ) {
+    if ($punyaSiswa || $punyaUjian) {
         return back()->with(
             'error',
-            'Kelas tidak dapat dihapus karena sudah digunakan oleh data siswa, absensi, atau ujian.'
+            'Kelas tidak dapat dihapus karena sudah digunakan oleh data siswa atau ujian.'
         );
     }
 

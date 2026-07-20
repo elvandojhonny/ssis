@@ -151,51 +151,67 @@
                     </div>
 
 
-                    {{-- KELAS --}}
+                    {{-- KELAS PESERTA --}}
 
-                    <div class="mb-3">
+<div class="mb-3">
 
-                        <label class="form-label required">
-                            Kelas Peserta
-                        </label>
+    <label class="form-label required">
+        Kelas Peserta
+    </label>
 
-                        <select
-                            name="kelas_id"
-                            class="form-select"
-                            required
+    <select
+        name="kelas_id"
+        class="form-select @error('kelas_id') is-invalid @enderror"
+        required
+    >
+
+        <option value="">
+            Pilih kelas
+        </option>
+
+        @foreach(['X', 'XI', 'XII'] as $tingkat)
+
+            @php
+                $kelasTingkat = $kelas->where('tingkat', $tingkat);
+            @endphp
+
+            @if($kelasTingkat->isNotEmpty())
+
+                <optgroup label="Tingkat {{ $tingkat }}">
+
+                    @foreach($kelasTingkat as $item)
+
+                        <option
+                            value="{{ $item->id }}"
+                            @selected(
+                                old('kelas_id') == $item->id
+                            )
                         >
+                            {{ $item->nama }}
+                            — {{ $item->tahunAjaran->nama }}
+                        </option>
 
-                            <option value="">
-                                Pilih kelas
-                            </option>
+                    @endforeach
 
-                            @foreach($kelas as $item)
+                </optgroup>
 
-                                <option
-                                    value="{{ $item->id }}"
-                                    @selected(
-                                        old('kelas_id')
-                                        == $item->id
-                                    )
-                                >
+            @endif
 
-                                    {{ $item->nama }}
+        @endforeach
 
-                                    —
+    </select>
 
-                                    {{
-                                        $item
-                                            ->tahunAjaran
-                                            ->nama
-                                    }}
+    @error('kelas_id')
+        <div class="invalid-feedback">
+            {{ $message }}
+        </div>
+    @enderror
 
-                                </option>
+    <div class="form-hint">
+        Pilih kelas yang akan mengikuti ujian.
+    </div>
 
-                            @endforeach
-
-                        </select>
-
-                    </div>
+</div>
 
                 </div>
 

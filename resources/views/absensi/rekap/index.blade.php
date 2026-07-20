@@ -234,122 +234,60 @@
 
 
     {{-- ===================================================== --}}
-    {{-- STATISTIK --}}
-    {{-- ===================================================== --}}
+{{-- RINGKASAN KEHADIRAN --}}
+{{-- ===================================================== --}}
 
-    <div class="card-body">
+<div class="card-body">
 
-        <div class="mb-3">
+    <div class="mb-4">
 
-            <h3 class="card-title">
-                Statistik Kehadiran
-            </h3>
+        <h3 class="card-title mb-1">
+            Ringkasan Kehadiran Bulan Ini
+        </h3>
 
-            <div class="text-secondary">
-                Total status absensi pada periode yang dipilih.
-            </div>
-
+        <div class="text-secondary">
+            Ringkasan seluruh catatan absensi siswa
+            Kelas {{ $namaTingkat }} selama
+            <strong>
+                {{ $daftarBulan[$bulan] }} {{ $tahun }}
+            </strong>.
+            Setiap angka menunjukkan jumlah kejadian, bukan jumlah siswa.
         </div>
 
-
-        <div class="row row-cards">
-
-            <div class="col-6 col-md-4 col-lg">
-
-                <div class="card h-100">
-
-                    <div class="card-body">
-
-                        <div class="text-secondary">
-                            Hadir
-                        </div>
-
-                        <div class="h1 mb-0">
-                            {{ $dataTingkat['statistik']['hadir'] }}
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
+    </div>
 
 
-            <div class="col-6 col-md-4 col-lg">
+    {{-- JUMLAH CATATAN KEHADIRAN --}}
 
-                <div class="card h-100">
+    <div class="row row-cards">
 
-                    <div class="card-body">
+        {{-- HADIR --}}
+        <div class="col-6 col-md-4 col-lg">
 
-                        <div class="text-secondary">
-                            Terlambat
-                        </div>
+            <div class="card h-100">
 
-                        <div class="h1 mb-0">
-                            {{ $dataTingkat['statistik']['terlambat'] }}
-                        </div>
+                <div class="card-body">
 
-                    </div>
+                    <div class="d-flex align-items-center gap-3">
 
-                </div>
+                        <span class="avatar bg-success-lt">
+                            <i class="ti ti-user-check"></i>
+                        </span>
 
-            </div>
+                        <div>
 
+                            <div class="text-secondary small">
+                                Kehadiran
+                            </div>
 
-            <div class="col-6 col-md-4 col-lg">
+                            <div class="h1 mb-0">
+                                {{ $dataTingkat['statistik']['hadir'] }}
+                            </div>
 
-                <div class="card h-100">
+                            <div class="text-secondary small">
+                                kali tercatat hadir
+                            </div>
 
-                    <div class="card-body">
-
-                        <div class="text-secondary">
-                            Izin
-                        </div>
-
-                        <div class="h1 mb-0">
-                            {{ $dataTingkat['statistik']['izin'] }}
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div class="col-6 col-md-4 col-lg">
-
-                <div class="card h-100">
-
-                    <div class="card-body">
-
-                        <div class="text-secondary">
-                            Sakit
-                        </div>
-
-                        <div class="h1 mb-0">
-                            {{ $dataTingkat['statistik']['sakit'] }}
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div class="col-6 col-md-4 col-lg">
-
-                <div class="card h-100">
-
-                    <div class="card-body">
-
-                        <div class="text-secondary">
-                            Alpa
-                        </div>
-
-                        <div class="h1 mb-0">
-                            {{ $dataTingkat['statistik']['alpa'] }}
                         </div>
 
                     </div>
@@ -361,73 +299,32 @@
         </div>
 
 
-        {{-- INFORMASI PERIODE --}}
+        {{-- TERLAMBAT --}}
+        <div class="col-6 col-md-4 col-lg">
 
-        <div class="row row-cards mt-2">
+            <div class="card h-100">
 
-            <div class="col-md-4">
+                <div class="card-body">
 
-                <div class="card h-100">
+                    <div class="d-flex align-items-center gap-3">
 
-                    <div class="card-body">
+                        <span class="avatar bg-warning-lt">
+                            <i class="ti ti-clock-exclamation"></i>
+                        </span>
 
-                        <div class="text-secondary mb-1">
-                            Hari Absensi Terisi
-                        </div>
+                        <div>
 
-                        <div class="h2 mb-0">
+                            <div class="text-secondary small">
+                                Keterlambatan
+                            </div>
 
-                            {{
-                                $dataTingkat[
-                                    'rekap_harian'
-                                ]->count()
-                            }}
+                            <div class="h1 mb-0">
+                                {{ $dataTingkat['statistik']['terlambat'] }}
+                            </div>
 
-                            Hari
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div class="col-md-4">
-
-                <div class="card h-100">
-
-                    <div class="card-body">
-
-                        <div class="text-secondary mb-1">
-                            Absensi Pertama
-                        </div>
-
-                        <div class="h3 mb-0">
-
-                            @if(
-                                $dataTingkat[
-                                    'rekap_harian'
-                                ]->isNotEmpty()
-                            )
-
-                                {{
-                                    \Carbon\Carbon::parse(
-                                        $dataTingkat[
-                                            'rekap_harian'
-                                        ]
-                                        ->first()['tanggal']
-                                    )
-                                    ->locale('id')
-                                    ->translatedFormat('d F Y')
-                                }}
-
-                            @else
-
-                                -
-
-                            @endif
+                            <div class="text-secondary small">
+                                kali tercatat terlambat
+                            </div>
 
                         </div>
 
@@ -437,41 +334,111 @@
 
             </div>
 
+        </div>
 
-            <div class="col-md-4">
 
-                <div class="card h-100">
+        {{-- IZIN --}}
+        <div class="col-6 col-md-4 col-lg">
 
-                    <div class="card-body">
+            <div class="card h-100">
 
-                        <div class="text-secondary mb-1">
-                            Absensi Terakhir
+                <div class="card-body">
+
+                    <div class="d-flex align-items-center gap-3">
+
+                        <span class="avatar bg-blue-lt">
+                            <i class="ti ti-file-description"></i>
+                        </span>
+
+                        <div>
+
+                            <div class="text-secondary small">
+                                Izin
+                            </div>
+
+                            <div class="h1 mb-0">
+                                {{ $dataTingkat['statistik']['izin'] }}
+                            </div>
+
+                            <div class="text-secondary small">
+                                kali tercatat izin
+                            </div>
+
                         </div>
 
-                        <div class="h3 mb-0">
+                    </div>
 
-                            @if(
-                                $dataTingkat[
-                                    'rekap_harian'
-                                ]->isNotEmpty()
-                            )
+                </div>
 
-                                {{
-                                    \Carbon\Carbon::parse(
-                                        $dataTingkat[
-                                            'rekap_harian'
-                                        ]
-                                        ->last()['tanggal']
-                                    )
-                                    ->locale('id')
-                                    ->translatedFormat('d F Y')
-                                }}
+            </div>
 
-                            @else
+        </div>
 
-                                -
 
-                            @endif
+        {{-- SAKIT --}}
+        <div class="col-6 col-md-4 col-lg">
+
+            <div class="card h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex align-items-center gap-3">
+
+                        <span class="avatar bg-azure-lt">
+                            <i class="ti ti-first-aid-kit"></i>
+                        </span>
+
+                        <div>
+
+                            <div class="text-secondary small">
+                                Sakit
+                            </div>
+
+                            <div class="h1 mb-0">
+                                {{ $dataTingkat['statistik']['sakit'] }}
+                            </div>
+
+                            <div class="text-secondary small">
+                                kali tercatat sakit
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        {{-- ALPA --}}
+        <div class="col-6 col-md-4 col-lg">
+
+            <div class="card h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex align-items-center gap-3">
+
+                        <span class="avatar bg-danger-lt">
+                            <i class="ti ti-user-x"></i>
+                        </span>
+
+                        <div>
+
+                            <div class="text-secondary small">
+                                Tanpa Keterangan
+                            </div>
+
+                            <div class="h1 mb-0">
+                                {{ $dataTingkat['statistik']['alpa'] }}
+                            </div>
+
+                            <div class="text-secondary small">
+                                kali tercatat alpa
+                            </div>
 
                         </div>
 
@@ -484,6 +451,185 @@
         </div>
 
     </div>
+
+
+    {{-- ===================================================== --}}
+    {{-- INFORMASI PELAKSANAAN ABSENSI --}}
+    {{-- ===================================================== --}}
+
+    <div class="mt-4 mb-3">
+
+        <h3 class="card-title mb-1">
+            Informasi Pelaksanaan Absensi
+        </h3>
+
+        <div class="text-secondary">
+            Informasi hari pelaksanaan absensi pada periode yang dipilih.
+        </div>
+
+    </div>
+
+
+    <div class="row row-cards">
+
+        {{-- JUMLAH HARI --}}
+        <div class="col-md-4">
+
+            <div class="card h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex align-items-center gap-3">
+
+                        <span class="avatar bg-primary-lt">
+                            <i class="ti ti-calendar-check"></i>
+                        </span>
+
+                        <div>
+
+                            <div class="text-secondary small">
+                                Hari Absensi Dilaksanakan
+                            </div>
+
+                            <div class="h2 mb-0">
+
+                                {{
+                                    $dataTingkat[
+                                        'rekap_harian'
+                                    ]->count()
+                                }}
+
+                                Hari
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        {{-- TANGGAL PERTAMA --}}
+        <div class="col-md-4">
+
+            <div class="card h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex align-items-center gap-3">
+
+                        <span class="avatar bg-blue-lt">
+                            <i class="ti ti-calendar-up"></i>
+                        </span>
+
+                        <div>
+
+                            <div class="text-secondary small">
+                                Tanggal Absensi Pertama
+                            </div>
+
+                            <div class="h3 mb-0">
+
+                                @if(
+                                    $dataTingkat[
+                                        'rekap_harian'
+                                    ]->isNotEmpty()
+                                )
+
+                                    {{
+                                        \Carbon\Carbon::parse(
+                                            $dataTingkat[
+                                                'rekap_harian'
+                                            ]
+                                            ->first()['tanggal']
+                                        )
+                                        ->locale('id')
+                                        ->translatedFormat('d F Y')
+                                    }}
+
+                                @else
+
+                                    -
+
+                                @endif
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        {{-- TANGGAL TERAKHIR --}}
+        <div class="col-md-4">
+
+            <div class="card h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex align-items-center gap-3">
+
+                        <span class="avatar bg-purple-lt">
+                            <i class="ti ti-calendar-down"></i>
+                        </span>
+
+                        <div>
+
+                            <div class="text-secondary small">
+                                Tanggal Absensi Terakhir
+                            </div>
+
+                            <div class="h3 mb-0">
+
+                                @if(
+                                    $dataTingkat[
+                                        'rekap_harian'
+                                    ]->isNotEmpty()
+                                )
+
+                                    {{
+                                        \Carbon\Carbon::parse(
+                                            $dataTingkat[
+                                                'rekap_harian'
+                                            ]
+                                            ->last()['tanggal']
+                                        )
+                                        ->locale('id')
+                                        ->translatedFormat('d F Y')
+                                    }}
+
+                                @else
+
+                                    -
+
+                                @endif
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
 
 
  {{-- ========================================================= --}}

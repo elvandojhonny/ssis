@@ -24,50 +24,74 @@
     </div>
 
     {{-- Kelas --}}
-    <div class="col-md-6 mb-3">
-        <label class="form-label">
-            Kelas
-            <span class="text-danger">*</span>
-        </label>
+<div class="col-md-6 mb-3">
 
-        <select
-            name="kelas_id"
-            class="form-select @error('kelas_id') is-invalid @enderror"
-            required
-        >
-            <option value="">
-                Pilih Kelas
-            </option>
+    <label class="form-label">
+        Kelas
+        <span class="text-danger">*</span>
+    </label>
 
-            @foreach($kelas as $item)
-                <option
-                    value="{{ $item->id }}"
-                    @selected(
-                        old(
-                            'kelas_id',
-                            $siswa->kelas_id ?? null
-                        ) == $item->id
-                    )
-                >
-                    {{ $item->nama }}
-                    — {{ $item->tahunAjaran->nama }}
-                </option>
-            @endforeach
+    <select
+        name="kelas_id"
+        class="form-select @error('kelas_id') is-invalid @enderror"
+        required
+    >
+        <option value="">
+            Pilih Kelas
+        </option>
 
-        </select>
+        @foreach(['X', 'XI', 'XII'] as $tingkat)
 
-        @error('kelas_id')
-            <div class="invalid-feedback">
-                {{ $message }}
-            </div>
-        @enderror
+            @php
+                $kelasTingkat = $kelas->where('tingkat', $tingkat);
+            @endphp
 
-        @if($kelas->isEmpty())
-            <div class="form-hint text-danger">
-                Belum ada kelas aktif. Tambahkan kelas terlebih dahulu.
-            </div>
-        @endif
-    </div>
+            @if($kelasTingkat->isNotEmpty())
+
+                <optgroup label="Tingkat {{ $tingkat }}">
+
+                    @foreach($kelasTingkat as $item)
+
+                        <option
+                            value="{{ $item->id }}"
+                            @selected(
+                                old(
+                                    'kelas_id',
+                                    $siswa->kelas_id ?? null
+                                ) == $item->id
+                            )
+                        >
+                            {{ $item->nama }}
+                            — {{ $item->tahunAjaran->nama }}
+                        </option>
+
+                    @endforeach
+
+                </optgroup>
+
+            @endif
+
+        @endforeach
+
+    </select>
+
+    @error('kelas_id')
+        <div class="invalid-feedback">
+            {{ $message }}
+        </div>
+    @enderror
+
+    @if($kelas->isEmpty())
+        <div class="form-hint text-danger">
+            Belum ada kelas aktif. Tambahkan kelas terlebih dahulu.
+        </div>
+    @else
+        <div class="form-hint">
+            Pilih kelas tempat siswa terdaftar.
+        </div>
+    @endif
+
+</div>
 
 </div>
 

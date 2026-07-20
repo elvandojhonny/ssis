@@ -319,562 +319,270 @@
 
 <div class="tab-content" id="kelasTabsContent">
 
-
-    @php
-
-        $daftarKelas = [
-
-            'X' => [
-                'X IPA',
-                'X IPS',
-            ],
-
-            'XI' => [
-                'XI IPA',
-                'XI IPS',
-            ],
-
-            'XII' => [
-                'XII IPA',
-                'XII IPS',
-            ],
-
-        ];
-
-    @endphp
-
-
-    @foreach($daftarKelas as $tingkat => $kelasList)
+    @foreach(['X', 'XI', 'XII'] as $tingkat)
 
         @php
-
             $tabId = match($tingkat) {
-
                 'X' => 'kelas-x',
-
                 'XI' => 'kelas-xi',
-
                 'XII' => 'kelas-xii',
-
             };
 
+            /*
+             * Mengambil seluruh siswa pada tingkat yang sama.
+             * Tidak lagi dibedakan berdasarkan jurusan.
+             */
+            $dataSiswa = $siswas->get(
+                $tingkat,
+                collect()
+            );
         @endphp
 
-
         <div
-            class="
-                tab-pane
-                fade
-                {{ $tingkat === 'X' ? 'show active' : '' }}
-            "
+            class="tab-pane fade {{ $tingkat === 'X' ? 'show active' : '' }}"
             id="{{ $tabId }}"
             role="tabpanel"
         >
 
-
-            {{-- ================================================= --}}
             {{-- HEADER TINGKAT --}}
-            {{-- ================================================= --}}
-
             <div class="mb-4">
 
                 <h2 class="page-title">
-
                     Siswa Kelas {{ $tingkat }}
-
                 </h2>
 
                 <div class="text-secondary mt-1">
-
-                    Data siswa jurusan IPA dan IPS
-                    tingkat {{ $tingkat }}.
-
+                    Daftar seluruh siswa tingkat {{ $tingkat }}.
                 </div>
 
             </div>
 
 
-            {{-- ================================================= --}}
-            {{-- IPA DAN IPS --}}
-            {{-- ================================================= --}}
+            {{-- TABLE SISWA --}}
+            <div class="card">
 
-            <div class="row row-cards">
+                <div class="card-header">
+
+                    <div class="d-flex justify-content-between align-items-center w-100">
+
+                        <div>
+                            <h3 class="card-title">
+                                Tingkat {{ $tingkat }}
+                            </h3>
+
+                            <div class="text-secondary small mt-1">
+                                Daftar siswa kelas {{ $tingkat }}
+                            </div>
+                        </div>
+
+                        <span class="badge bg-blue-lt">
+                            {{ $dataSiswa->count() }} Siswa
+                        </span>
+
+                    </div>
+
+                </div>
 
 
-                @foreach($kelasList as $namaKelas)
+                <div class="table-responsive ssis-mobile-table">
 
-                    @php
+                    <table class="table table-vcenter card-table">
 
-                        $dataSiswa = $siswas->get(
-                            strtoupper($namaKelas),
-                            collect()
-                        );
+                        <thead>
+                            <tr>
+                                <th>Siswa</th>
+                                <th>Kelas</th>
+                                <th>NIS / NISN</th>
+                                <th>Username</th>
+                                <th>Status</th>
+                                <th class="w-1">Aksi</th>
+                            </tr>
+                        </thead>
 
-                    @endphp
+                        <tbody>
 
+                        @forelse($dataSiswa as $siswa)
 
-                    <div class="col-12">
+                            <tr>
 
+                                {{-- SISWA --}}
+                                <td data-label="Siswa">
 
-                        <div class="card">
+                                    <div class="d-flex align-items-center">
 
+                                        <span class="avatar avatar-sm me-3">
+                                            {{
+                                                strtoupper(
+                                                    substr(
+                                                        $siswa->nama,
+                                                        0,
+                                                        1
+                                                    )
+                                                )
+                                            }}
+                                        </span>
 
-                            {{-- ================================= --}}
-                            {{-- CARD HEADER --}}
-                            {{-- ================================= --}}
+                                        <div class="text-start">
 
-                            <div class="card-header">
+                                            <div class="fw-bold">
+                                                {{ $siswa->nama }}
+                                            </div>
 
-                                <div
-                                    class="
-                                        d-flex
-                                        justify-content-between
-                                        align-items-center
-                                        w-100
-                                    "
-                                >
+                                            <div class="text-secondary small">
 
-                                    <div>
+                                                @if($siswa->jenis_kelamin === 'L')
+                                                    Laki-laki
+                                                @elseif($siswa->jenis_kelamin === 'P')
+                                                    Perempuan
+                                                @else
+                                                    -
+                                                @endif
 
-                                        <h3 class="card-title">
-
-                                            {{ $namaKelas }}
-
-                                        </h3>
-
-                                        <div
-                                            class="
-                                                text-secondary
-                                                small
-                                                mt-1
-                                            "
-                                        >
-
-                                            Daftar siswa
-                                            {{ $namaKelas }}
+                                            </div>
 
                                         </div>
 
                                     </div>
 
+                                </td>
 
-                                    <span class="badge bg-blue-lt">
 
-                                        {{ $dataSiswa->count() }}
+                                {{-- KELAS --}}
+                                <td data-label="Kelas">
 
-                                        Siswa
-
+                                    <span class="badge bg-azure-lt">
+                                        {{ $siswa->kelas?->nama ?? '-' }}
                                     </span>
 
-                                </div>
-
-                            </div>
+                                </td>
 
 
-                            {{-- ================================= --}}
-                            {{-- TABLE --}}
-                            {{-- ================================= --}}
+                                {{-- NIS / NISN --}}
+                                <td data-label="NIS / NISN">
 
-                            <div
-                                class="
-                                    table-responsive
-                                    ssis-mobile-table
-                                "
-                            >
+                                    <div>
+                                        {{ $siswa->nis }}
+                                    </div>
 
-                                <table
-                                    class="
-                                        table
-                                        table-vcenter
-                                        card-table
-                                    "
+                                    <div class="text-secondary small">
+                                        NISN: {{ $siswa->nisn ?? '-' }}
+                                    </div>
+
+                                </td>
+
+
+                                {{-- USERNAME --}}
+                                <td data-label="Username">
+
+                                    <i class="ti ti-user me-1 text-secondary"></i>
+
+                                    {{ $siswa->user?->username ?? '-' }}
+
+                                </td>
+
+
+                                {{-- STATUS --}}
+                                <td data-label="Status">
+
+                                    @if($siswa->is_active)
+
+                                        <span class="badge bg-success-lt">
+                                            Aktif
+                                        </span>
+
+                                    @else
+
+                                        <span class="badge bg-secondary-lt">
+                                            Tidak Aktif
+                                        </span>
+
+                                    @endif
+
+                                </td>
+
+
+                                {{-- AKSI --}}
+                                <td data-label="Aksi">
+
+                                    <div class="d-flex gap-2 justify-content-end ssis-table-actions">
+
+                                        <a
+                                            href="{{ route('siswa.edit', $siswa) }}"
+                                            class="btn btn-sm btn-outline-primary"
+                                            title="Edit"
+                                        >
+                                            <i class="ti ti-edit"></i>
+                                        </a>
+
+
+                                        <a
+                                            href="{{ route('siswa.qr.show', $siswa) }}"
+                                            class="btn btn-sm btn-outline-success"
+                                            title="QR Code"
+                                        >
+                                            <i class="ti ti-qrcode me-1"></i>
+                                            QR
+                                        </a>
+
+
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm btn-outline-danger"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#globalDeleteModal"
+                                            data-delete-action="{{ route('siswa.destroy', $siswa) }}"
+                                            data-delete-name="{{ $siswa->nama }}"
+                                            data-delete-warning="Jika siswa sudah memiliki riwayat absensi atau ujian, data tidak akan dihapus permanen dan akun akan dinonaktifkan."
+                                        >
+                                            <i class="ti ti-trash"></i>
+                                        </button>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        @empty
+
+                            <tr class="ssis-empty-row">
+
+                                <td
+                                    colspan="6"
+                                    class="text-center py-5"
                                 >
 
-                                    <thead>
+                                    <div class="text-secondary">
 
-                                        <tr>
+                                        <i
+                                            class="ti ti-users"
+                                            style="font-size: 36px;"
+                                        ></i>
 
-                                            <th>
-                                                Siswa
-                                            </th>
+                                        <div class="mt-2">
+                                            Belum ada siswa di tingkat
+                                            {{ $tingkat }}.
+                                        </div>
 
-                                            <th>
-                                                NIS / NISN
-                                            </th>
+                                    </div>
 
-                                            <th>
-                                                Username
-                                            </th>
+                                </td>
 
-                                            <th>
-                                                Status
-                                            </th>
+                            </tr>
 
-                                            <th class="w-1">
-                                                Aksi
-                                            </th>
+                        @endforelse
 
-                                        </tr>
+                        </tbody>
 
-                                    </thead>
+                    </table>
 
-
-                                    <tbody>
-
-
-                                    @forelse($dataSiswa as $siswa)
-
-
-                                        <tr>
-
-
-                                            {{-- ================= --}}
-                                            {{-- SISWA --}}
-                                            {{-- ================= --}}
-
-                                            <td data-label="Siswa">
-
-                                                <div
-                                                    class="
-                                                        d-flex
-                                                        align-items-center
-                                                    "
-                                                >
-
-                                                    <span
-                                                        class="
-                                                            avatar
-                                                            avatar-sm
-                                                            me-3
-                                                        "
-                                                    >
-
-                                                        {{
-                                                            strtoupper(
-                                                                substr(
-                                                                    $siswa->nama,
-                                                                    0,
-                                                                    1
-                                                                )
-                                                            )
-                                                        }}
-
-                                                    </span>
-
-
-                                                    <div class="text-start">
-
-                                                        <div class="fw-bold">
-
-                                                            {{ $siswa->nama }}
-
-                                                        </div>
-
-
-                                                        <div
-                                                            class="
-                                                                text-secondary
-                                                                small
-                                                            "
-                                                        >
-
-                                                            @if(
-                                                                $siswa->jenis_kelamin
-                                                                === 'L'
-                                                            )
-
-                                                                Laki-laki
-
-                                                            @elseif(
-                                                                $siswa->jenis_kelamin
-                                                                === 'P'
-                                                            )
-
-                                                                Perempuan
-
-                                                            @else
-
-                                                                -
-
-                                                            @endif
-
-                                                        </div>
-
-                                                    </div>
-
-                                                </div>
-
-                                            </td>
-
-
-                                            {{-- ================= --}}
-                                            {{-- NIS / NISN --}}
-                                            {{-- ================= --}}
-
-                                            <td data-label="NIS / NISN">
-
-                                                <div>
-
-                                                    {{ $siswa->nis }}
-
-                                                </div>
-
-                                                <div
-                                                    class="
-                                                        text-secondary
-                                                        small
-                                                    "
-                                                >
-
-                                                    NISN:
-
-                                                    {{
-                                                        $siswa->nisn
-                                                        ?? '-'
-                                                    }}
-
-                                                </div>
-
-                                            </td>
-
-
-                                            {{-- ================= --}}
-                                            {{-- USERNAME --}}
-                                            {{-- ================= --}}
-
-                                            <td data-label="Username">
-
-                                                <i
-                                                    class="
-                                                        ti
-                                                        ti-user
-                                                        me-1
-                                                        text-secondary
-                                                    "
-                                                ></i>
-
-                                                {{
-                                                    $siswa
-                                                        ->user
-                                                        ?->username
-                                                    ?? '-'
-                                                }}
-
-                                            </td>
-
-
-                                            {{-- ================= --}}
-                                            {{-- STATUS --}}
-                                            {{-- ================= --}}
-
-                                            <td data-label="Status">
-
-                                                @if($siswa->is_active)
-
-                                                    <span
-                                                        class="
-                                                            badge
-                                                            bg-success-lt
-                                                        "
-                                                    >
-
-                                                        Aktif
-
-                                                    </span>
-
-                                                @else
-
-                                                    <span
-                                                        class="
-                                                            badge
-                                                            bg-secondary-lt
-                                                        "
-                                                    >
-
-                                                        Tidak Aktif
-
-                                                    </span>
-
-                                                @endif
-
-                                            </td>
-
-
-                                            {{-- ================= --}}
-                                            {{-- AKSI --}}
-                                            {{-- ================= --}}
-
-                                            <td data-label="Aksi">
-
-                                                <div
-                                                    class="
-                                                        d-flex
-                                                        gap-2
-                                                        justify-content-end
-                                                        ssis-table-actions
-                                                    "
-                                                >
-
-
-                                                    {{-- EDIT --}}
-
-                                                    <a
-                                                        href="{{
-                                                            route(
-                                                                'siswa.edit',
-                                                                $siswa
-                                                            )
-                                                        }}"
-                                                        class="
-                                                            btn
-                                                            btn-sm
-                                                            btn-outline-primary
-                                                        "
-                                                        title="Edit"
-                                                    >
-
-                                                        <i class="ti ti-edit"></i>
-
-                                                    </a>
-
-
-                                                    {{-- QR --}}
-
-                                                    <a
-                                                        href="{{
-                                                            route(
-                                                                'siswa.qr.show',
-                                                                $siswa
-                                                            )
-                                                        }}"
-                                                        class="
-                                                            btn
-                                                            btn-sm
-                                                            btn-outline-success
-                                                        "
-                                                        title="QR Code"
-                                                    >
-
-                                                        <i
-                                                            class="
-                                                                ti
-                                                                ti-qrcode
-                                                                me-1
-                                                            "
-                                                        ></i>
-
-                                                        QR
-
-                                                    </a>
-
-
-                                                    {{-- HAPUS --}}
-
-                                                    <form
-                                                        action="{{
-                                                            route(
-                                                                'siswa.destroy',
-                                                                $siswa
-                                                            )
-                                                        }}"
-                                                        method="POST"
-                                                    >
-
-                                                        @csrf
-
-                                                        @method('DELETE')
-
-
-                                                        <button
-                                                            type="button"
-                                                            class="btn btn-sm btn-outline-danger"
-                                                            data-bs-toggle="modal"
-                                                            data-bs-target="#globalDeleteModal"
-                                                            data-delete-action="{{ route('siswa.destroy', $siswa) }}"
-                                                            data-delete-name="{{ $siswa->nama }}"
-                                                            data-delete-warning="Jika siswa sudah memiliki riwayat absensi atau ujian, data tidak akan dihapus permanen dan akun akan dinonaktifkan."
-                                                        >
-                                                            <i class="ti ti-trash"></i>
-                                                        </button>
-
-                                                    </form>
-
-
-                                                </div>
-
-                                            </td>
-
-
-                                        </tr>
-
-
-                                    @empty
-
-
-                                        <tr class="ssis-empty-row">
-
-                                            <td
-                                                colspan="5"
-                                                class="
-                                                    text-center
-                                                    py-5
-                                                "
-                                            >
-
-                                                <div class="text-secondary">
-
-                                                    <i
-                                                        class="
-                                                            ti
-                                                            ti-users
-                                                        "
-                                                        style="
-                                                            font-size: 36px;
-                                                        "
-                                                    ></i>
-
-
-                                                    <div class="mt-2">
-
-                                                        Belum ada siswa
-                                                        di kelas
-                                                        {{ $namaKelas }}.
-
-                                                    </div>
-
-                                                </div>
-
-                                            </td>
-
-                                        </tr>
-
-
-                                    @endforelse
-
-
-                                    </tbody>
-
-                                </table>
-
-                            </div>
-
-
-                        </div>
-
-                    </div>
-
-
-                @endforeach
-
+                </div>
 
             </div>
 
-
         </div>
 
-
     @endforeach
-
 
 </div>
 

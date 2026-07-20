@@ -48,40 +48,47 @@ class UjianController extends Controller
      * Form membuat ujian.
      */
     public function create()
-    {
-        /*
-         * Hanya bank soal yang sudah siap.
-         */
-        $bankSoals = BankSoal::with([
-                'guru',
-            ])
-            ->withCount('soals')
-            ->where('status', 'siap')
-            ->latest()
-            ->get();
+{
+    /*
+     * Hanya bank soal yang sudah siap.
+     */
+    $bankSoals = BankSoal::with('guru')
+        ->withCount('soals')
+        ->where('status', 'siap')
+        ->latest()
+        ->get();
 
-        /*
-         * Hanya kelas aktif.
-         */
-        $kelas = Kelas::with(
-                'tahunAjaran'
-            )
-            ->where(
-                'is_active',
-                true
-            )
-            ->orderBy('tingkat')
-            ->orderBy('nama')
-            ->get();
+    /*
+     * Hanya kelas aktif dari
+     * tahun ajaran yang sedang aktif.
+     */
+    $kelas = Kelas::with('tahunAjaran')
+        ->where('is_active', true)
+        ->whereHas('tahunAjaran', function ($query) {
+            $query->where('is_active', true);
+        })
+        ->orderByRaw("
+            CASE tingkat
+                WHEN 'X' THEN 1
+                WHEN 'XI' THEN 2
+                WHEN 'XII' THEN 3
+                ELSE 4
+            END
+        ")
+        ->orderBy('nama')
+        ->get();
 
-        return view(
-            'cbt.ujian.create',
-            compact(
-                'bankSoals',
-                'kelas'
-            )
-        );
-    }
+    /*
+     * Tampilkan halaman buat ujian.
+     */
+    return view(
+        'cbt.ujian.create',
+        compact(
+            'bankSoals',
+            'kelas'
+        )
+    );
+}
 
 
     /*
@@ -159,14 +166,12 @@ class UjianController extends Controller
          * Pastikan kelas masih aktif.
          */
         $kelas = Kelas::query()
-            ->whereKey(
-                $validated['kelas_id']
-            )
-            ->where(
-                'is_active',
-                true
-            )
-            ->firstOrFail();
+        ->whereKey($validated['kelas_id'])
+        ->where('is_active', true)
+        ->whereHas('tahunAjaran', function ($query) {
+            $query->where('is_active', true);
+        })
+        ->firstOrFail();
 
         $ujian = Ujian::create([
             'bank_soal_id' =>
@@ -278,16 +283,21 @@ public function edit(Ujian $ujian)
     /*
      * Ambil kelas yang masih aktif.
      */
-    $kelas = Kelas::with(
-            'tahunAjaran'
-        )
-        ->where(
-            'is_active',
-            true
-        )
-        ->orderBy('tingkat')
-        ->orderBy('nama')
-        ->get();
+    $kelas = Kelas::with('tahunAjaran')
+    ->where('is_active', true)
+    ->whereHas('tahunAjaran', function ($query) {
+        $query->where('is_active', true);
+    })
+    ->orderByRaw("
+        CASE tingkat
+            WHEN 'X' THEN 1
+            WHEN 'XI' THEN 2
+            WHEN 'XII' THEN 3
+            ELSE 4
+        END
+    ")
+    ->orderBy('nama')
+    ->get();
 
 
     return view(
@@ -404,13 +414,11 @@ public function update(
      * Pastikan kelas masih aktif.
      */
     $kelas = Kelas::query()
-        ->whereKey(
-            $validated['kelas_id']
-        )
-        ->where(
-            'is_active',
-            true
-        )
+        ->whereKey($validated['kelas_id'])
+        ->where('is_active', true)
+        ->whereHas('tahunAjaran', function ($query) {
+            $query->where('is_active', true);
+        })
         ->firstOrFail();
 
 
