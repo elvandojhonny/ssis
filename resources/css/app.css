@@ -501,6 +501,8 @@ body.ssis-body {
 
     height: 72px;
 
+    overflow: hidden;
+
     background:
         rgba(255, 255, 255, 0.96);
 
@@ -2144,6 +2146,152 @@ body.ssis-body {
     .btn {
         width:
             100%;
+    }
+
+}
+
+/* =========================================================
+   NAVBAR — BLUE LINE ORBIT AROUND BORDER
+========================================================= */
+
+.ssis-navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+
+    height: 72px;
+
+    /* Jangan pakai overflow hidden */
+    overflow: visible;
+
+    background:
+        rgba(255, 255, 255, 0.96);
+
+    border:
+        1px solid
+        var(--ssis-border);
+
+    backdrop-filter:
+        blur(14px);
+
+    -webkit-backdrop-filter:
+        blur(14px);
+}
+
+
+/* =========================================================
+   GARIS BIRU BERPUTAR MENGELILINGI NAVBAR
+========================================================= */
+
+.ssis-navbar::before {
+    content: "";
+
+    position: absolute;
+
+    z-index: -2;
+
+    inset: -1px;
+
+    padding: 1.5px;
+
+    pointer-events: none;
+
+    background:
+        conic-gradient(
+            from var(--navbar-border-angle),
+
+            transparent 0deg,
+            transparent 300deg,
+
+            rgba(32, 107, 196, 0.08) 310deg,
+
+            rgba(32, 107, 196, 0.45) 325deg,
+
+            #206bc4 338deg,
+
+            #8fc5ff 345deg,
+
+            #206bc4 351deg,
+
+            transparent 360deg
+        );
+
+    /*
+     * Membuat bagian tengah transparan,
+     * jadi gradient hanya terlihat di pinggir.
+     */
+
+    -webkit-mask:
+        linear-gradient(#fff 0 0)
+        content-box,
+
+        linear-gradient(#fff 0 0);
+
+    -webkit-mask-composite:
+        xor;
+
+    mask-composite:
+        exclude;
+
+    animation:
+        ssisNavbarBorderOrbit
+        7s
+        linear
+        infinite;
+}
+
+
+/* =========================================================
+   ANIMASI
+========================================================= */
+
+@property --navbar-border-angle {
+
+    syntax: "<angle>";
+
+    initial-value: 0deg;
+
+    inherits: false;
+
+}
+
+
+@keyframes ssisNavbarBorderOrbit {
+
+    from {
+        --navbar-border-angle:
+            0deg;
+    }
+
+    to {
+        --navbar-border-angle:
+            360deg;
+    }
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 575.98px) {
+
+    .ssis-navbar {
+        height: 64px;
+    }
+
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .ssis-navbar::before {
+        animation: none;
     }
 
 }
