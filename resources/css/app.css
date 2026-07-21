@@ -833,6 +833,8 @@ body.ssis-body {
 .navbar-vertical
 > .container-fluid {
     height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
 
     padding:
         0
@@ -954,6 +956,9 @@ body.ssis-body {
 .navbar-vertical
 .navbar-collapse {
     flex: 1;
+
+    min-height: 0;
+    overscroll-behavior: contain;
 
     padding:
         12px
@@ -1600,6 +1605,8 @@ body.ssis-body {
 
         max-height:
             none;
+
+        min-height: 0;
 
         padding:
             10px
