@@ -11,7 +11,7 @@
         <div class="col">
 
             <div class="page-pretitle">
-                Modul CBT
+                Computer Based Test
             </div>
 
             <h2 class="page-title">

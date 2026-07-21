@@ -7,7 +7,7 @@
 <div class="page-header mb-4">
     <div class="row align-items-center">
         <div class="col">
-            <div class="page-pretitle">Modul Absensi</div>
+            <div class="page-pretitle">Absensi</div>
 
             <h2 class="page-title">
                 Rekap Absensi
@@ -670,7 +670,7 @@
 
                     <th>No</th>
                     <th>Nama Siswa</th>
-                    <th>NIS</th>
+                    <th>NISN</th>
                     <th>Kelas</th>
 
                     <th class="text-center">
@@ -739,7 +739,7 @@
 
                             {{
                                 $rekap['siswa']
-                                    ->nis
+                                    ->nisn
                             }}
 
                         </td>

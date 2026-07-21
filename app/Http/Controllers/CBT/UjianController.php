@@ -1650,64 +1650,165 @@ public function exportRekap(
         );
 }
 
+/*
+|--------------------------------------------------------------------------
+| Daftar Peserta Ujian Terblokir
+|--------------------------------------------------------------------------
+*/
+public function blokirIndex(Request $request)
+{
+    $query = PengerjaanUjian::query()
+        ->with([
+            'siswa.kelas',
+            'ujian.kelas',
+            'ujian.bankSoal',
+        ])
+        ->where('status', 'diblokir');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Pencarian
+    |--------------------------------------------------------------------------
+    |
+    | Bisa mencari berdasarkan:
+    | - Nama siswa
+    | - NISN
+    | - Judul ujian
+    |
+    */
+
+    if ($request->filled('search')) {
+
+        $search = trim($request->search);
+
+        $query->where(function ($query) use ($search) {
+
+            $query
+                ->whereHas('siswa', function ($siswa) use ($search) {
+
+                    $siswa
+                        ->where(
+                            'nama',
+                            'like',
+                            '%' . $search . '%'
+                        )
+                        ->orWhere(
+                            'nisn',
+                            'like',
+                            '%' . $search . '%'
+                        );
+
+                })
+
+                ->orWhereHas('ujian', function ($ujian) use ($search) {
+
+                    $ujian->where(
+                        'judul',
+                        'like',
+                        '%' . $search . '%'
+                    );
+
+                });
+
+        });
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Ambil Peserta Terblokir
+    |--------------------------------------------------------------------------
+    */
+
+    $pengerjaans = $query
+        ->orderByDesc('diblokir_pada')
+        ->paginate(10)
+        ->withQueryString();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Statistik
+    |--------------------------------------------------------------------------
+    */
+
+    $totalDiblokir = PengerjaanUjian::query()
+        ->where('status', 'diblokir')
+        ->count();
+
+
+    return view(
+        'cbt.blokir.index',
+        compact(
+            'pengerjaans',
+            'totalDiblokir'
+        )
+    );
+}
+
+/*
+|--------------------------------------------------------------------------
+| Buka Blokir Peserta Ujian
+|--------------------------------------------------------------------------
+*/
 public function bukaBlokir(
-    Ujian $ujian,
     PengerjaanUjian $pengerjaan
 ) {
     /*
-     * Pastikan pengerjaan benar-benar
-     * berasal dari ujian yang dibuka.
-     */
-    abort_unless(
-        (int) $pengerjaan->ujian_id ===
-        (int) $ujian->id,
-        404
-    );
+    |--------------------------------------------------------------------------
+    | Pastikan Peserta Memang Diblokir
+    |--------------------------------------------------------------------------
+    */
 
-
-    /*
-     * Hanya pengerjaan dengan status
-     * diblokir yang dapat dibuka kembali.
-     */
     if ($pengerjaan->status !== 'diblokir') {
 
-        return back()->with(
-            'error',
-            'Peserta ini tidak sedang diblokir.'
-        );
+        return redirect()
+            ->route('cbt.blokir.index')
+            ->with(
+                'error',
+                'Peserta ini tidak sedang diblokir.'
+            );
     }
 
 
     /*
-     * Jika batas waktu pengerjaan sudah habis,
-     * siswa tidak dapat melanjutkan lagi.
-     */
+    |--------------------------------------------------------------------------
+    | Periksa Batas Waktu Pengerjaan
+    |--------------------------------------------------------------------------
+    */
+
     if (
-        now()->gte(
-            $pengerjaan->batas_waktu
-        )
+        $pengerjaan->batas_waktu &&
+        now()->gte($pengerjaan->batas_waktu)
     ) {
 
-        return back()->with(
-            'error',
-            'Blokir tidak dapat dibuka karena waktu pengerjaan peserta telah berakhir.'
-        );
+        return redirect()
+            ->route('cbt.blokir.index')
+            ->with(
+                'error',
+                'Blokir tidak dapat dibuka karena waktu pengerjaan peserta telah berakhir.'
+            );
     }
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Proses Buka Blokir
+    |--------------------------------------------------------------------------
+    */
 
     DB::transaction(function () use ($pengerjaan) {
 
         /*
-         * Lock row agar tidak terjadi
+         * Lock data agar tidak terjadi
          * proses buka blokir bersamaan.
          */
-        $attempt =
-            PengerjaanUjian::query()
-                ->whereKey(
-                    $pengerjaan->id
-                )
-                ->lockForUpdate()
-                ->firstOrFail();
+        $attempt = PengerjaanUjian::query()
+            ->whereKey($pengerjaan->id)
+            ->lockForUpdate()
+            ->firstOrFail();
 
 
         /*
@@ -1719,30 +1820,20 @@ public function bukaBlokir(
         }
 
 
+        /*
+         * Aktifkan kembali pengerjaan.
+         */
         $attempt->update([
 
-            /*
-             * Aktifkan kembali pengerjaan.
-             */
             'status' =>
                 'mengerjakan',
 
-            /*
-             * Reset jumlah pelanggaran.
-             */
             'jumlah_pelanggaran' =>
                 0,
 
-            /*
-             * Hapus status waktu blokir aktif.
-             */
             'diblokir_pada' =>
                 null,
 
-            /*
-             * Catat user/operator
-             * yang membuka blokir.
-             */
             'dibuka_blokir_oleh' =>
                 auth()->id(),
 
@@ -1751,9 +1842,11 @@ public function bukaBlokir(
     });
 
 
-    return back()->with(
-        'success',
-        'Blokir peserta berhasil dibuka. Peserta dapat melanjutkan ujian.'
-    );
+    return redirect()
+        ->route('cbt.blokir.index')
+        ->with(
+            'success',
+            'Blokir peserta berhasil dibuka. Peserta dapat melanjutkan ujian.'
+        );
 }
 }

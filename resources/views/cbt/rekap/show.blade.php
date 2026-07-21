@@ -414,7 +414,6 @@
     </div>
 
 
-
     {{-- ===================================================== --}}
     {{-- TABEL DESKTOP --}}
     {{-- ===================================================== --}}
@@ -429,7 +428,7 @@
 
                     <th>Siswa</th>
 
-                    <th>NIS</th>
+                    <th>NISN</th>
 
                     <th>Status</th>
 
@@ -438,10 +437,6 @@
                     <th>Selesai</th>
 
                     <th>Nilai</th>
-
-                    <th class="w-1">
-                        Aksi
-                    </th>
 
                 </tr>
 
@@ -477,7 +472,7 @@
                         {{-- NIS --}}
 
                         <td>
-                            {{ $siswa->nis ?? '-' }}
+                            {{ $siswa->nisn ?? '-' }}
                         </td>
 
 
@@ -648,108 +643,39 @@
 
                         <td>
 
-                            <div class="d-flex gap-2 flex-wrap">
+    @if(
+        $pengerjaan &&
+        $pengerjaan->status === 'selesai'
+    )
 
-                                @if(
-                                    $pengerjaan &&
-                                    $pengerjaan->status ===
-                                    'diblokir'
-                                )
+        <a
+            href="{{
+                route(
+                    'cbt.rekap.peserta',
+                    [
+                        'ujian' => $ujian,
+                        'pengerjaan' => $pengerjaan,
+                    ]
+                )
+            }}"
+            class="btn btn-sm btn-outline-primary"
+        >
 
-                                    <form
-                                        action="{{
-                                            route(
-                                                'cbt.rekap.buka-blokir',
-                                                [
-                                                    'ujian' =>
-                                                        $ujian,
+            <i class="ti ti-eye me-1"></i>
 
-                                                    'pengerjaan' =>
-                                                        $pengerjaan,
-                                                ]
-                                            )
-                                        }}"
-                                        method="POST"
-                                        onsubmit="
-                                            return confirm(
-                                                'Buka blokir peserta ini? Jumlah pelanggaran akan direset dan peserta dapat melanjutkan ujian selama waktu masih tersedia.'
-                                            );
-                                        "
-                                    >
+            Detail
 
-                                        @csrf
+        </a>
 
-                                        @method('PATCH')
+    @else
 
+        <span class="text-secondary">
+            -
+        </span>
 
-                                        <button
-                                            type="submit"
-                                            class="
-                                                btn
-                                                btn-sm
-                                                btn-warning
-                                            "
-                                        >
+    @endif
 
-                                            <i
-                                                class="
-                                                    ti
-                                                    ti-lock-open
-                                                    me-1
-                                                "
-                                            ></i>
-
-                                            Buka Blokir
-
-                                        </button>
-
-                                    </form>
-
-
-                                @elseif(
-                                    $pengerjaan &&
-                                    $pengerjaan->status ===
-                                    'selesai'
-                                )
-
-                                    <a
-                                        href="{{
-                                            route(
-                                                'cbt.rekap.peserta',
-                                                [
-                                                    'ujian' =>
-                                                        $ujian,
-
-                                                    'pengerjaan' =>
-                                                        $pengerjaan,
-                                                ]
-                                            )
-                                        }}"
-                                        class="
-                                            btn
-                                            btn-sm
-                                            btn-outline-primary
-                                        "
-                                    >
-
-                                        <i class="ti ti-eye me-1"></i>
-
-                                        Detail
-
-                                    </a>
-
-
-                                @else
-
-                                    <span class="text-secondary">
-                                        -
-                                    </span>
-
-                                @endif
-
-                            </div>
-
-                        </td>
+</td>
 
                     </tr>
 
@@ -823,9 +749,9 @@
 
                         <div class="text-secondary small mt-1">
 
-                            NIS:
+                            NISN:
 
-                            {{ $siswa->nis ?? '-' }}
+                            {{ $siswa->nisn ?? '-' }}
 
                         </div>
 
@@ -1019,117 +945,46 @@
 
                 {{-- AKSI MOBILE --}}
 
-                @if(
-                    $pengerjaan &&
-                    in_array(
-                        $pengerjaan->status,
-                        [
-                            'diblokir',
-                            'selesai',
-                        ]
-                    )
+@if(
+    $pengerjaan &&
+    $pengerjaan->status === 'selesai'
+)
+
+    <div
+        class="
+            rekap-mobile-action
+            mt-3
+            pt-3
+            border-top
+        "
+    >
+
+        <a
+            href="{{
+                route(
+                    'cbt.rekap.peserta',
+                    [
+                        'ujian' => $ujian,
+                        'pengerjaan' => $pengerjaan,
+                    ]
                 )
+            }}"
+            class="
+                btn
+                btn-outline-primary
+                w-100
+            "
+        >
 
-                    <div
-                        class="
-                            rekap-mobile-action
-                            mt-3
-                            pt-3
-                            border-top
-                        "
-                    >
+            <i class="ti ti-eye me-1"></i>
 
-                        @if(
-                            $pengerjaan->status ===
-                            'diblokir'
-                        )
+            Lihat Detail Hasil
 
-                            <form
-                                action="{{
-                                    route(
-                                        'cbt.rekap.buka-blokir',
-                                        [
-                                            'ujian' =>
-                                                $ujian,
+        </a>
 
-                                            'pengerjaan' =>
-                                                $pengerjaan,
-                                        ]
-                                    )
-                                }}"
-                                method="POST"
-                                onsubmit="
-                                    return confirm(
-                                        'Buka blokir peserta ini? Jumlah pelanggaran akan direset dan peserta dapat melanjutkan ujian selama waktu masih tersedia.'
-                                    );
-                                "
-                            >
+    </div>
 
-                                @csrf
-
-                                @method('PATCH')
-
-
-                                <button
-                                    type="submit"
-                                    class="
-                                        btn
-                                        btn-warning
-                                        w-100
-                                    "
-                                >
-
-                                    <i
-                                        class="
-                                            ti
-                                            ti-lock-open
-                                            me-1
-                                        "
-                                    ></i>
-
-                                    Buka Blokir Peserta
-
-                                </button>
-
-                            </form>
-
-
-                        @elseif(
-                            $pengerjaan->status ===
-                            'selesai'
-                        )
-
-                            <a
-                                href="{{
-                                    route(
-                                        'cbt.rekap.peserta',
-                                        [
-                                            'ujian' =>
-                                                $ujian,
-
-                                            'pengerjaan' =>
-                                                $pengerjaan,
-                                        ]
-                                    )
-                                }}"
-                                class="
-                                    btn
-                                    btn-outline-primary
-                                    w-100
-                                "
-                            >
-
-                                <i class="ti ti-eye me-1"></i>
-
-                                Lihat Detail Hasil
-
-                            </a>
-
-                        @endif
-
-                    </div>
-
-                @endif
+@endif
 
             </div>
 

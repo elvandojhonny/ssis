@@ -16,7 +16,7 @@
         <div class="col">
 
             <div class="page-pretitle">
-                Modul Absensi
+                Absensi
             </div>
 
             <h2 class="page-title">

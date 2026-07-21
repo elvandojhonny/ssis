@@ -220,10 +220,21 @@ Route::middleware('auth')->group(function () {
             [UjianController::class, 'rekapPeserta']
         )->name('cbt.rekap.peserta');
 
+        /*
+        |--------------------------------------------------------------------------
+        | Buka Blokir Ujian
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/cbt/buka-blokir',
+            [UjianController::class, 'blokirIndex']
+        )->name('cbt.blokir.index');
+
         Route::patch(
-            '/cbt/rekap/{ujian}/peserta/{pengerjaan}/buka-blokir',
+            '/cbt/buka-blokir/{pengerjaan}',
             [UjianController::class, 'bukaBlokir']
-        )->name('cbt.rekap.buka-blokir');
+        )->name('cbt.blokir.buka');
 
 
     });

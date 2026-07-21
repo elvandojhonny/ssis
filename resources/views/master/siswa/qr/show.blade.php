@@ -76,13 +76,12 @@
                 </h2>
 
                 <div class="text-secondary">
-                    NIS: {{ $siswa->nis }}
+                    NISN: {{ $siswa->nisn }}
                 </div>
 
                 <div class="text-secondary">
                     Kelas:
                     {{ $siswa->kelas->tingkat }}
-                    {{ $siswa->kelas->nama }}
                 </div>
 
 

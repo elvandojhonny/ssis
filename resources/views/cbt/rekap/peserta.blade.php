@@ -73,11 +73,11 @@
             <div class="col-md-4">
 
                 <div class="text-secondary small">
-                    NIS
+                    NISN
                 </div>
 
                 <div class="fw-bold">
-                    {{ $pengerjaan->siswa->nis ?? '-' }}
+                    {{ $pengerjaan->siswa->nisn ?? '-' }}
                 </div>
 
             </div>

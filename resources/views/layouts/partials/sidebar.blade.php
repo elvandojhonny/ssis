@@ -298,6 +298,8 @@
 
                     </li>
 
+                    {{-- CBT --}}
+
                     <li class="nav-item mt-3">
 
                         <div class="nav-link disabled">
@@ -351,6 +353,29 @@
 
                             <span class="nav-link-title">
                                 Rekap Hasil Ujian
+                            </span>
+
+                        </a>
+
+                    </li>
+
+                    <li class="nav-item">
+
+                        <a
+                            class="nav-link {{
+                                request()->routeIs('cbt.blokir.*')
+                                    ? 'active'
+                                    : ''
+                            }}"
+                            href="{{ route('cbt.blokir.index') }}"
+                        >
+
+                            <span class="nav-link-icon">
+                                <i class="ti ti-lock-open"></i>
+                            </span>
+
+                            <span class="nav-link-title">
+                                Blokir
                             </span>
 
                         </a>
