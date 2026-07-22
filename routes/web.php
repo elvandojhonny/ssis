@@ -516,7 +516,9 @@ Route::middleware('role:siswa')
         Route::post(
             '/ujian/{ujian}/token',
             [UjianSiswaController::class, 'verifyToken']
-        )->name('ujian.token');
+        )
+            ->middleware('throttle:5,1')
+            ->name('ujian.token');
 
 
         /*
