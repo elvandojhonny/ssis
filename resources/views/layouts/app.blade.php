@@ -31,6 +31,45 @@
 
 <body class="ssis-body">
 
+{{-- ========================================================= --}}
+{{-- GLOBAL PAGE LOADING --}}
+{{-- ========================================================= --}}
+
+<div
+    id="globalPageLoader"
+    class="ssis-page-loader"
+    aria-hidden="true"
+>
+    <div class="ssis-loader-content">
+
+        <div class="ssis-loader-logo-wrapper">
+
+            <div class="ssis-loader-ring"></div>
+
+            <div class="ssis-loader-logo">
+                <img
+                    src="{{ asset('images/logo SMAN 6.png') }}"
+                    alt="Logo SMA Negeri 6 Malinau"
+                >
+            </div>
+
+        </div>
+
+        <div
+            id="globalLoaderText"
+            class="ssis-loader-text"
+        >
+            Memuat...
+        </div>
+
+        <div class="ssis-loader-subtext">
+            Mohon tunggu sebentar
+        </div>
+
+    </div>
+</div>
+
+
 <div class="page ssis-app">
 
     {{-- ===================================================== --}}
@@ -276,6 +315,235 @@ document.addEventListener('DOMContentLoaded', function () {
             deleteWarning.textContent =
                 warning ||
                 'Data yang sudah terhubung dengan data lain mungkin tidak dapat dihapus.';
+
+        }
+    );
+
+});
+</script>
+
+{{-- ========================================================= --}}
+{{-- GLOBAL PAGE LOADING SCRIPT --}}
+{{-- ========================================================= --}}
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const loader =
+        document.getElementById('globalPageLoader');
+
+    const loaderText =
+        document.getElementById('globalLoaderText');
+
+    let loaderTimer = null;
+
+
+    if (!loader) {
+        return;
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Tampilkan Loading
+    |--------------------------------------------------------------------------
+    */
+
+    function showLoader(text = 'Memuat...') {
+
+        clearTimeout(loaderTimer);
+
+        if (loaderText) {
+            loaderText.textContent = text;
+        }
+
+
+        /*
+         * Loading tidak langsung muncul.
+         *
+         * Jika halaman sangat cepat,
+         * loader tidak akan berkedip.
+         */
+
+        loaderTimer = setTimeout(
+            function () {
+
+                loader.classList.add(
+                    'is-active'
+                );
+
+            },
+            250
+        );
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Sembunyikan Loading
+    |--------------------------------------------------------------------------
+    */
+
+    function hideLoader() {
+
+        clearTimeout(loaderTimer);
+
+        loader.classList.remove(
+            'is-active'
+        );
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Loading Saat Klik Link
+    |--------------------------------------------------------------------------
+    */
+
+    document.addEventListener(
+        'click',
+        function (event) {
+
+            const link =
+                event.target.closest('a');
+
+
+            if (!link) {
+                return;
+            }
+
+
+            /*
+             * Abaikan link yang tidak
+             * menyebabkan perpindahan halaman.
+             */
+
+            if (
+                !link.href ||
+                link.getAttribute('href') === '#' ||
+                link.getAttribute('href')?.startsWith('#') ||
+                link.hasAttribute('download') ||
+                link.getAttribute('target') === '_blank' ||
+                link.hasAttribute('data-bs-toggle') ||
+                link.classList.contains('no-loading')
+            ) {
+                return;
+            }
+
+
+            /*
+             * Abaikan CTRL / CMD / SHIFT click.
+             */
+
+            if (
+                event.ctrlKey ||
+                event.metaKey ||
+                event.shiftKey ||
+                event.altKey
+            ) {
+                return;
+            }
+
+
+            /*
+             * Hanya link dari website sendiri.
+             */
+
+            try {
+
+                const url =
+                    new URL(link.href);
+
+
+                if (
+                    url.origin !==
+                    window.location.origin
+                ) {
+                    return;
+                }
+
+            } catch (error) {
+
+                return;
+
+            }
+
+
+            showLoader(
+                'Memuat halaman...'
+            );
+
+        }
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Loading Saat Submit Form
+    |--------------------------------------------------------------------------
+    */
+
+    document.addEventListener(
+        'submit',
+        function (event) {
+
+            const form =
+                event.target;
+
+
+            /*
+             * Tambahkan class no-loading
+             * jika ada form tertentu yang
+             * tidak ingin memakai loader.
+             */
+
+            if (
+                form.classList.contains(
+                    'no-loading'
+                )
+            ) {
+                return;
+            }
+
+
+            showLoader(
+                'Memproses...'
+            );
+
+        }
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Browser Back / Forward
+    |--------------------------------------------------------------------------
+    */
+
+    window.addEventListener(
+        'pageshow',
+        function () {
+
+            hideLoader();
+
+        }
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Pastikan Loading Hilang
+    | Setelah Halaman Selesai Dimuat
+    |--------------------------------------------------------------------------
+    */
+
+    window.addEventListener(
+        'load',
+        function () {
+
+            hideLoader();
 
         }
     );
