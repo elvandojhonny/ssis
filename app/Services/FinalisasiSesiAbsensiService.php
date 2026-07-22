@@ -75,15 +75,14 @@ class FinalisasiSesiAbsensiService
          * pada kelas sesi ini.
          */
         $siswaKelas = Siswa::query()
-            ->where(
-                'kelas_id',
-                $sesiTerkunci->kelas_id
-            )
-            ->where(
-                'is_active',
-                true
-            )
-            ->get();
+        ->where('is_active', true)
+        ->whereHas('kelas', function ($query) use ($sesiTerkunci) {
+            $query->where(
+                'tingkat',
+                $sesiTerkunci->tingkat
+            );
+        })
+        ->get();
 
 
         foreach ($siswaKelas as $siswa) {

@@ -868,6 +868,7 @@
 
 
                         <div
+                            id="tokenUjian"
                             class="
                                 fw-bold
                                 font-monospace
@@ -885,6 +886,33 @@
                         </div>
 
 
+                        @if($ujian->token)
+
+                            <div class="mt-3">
+
+                                <button
+                                    type="button"
+                                    id="btnSalinToken"
+                                    class="btn btn-outline-primary"
+                                    data-token="{{ $ujian->token }}"
+                                >
+
+                                    <i
+                                        id="iconSalinToken"
+                                        class="ti ti-copy me-1"
+                                    ></i>
+
+                                    <span id="textSalinToken">
+                                        Salin Token
+                                    </span>
+
+                                </button>
+
+                            </div>
+
+                        @endif
+
+
                         <div class="text-secondary small mt-3">
 
                             Bagikan token ini kepada siswa
@@ -893,6 +921,93 @@
                         </div>
 
                     </div>
+
+
+                    @push('scripts')
+
+                    <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+
+                        const button =
+                            document.getElementById('btnSalinToken');
+
+                        const text =
+                            document.getElementById('textSalinToken');
+
+                        const icon =
+                            document.getElementById('iconSalinToken');
+
+
+                        if (!button) {
+                            return;
+                        }
+
+
+                        button.addEventListener('click', async function () {
+
+                            const token =
+                                this.dataset.token;
+
+
+                            try {
+
+                                await navigator.clipboard.writeText(token);
+
+
+                                text.textContent =
+                                    'Tersalin';
+
+
+                                icon.className =
+                                    'ti ti-check me-1';
+
+
+                                button.classList.remove(
+                                    'btn-outline-primary'
+                                );
+
+
+                                button.classList.add(
+                                    'btn-success'
+                                );
+
+
+                                setTimeout(function () {
+
+                                    text.textContent =
+                                        'Salin Token';
+
+
+                                    icon.className =
+                                        'ti ti-copy me-1';
+
+
+                                    button.classList.remove(
+                                        'btn-success'
+                                    );
+
+
+                                    button.classList.add(
+                                        'btn-outline-primary'
+                                    );
+
+                                }, 2000);
+
+
+                            } catch (error) {
+
+                                alert(
+                                    'Token gagal disalin.'
+                                );
+
+                            }
+
+                        });
+
+                    });
+                    </script>
+
+                    @endpush
 
 
 

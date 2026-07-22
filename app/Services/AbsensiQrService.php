@@ -29,7 +29,7 @@ class AbsensiQrService
 
         $payload = implode('|', [
             $sesi->id,
-            $sesi->kelas_id,
+            $sesi->tingkat,
             $sesi->tanggal->format('Y-m-d'),
             $sesi->jenis,
             $interval,
