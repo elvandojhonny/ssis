@@ -1,10 +1,10 @@
-@extends('layouts.app')
+@extends('errors.layouts')
 
 @section('title', 'Terjadi Kesalahan')
 
 @section('content')
 
-<div class="container-tight py-5">
+<div class="py-5">
 
     <div class="text-center py-5">
 

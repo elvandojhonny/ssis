@@ -1,10 +1,10 @@
-@extends('layouts.app')
+@extends('errors.layouts')
 
 @section('title', 'Sesi Kedaluwarsa')
 
 @section('content')
 
-<div class="container-tight py-5">
+<div class="py-5">
 
     <div class="text-center py-5">
 
@@ -35,10 +35,10 @@
 
             <a
                 href="{{ route('dashboard') }}"
-                class="btn btn-outline-secondary"
+                class="btn btn-primary"
             >
                 <i class="ti ti-home me-1"></i>
-                Dashboard
+                Kembali ke Dashboard
             </a>
 
         </div>

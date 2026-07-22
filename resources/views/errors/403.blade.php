@@ -1,10 +1,10 @@
-@extends('layouts.app')
+@extends('errors.layouts')
 
 @section('title', 'Akses Ditolak')
 
 @section('content')
 
-<div class="container-tight py-5">
+<div class="py-5">
 
     <div class="text-center">
 
@@ -25,22 +25,27 @@
 
         <div class="d-flex justify-content-center gap-2">
 
-            <a
-                href="{{ route('dashboard') }}"
-                class="btn btn-primary"
-            >
-                <i class="ti ti-home me-1"></i>
-                Kembali ke Dashboard
-            </a>
+            @if(auth()->check())
 
-            <button
-                type="button"
-                class="btn btn-outline-secondary"
-                onclick="history.back()"
-            >
-                <i class="ti ti-arrow-left me-1"></i>
-                Kembali
-            </button>
+                <a
+                    href="{{ route('dashboard') }}"
+                    class="btn btn-primary"
+                >
+                    <i class="ti ti-home me-1"></i>
+                    Kembali ke Dashboard
+                </a>
+
+            @else
+
+                <a
+                    href="{{ route('login') }}"
+                    class="btn btn-primary"
+                >
+                    <i class="ti ti-login me-1"></i>
+                    Kembali ke Login
+                </a>
+
+            @endif
 
         </div>
 
