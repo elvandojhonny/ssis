@@ -55,22 +55,22 @@ class RekapAbsensiController extends Controller
         */
 
         $daftarTingkat = Kelas::query()
-    ->where('is_active', true)
-    ->whereHas('tahunAjaran', function ($query) {
-        $query->where('is_active', true);
-    })
-    ->whereNotNull('tingkat')
-    ->select('tingkat')
-    ->distinct()
-    ->orderByRaw("
-        CASE tingkat
-            WHEN 'X' THEN 1
-            WHEN 'XI' THEN 2
-            WHEN 'XII' THEN 3
-            ELSE 4
-        END
-    ")
-    ->pluck('tingkat');
+        ->where('is_active', true)
+        ->whereHas('tahunAjaran', function ($query) {
+            $query->where('is_active', true);
+        })
+        ->whereNotNull('tingkat')
+        ->select('tingkat')
+        ->distinct()
+        ->orderByRaw("
+            CASE tingkat
+                WHEN 'X' THEN 1
+                WHEN 'XI' THEN 2
+                WHEN 'XII' THEN 3
+                ELSE 4
+            END
+        ")
+        ->pluck('tingkat');
 
 
         /*
@@ -575,6 +575,36 @@ class RekapAbsensiController extends Controller
                     ],
                 ];
             });
+
+
+
+        /*
+|--------------------------------------------------------------------------
+| Pastikan Hasil Sesuai Filter Tingkat
+|--------------------------------------------------------------------------
+|
+| Jika pengguna memilih tingkat tertentu, hanya data tingkat tersebut
+| yang boleh ditampilkan.
+|
+| Jika tingkat tersebut tidak memiliki data absensi, hasil dibuat kosong
+| agar Blade menampilkan bagian "Belum Ada Data Absensi".
+|
+*/
+
+if ($tingkat) {
+
+    if ($rekapPerTingkat->has($tingkat)) {
+
+        $rekapPerTingkat = $rekapPerTingkat->only([
+            $tingkat,
+        ]);
+
+    } else {
+
+        $rekapPerTingkat = collect();
+
+    }
+}
 
 
         /*
