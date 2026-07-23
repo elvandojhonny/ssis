@@ -156,12 +156,7 @@
 
                                 <i class="ti ti-school me-1"></i>
 
-                                {{
-                                    $sesi
-                                        ->kelas
-                                        ?->nama
-                                    ?? '-'
-                                }}
+                                Kelas {{ $sesi->tingkat ?? '-' }}
 
                             </div>
 
