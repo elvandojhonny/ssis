@@ -243,6 +243,8 @@
 
             <div class="text-secondary mt-1">
                 Ringkasan dan pusat pengelolaan sistem sekolah.
+
+                (QR SISWA TIDAK BISA BUKA)
             </div>
 
         </div>
