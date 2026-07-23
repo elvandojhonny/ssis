@@ -2463,3 +2463,30 @@ body.ssis-body {
     }
 
 }
+
+@media (min-width: 992px) {
+
+    .ssis-navbar {
+        position: sticky;
+    }
+
+    .ssis-navbar::after {
+        content: "";
+
+        position: absolute;
+
+        top: -1px;
+        bottom: -1px;
+        right: 100%;
+
+        width: 18px;
+
+        background: inherit;
+
+        border-top: 1px solid var(--ssis-border);
+        border-bottom: 1px solid var(--ssis-border);
+
+        pointer-events: none;
+    }
+
+}
