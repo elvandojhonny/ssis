@@ -517,31 +517,11 @@
 
                             <div class="fw-bold">
 
-                                {{
-                                    $sesi
-                                        ->kelas
-                                        ?->nama
-                                    ?? '-'
-                                }}
-
-                            </div>
-
-
-                            <div class="text-secondary small">
-
-                                {{
-                                    $sesi
-                                        ->kelas
-                                        ?->tahunAjaran
-                                        ?->nama
-                                    ?? '-'
-                                }}
+                                {{ $sesi->tingkat ?? '-' }}
 
                             </div>
 
                         </td>
-
-
 
                         {{-- JENIS --}}
 
