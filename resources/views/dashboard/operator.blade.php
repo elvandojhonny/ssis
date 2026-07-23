@@ -238,7 +238,7 @@
             </div>
 
             <h2 class="page-title">
-                Dashboard Operator (QR SISWA TIDAK BISA DIBUKA)
+                Dashboard Operator
             </h2>
 
             <div class="text-secondary mt-1">
