@@ -55,78 +55,75 @@
     <div class="col-lg-9 order-2 order-lg-1">
 
         {{-- HEADER UJIAN --}}
-        <div class="card mb-4">
+<div class="card mb-3 exam-info-card">
 
-            <div class="card-body">
+    <div class="card-body">
 
-                <div
-                    class="
-                        d-flex
-                        flex-column
-                        flex-md-row
-                        justify-content-between
-                        align-items-md-center
-                        gap-3
-                    "
-                >
+        <div
+            class="
+                d-flex
+                justify-content-between
+                align-items-center
+                gap-3
+            "
+        >
 
-                    <div>
+            <div class="min-w-0">
 
-                        <div class="page-pretitle">
-                            Computer Based Test
-                        </div>
+                <div class="page-pretitle">
+                    Computer Based Test
+                </div>
 
-                        <h2 class="mb-1">
-                            {{ $ujian->judul }}
-                        </h2>
+                <h2 class="mb-1 exam-title">
+                    {{ $ujian->judul }}
+                </h2>
 
-                        <div class="text-secondary">
+                <div class="text-secondary exam-meta">
 
-                            {{ $ujian->kelas->nama ?? '-' }}
+                    {{ $ujian->kelas->nama ?? '-' }}
 
-                            <span class="mx-2">•</span>
+                    <span class="mx-1">•</span>
 
-                            {{ $soals->count() }} Soal
-
-                        </div>
-
-                    </div>
-
-
-                    {{-- TIMER --}}
-                    <div class="d-none d-lg-block">
-
-                        <div
-                            id="timer-container"
-                            class="
-                                border
-                                rounded
-                                px-4
-                                py-3
-                                text-center
-                            "
-                        >
-
-                            <div class="text-secondary small mb-1">
-                                Sisa Waktu
-                            </div>
-
-                            <div
-                                id="timer"
-                                class="fw-bold fs-2"
-                            >
-                                --:--:--
-                            </div>
-
-                        </div>
-
-                    </div>
+                    {{ $soals->count() }} Soal
 
                 </div>
 
             </div>
 
+
+            {{-- TIMER DESKTOP --}}
+            <div
+                id="timer-container"
+                class="
+                    d-none
+                    d-lg-block
+                    border
+                    rounded
+                    px-3
+                    py-2
+                    text-center
+                    flex-shrink-0
+                "
+            >
+
+                <div class="text-secondary small">
+                    Sisa Waktu
+                </div>
+
+                <div
+                    id="timer"
+                    class="fw-bold fs-3"
+                >
+                    --:--:--
+                </div>
+
+            </div>
+
         </div>
+
+    </div>
+
+</div>
 
 
         {{-- ================================================= --}}
@@ -563,222 +560,240 @@
 
     <div class="col-lg-3 order-1 order-lg-2">
 
-        <div
-            class="card"
-            style="
-                position: sticky;
-                top: 90px;
-            "
-        >
+        <div class="card exam-navigation-card">
 
-            <div class="card-header">
+    <div class="card-body">
 
-                <h3 class="card-title">
-                    Navigasi Soal
-                </h3>
+        {{-- MOBILE: INFORMASI + TIMER --}}
+        <div class="d-lg-none mb-3">
 
-            </div>
+            <div
+                class="
+                    d-flex
+                    justify-content-between
+                    align-items-start
+                    gap-3
+                "
+            >
 
+                <div class="min-w-0">
 
-            <div class="card-body">
+                    <div class="page-pretitle">
+                        Computer Based Test
+                    </div>
 
-                {{-- WAKTU PENGERJAAN MOBILE --}}
-                    <div
-                        id="timer-container-mobile"
-                        class="
-                            d-lg-none
-                            border
-                            rounded
-                            p-3
-                            text-center
-                            mb-4
-                        "
-                    >
+                    <div class="fw-bold exam-mobile-title">
+                        {{ $ujian->judul }}
+                    </div>
 
-                        <div class="text-secondary small mb-1">
+                    <div class="text-secondary small mt-1">
 
-                            <i class="ti ti-clock me-1"></i>
+                        {{ $ujian->kelas->nama ?? '-' }}
 
-                            Sisa Waktu Pengerjaan
+                        <span class="mx-1">•</span>
 
-                        </div>
-
-                        <div
-                            id="timer-mobile"
-                            class="fw-bold fs-2"
-                        >
-                            --:--:--
-                        </div>
+                        {{ $soals->count() }} Soal
 
                     </div>
 
+                </div>
+
+
                 <div
-                    id="navigasi-soal"
-                    class="d-grid gap-2"
-                    style="
-                        grid-template-columns:
-                        repeat(5, 1fr);
+                    id="timer-container-mobile"
+                    class="
+                        exam-mobile-timer
+                        text-end
+                        flex-shrink-0
                     "
                 >
 
-                    @foreach(
-                        $soals
-                        as $index => $soal
-                    )
+                    <div class="text-secondary small">
 
-                        @php
+                        <i class="ti ti-clock"></i>
 
-                            $sudahDijawab =
-                                $jawabanTersimpan
-                                    ->has(
-                                        $soal->id
-                                    );
-
-                        @endphp
-
-
-                        <button
-                            type="button"
-                            class="
-                                btn
-                                btn-soal
-                                {{
-                                    $sudahDijawab
-                                        ? 'btn-success'
-                                        : 'btn-outline-secondary'
-                                }}
-                            "
-                            data-index="{{ $index }}"
-                            data-soal-id="{{ $soal->id }}"
-                        >
-
-                            {{ $index + 1 }}
-
-                        </button>
-
-                    @endforeach
-
-                </div>
-
-
-                <hr class="my-4">
-
-
-                {{-- KETERANGAN --}}
-                <div class="small">
-
-                    <div
-                        class="
-                            d-flex
-                            align-items-center
-                            mb-2
-                        "
-                    >
-
-                        <span class="badge bg-success me-2">
-                            &nbsp;
-                        </span>
-
-                        Sudah dijawab
+                        Waktu
 
                     </div>
 
-
                     <div
-                        class="
-                            d-flex
-                            align-items-center
-                        "
+                        id="timer-mobile"
+                        class="fw-bold"
                     >
-
-                        <span class="badge bg-secondary me-2">
-                            &nbsp;
-                        </span>
-
-                        Belum dijawab
-
+                        --:--:--
                     </div>
 
                 </div>
 
+            </div>
 
-                <hr class="my-4">
-
-
-                {{-- PROGRESS --}}
-                <div>
-
-                    <div
-                        class="
-                            d-flex
-                            justify-content-between
-                            mb-2
-                        "
-                    >
-
-                        <span class="text-secondary">
-                            Terjawab
-                        </span>
+        </div>
 
 
-                        <strong id="jumlah-terjawab">
-
-                            {{ $jawabanTersimpan->count() }}
-
-                            /
-
-                            {{ $soals->count() }}
-
-                        </strong>
-
-                    </div>
+        {{-- JUDUL NAVIGASI DESKTOP --}}
+        <h3 class="card-title d-none d-lg-block mb-3">
+            Navigasi Soal
+        </h3>
 
 
-                    <div class="progress">
+        {{-- NOMOR SOAL --}}
+        <div
+            id="navigasi-soal"
+            class="exam-number-grid"
+        >
 
-                        <div
-                            id="progress-jawaban"
-                            class="progress-bar"
-                            style="
-                                width:
-                                {{
-                                    $soals->count() > 0
-                                        ? (
-                                            $jawabanTersimpan->count()
-                                            /
-                                            $soals->count()
-                                        ) * 100
-                                        : 0
-                                }}%;
-                            "
-                        ></div>
+            @foreach($soals as $index => $soal)
 
-                    </div>
+                @php
 
-                </div>
+                    $sudahDijawab =
+                        $jawabanTersimpan
+                            ->has($soal->id);
+
+                @endphp
 
 
                 <button
                     type="button"
                     class="
                         btn
-                        btn-success
-                        w-100
-                        mt-4
-                        btn-buka-submit
+                        btn-soal
+                        {{
+                            $sudahDijawab
+                                ? 'btn-success'
+                                : 'btn-outline-secondary'
+                        }}
                     "
+                    data-index="{{ $index }}"
+                    data-soal-id="{{ $soal->id }}"
                 >
 
-                    <i class="ti ti-circle-check me-1"></i>
-
-                    Selesai Ujian
+                    {{ $index + 1 }}
 
                 </button>
+
+            @endforeach
+
+        </div>
+
+
+        {{-- KETERANGAN DESKTOP --}}
+        <div class="d-none d-lg-block">
+
+            <hr class="my-4">
+
+            <div class="small">
+
+                <div class="d-flex align-items-center mb-2">
+
+                    <span class="badge bg-success me-2">
+                        &nbsp;
+                    </span>
+
+                    Sudah dijawab
+
+                </div>
+
+                <div class="d-flex align-items-center">
+
+                    <span class="badge bg-secondary me-2">
+                        &nbsp;
+                    </span>
+
+                    Belum dijawab
+
+                </div>
 
             </div>
 
         </div>
 
+
+        <hr class="my-3">
+
+
+        {{-- PROGRESS --}}
+        <div>
+
+            <div
+                class="
+                    d-flex
+                    justify-content-between
+                    align-items-center
+                    mb-2
+                "
+            >
+
+                <span class="text-secondary small">
+                    Terjawab
+                </span>
+
+                <strong
+                    id="jumlah-terjawab"
+                    class="small"
+                >
+
+                    {{ $jawabanTersimpan->count() }}
+                    /
+                    {{ $soals->count() }}
+
+                </strong>
+
+            </div>
+
+
+            <div
+                class="progress"
+                style="height: 6px;"
+            >
+
+                <div
+                    id="progress-jawaban"
+                    class="progress-bar"
+                    style="
+                        width:
+                        {{
+                            $soals->count() > 0
+                                ? (
+                                    $jawabanTersimpan->count()
+                                    /
+                                    $soals->count()
+                                ) * 100
+                                : 0
+                        }}%;
+                    "
+                ></div>
+
+            </div>
+
+        </div>
+
+
+        {{-- SELESAI HANYA DESKTOP --}}
+        <button
+            type="button"
+            class="
+                btn
+                btn-success
+                w-100
+                mt-4
+                btn-buka-submit
+                d-none
+                d-lg-block
+            "
+        >
+
+            <i class="ti ti-circle-check me-1"></i>
+
+            Selesai Ujian
+
+        </button>
+
+    </div>
+
+</div>
+
+        
     </div>
 
 </div>
@@ -1386,28 +1401,202 @@
      * Mobile
      */
 
-    @media (max-width: 767.98px) {
+    /* =========================================================
+   EXAM LAYOUT
+========================================================= */
 
-        .soal-pertanyaan {
-            font-size: 1.1rem !important;
-            line-height: 1.7;
-        }
+.exam-navigation-card {
+    position: sticky;
+    top: 90px;
+}
+
+.exam-number-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.5rem;
+}
 
 
-        .jawaban-option {
-            padding: 1rem !important;
-        }
+/* =========================================================
+   MOBILE EXAM
+========================================================= */
 
+@media (max-width: 991.98px) {
 
-        #timer-container-mobile {
-            width: 100%;
-        }
+    /*
+     * Jarak antar area dibuat lebih rapat.
+     */
 
-        #timer-mobile {
-            font-size: 1.5rem !important;
-        }
-
+    .row.g-4 {
+        --tblr-gutter-y: 0.75rem;
     }
+
+
+    /*
+     * Header ujian desktop tidak diperlukan
+     * karena informasi sudah masuk navigasi.
+     */
+
+    .exam-info-card {
+        display: none;
+    }
+
+
+    /*
+     * Navigasi tidak sticky pada HP/tablet.
+     */
+
+    .exam-navigation-card {
+        position: static !important;
+        margin-bottom: 0;
+    }
+
+
+    .exam-navigation-card .card-body {
+        padding: 1rem;
+    }
+
+
+    /*
+     * Informasi ujian.
+     */
+
+    .exam-mobile-title {
+        font-size: 1.05rem;
+        line-height: 1.3;
+    }
+
+
+    /*
+     * Timer lebih kecil dan berada
+     * di samping informasi ujian.
+     */
+
+    #timer-container-mobile {
+        width: auto !important;
+        min-width: 90px;
+    }
+
+    #timer-mobile {
+        font-size: 1.2rem !important;
+        line-height: 1.2;
+        margin-top: 3px;
+    }
+
+
+    /*
+     * Nomor soal.
+     */
+
+    .exam-number-grid {
+        grid-template-columns:
+            repeat(5, minmax(0, 1fr));
+
+        gap: 0.45rem;
+    }
+
+    .btn-soal {
+        min-height: 38px;
+        padding: 0.35rem;
+    }
+
+
+    /*
+     * Card soal.
+     */
+
+    .soal-container .card-header {
+        min-height: auto;
+        padding: 0.85rem 1rem;
+    }
+
+    .soal-container .card-body {
+        padding: 1rem;
+    }
+
+    .soal-container .card-footer {
+        padding: 0.85rem 1rem;
+    }
+
+
+    /*
+     * Pertanyaan.
+     */
+
+    .soal-pertanyaan {
+        font-size: 1.05rem !important;
+        line-height: 1.55;
+        margin-bottom: 1rem !important;
+    }
+
+
+    /*
+     * Pilihan jawaban lebih compact.
+     */
+
+    .jawaban-option {
+        padding: 0.75rem !important;
+        margin-bottom: 0.65rem !important;
+        gap: 0.75rem !important;
+        align-items: center !important;
+    }
+
+    .jawaban-option .form-check-input {
+        margin-top: 0 !important;
+    }
+
+
+    /*
+     * Navigasi bawah soal.
+     */
+
+    .soal-container .card-footer .btn {
+        padding-left: 0.8rem;
+        padding-right: 0.8rem;
+    }
+
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width: 575.98px) {
+
+    .exam-navigation-card .card-body {
+        padding: 0.85rem;
+    }
+
+    .exam-mobile-title {
+        font-size: 1rem;
+    }
+
+    #timer-mobile {
+        font-size: 1.1rem !important;
+    }
+
+    .exam-number-grid {
+        gap: 0.35rem;
+    }
+
+    .btn-soal {
+        min-height: 36px;
+        font-size: 0.85rem;
+    }
+
+    .soal-container .card-header,
+    .soal-container .card-body,
+    .soal-container .card-footer {
+        padding-left: 0.85rem;
+        padding-right: 0.85rem;
+    }
+
+    .jawaban-option {
+        min-height: 48px;
+    }
+
+}
 
 </style>
 

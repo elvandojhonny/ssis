@@ -41,7 +41,13 @@ class UjianSiswaController extends Controller
          *    siswa yang sedang login.
          */
         $ujians = Ujian::query()
+
+            /*
+            * Load data yang dibutuhkan
+            * untuk tampilan daftar ujian.
+            */
             ->with([
+
                 'bankSoal',
 
                 'kelas.tahunAjaran',
@@ -55,18 +61,84 @@ class UjianSiswaController extends Controller
                         );
 
                     },
+
             ])
+
+
+            /*
+            * Hanya ujian untuk
+            * kelas siswa.
+            */
             ->where(
                 'kelas_id',
                 $siswa->kelas_id
             )
+
+
+            /*
+            * Hanya ujian yang
+            * sudah dipublikasikan.
+            */
             ->where(
                 'status',
                 'dipublikasi'
             )
-            ->latest(
-                'waktu_mulai'
+
+
+            /*
+            * Hanya ujian yang dijadwalkan
+            * pada hari ini.
+            */
+            ->whereDate(
+                'waktu_mulai',
+                today()
             )
+
+
+            /*
+            * Jangan tampilkan ujian
+            * yang waktu pelaksanaannya
+            * sudah berakhir.
+            */
+            ->where(
+                'waktu_selesai',
+                '>',
+                now()
+            )
+
+
+            /*
+            * Jangan tampilkan ujian yang
+            * sudah diselesaikan siswa.
+            */
+            ->whereDoesntHave(
+                'pengerjaans',
+                function ($query) use ($siswa) {
+
+                    $query
+                        ->where(
+                            'siswa_id',
+                            $siswa->id
+                        )
+                        ->where(
+                            'status',
+                            'selesai'
+                        );
+
+                }
+            )
+
+
+            /*
+            * Urutkan berdasarkan jadwal
+            * paling awal.
+            */
+            ->orderBy(
+                'waktu_mulai',
+                'asc'
+            )
+
+
             ->get();
 
 
