@@ -47,7 +47,7 @@
 
                 <a
                     href="{{ route('cbt.bank-soal.template') }}"
-                    class="btn btn-outline-primary"
+                    class="btn btn-outline-primary no-loading"
                 >
                     <i class="ti ti-download me-1"></i>
 

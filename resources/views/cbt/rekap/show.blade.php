@@ -190,7 +190,7 @@
 
                 <a
                     href="{{ route('cbt.rekap.export', $ujian) }}"
-                    class="btn btn-success"
+                    class="btn btn-success no-loading"
                 >
 
                     <i class="ti ti-file-spreadsheet me-2"></i>

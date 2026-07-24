@@ -27,7 +27,7 @@
 
         <a
             href="{{ route('guru.template-import') }}"
-            class="btn btn-outline-success"
+            class="btn btn-outline-success no-loading"
         >
             <i class="ti ti-file-spreadsheet me-1"></i>
             Download Template
@@ -442,6 +442,7 @@
                 action="{{ route('guru.import') }}"
                 method="POST"
                 enctype="multipart/form-data"
+                class="no-loading"
             >
 
                 @csrf

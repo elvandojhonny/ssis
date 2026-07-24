@@ -38,7 +38,7 @@
 
                 <a
                     href="{{ route('siswa.template-import') }}"
-                    class="btn btn-outline-success"
+                    class="btn btn-outline-success no-loading"
                 >
 
                     <i class="ti ti-file-spreadsheet me-1"></i>
@@ -613,6 +613,7 @@
                 action="{{ route('siswa.import') }}"
                 method="POST"
                 enctype="multipart/form-data"
+                class="no-loading"
             >
 
                 @csrf
