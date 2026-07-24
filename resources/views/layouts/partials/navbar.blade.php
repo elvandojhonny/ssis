@@ -162,7 +162,7 @@
                     >
                         <i class="ti ti-logout me-2"></i>
 
-                        Keluar dari Sistem
+                        Keluar
                     </button>
 
                 </form>

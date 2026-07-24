@@ -52,7 +52,7 @@
     {{-- AREA SOAL --}}
     {{-- ===================================================== --}}
 
-    <div class="col-lg-9">
+    <div class="col-lg-9 order-2 order-lg-1">
 
         {{-- HEADER UJIAN --}}
         <div class="card mb-4">
@@ -94,7 +94,7 @@
 
 
                     {{-- TIMER --}}
-                    <div>
+                    <div class="d-none d-lg-block">
 
                         <div
                             id="timer-container"
@@ -561,7 +561,7 @@
     {{-- NAVIGASI NOMOR SOAL --}}
     {{-- ===================================================== --}}
 
-    <div class="col-lg-3">
+    <div class="col-lg-3 order-1 order-lg-2">
 
         <div
             class="card"
@@ -581,6 +581,36 @@
 
 
             <div class="card-body">
+
+                {{-- WAKTU PENGERJAAN MOBILE --}}
+                    <div
+                        id="timer-container-mobile"
+                        class="
+                            d-lg-none
+                            border
+                            rounded
+                            p-3
+                            text-center
+                            mb-4
+                        "
+                    >
+
+                        <div class="text-secondary small mb-1">
+
+                            <i class="ti ti-clock me-1"></i>
+
+                            Sisa Waktu Pengerjaan
+
+                        </div>
+
+                        <div
+                            id="timer-mobile"
+                            class="fw-bold fs-2"
+                        >
+                            --:--:--
+                        </div>
+
+                    </div>
 
                 <div
                     id="navigasi-soal"
@@ -1135,12 +1165,168 @@
 
 </div>
 
+{{-- ========================================================= --}}
+{{-- MODAL KONFIRMASI SELESAI UJIAN --}}
+{{-- ========================================================= --}}
+
+<div
+    class="modal modal-blur fade"
+    id="modalSelesaiUjian"
+    tabindex="-1"
+    aria-hidden="true"
+    data-bs-backdrop="static"
+    data-bs-keyboard="false"
+>
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <div class="modal-status bg-success"></div>
+
+            <div class="modal-body text-center py-4">
+
+                <span class="avatar avatar-xl bg-success-lt mb-3">
+                    <i class="ti ti-circle-check"></i>
+                </span>
+
+                <h3 class="mb-2">
+                    Selesaikan Ujian?
+                </h3>
+
+                <p
+                    id="pesanKonfirmasiSelesai"
+                    class="text-secondary mb-0"
+                >
+                    Pastikan seluruh jawaban Anda sudah benar.
+                </p>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <div class="w-100">
+
+                    <div class="row g-2">
+
+                        <div class="col">
+
+                            <button
+                                type="button"
+                                class="btn w-100"
+                                data-bs-dismiss="modal"
+                            >
+                                Batal
+                            </button>
+
+                        </div>
+
+                        <div class="col">
+
+                            <button
+                                type="button"
+                                id="btnKonfirmasiSelesai"
+                                class="btn btn-success w-100"
+                            >
+                                <i class="ti ti-circle-check me-1"></i>
+
+                                Ya, Selesai
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+{{-- ========================================================= --}}
+{{-- MODAL INFORMASI CBT --}}
+{{-- ========================================================= --}}
+
+<div
+    class="modal modal-blur fade"
+    id="modalInformasiCbt"
+    tabindex="-1"
+    aria-hidden="true"
+>
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <div
+                id="statusModalInformasiCbt"
+                class="modal-status bg-danger"
+            ></div>
+
+            <div class="modal-body text-center py-4">
+
+                <span
+                    id="iconModalInformasiCbt"
+                    class="avatar avatar-xl bg-danger-lt mb-3"
+                >
+                    <i class="ti ti-alert-triangle"></i>
+                </span>
+
+                <h3
+                    id="judulModalInformasiCbt"
+                    class="mb-2"
+                >
+                    Terjadi Kesalahan
+                </h3>
+
+                <p
+                    id="pesanModalInformasiCbt"
+                    class="text-secondary mb-0"
+                ></p>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button
+                    type="button"
+                    id="btnTutupModalInformasiCbt"
+                    class="btn btn-primary w-100"
+                >
+                    Mengerti
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
 @endsection
 
 
 @push('styles')
 
 <style>
+
+    /*
+    * Nomor soal yang sedang aktif
+    */
+
+    .btn-soal.soal-aktif {
+        background-color: var(--tblr-primary) !important;
+        border-color: var(--tblr-primary) !important;
+        color: #ffffff !important;
+
+        box-shadow:
+            0 0 0 3px
+            rgba(
+                var(--tblr-primary-rgb),
+                .15
+            );
+    }
 
     /*
      * Pilihan jawaban
@@ -1213,12 +1399,11 @@
         }
 
 
-        #timer-container {
+        #timer-container-mobile {
             width: 100%;
         }
 
-
-        #timer {
+        #timer-mobile {
             font-size: 1.5rem !important;
         }
 
@@ -1309,6 +1494,47 @@ document.addEventListener(
 
 
             soalAktif = index;
+
+            /*
+                * Hapus warna aktif
+                * dari semua nomor soal.
+                */
+
+                tombolSoal.forEach(
+                    function (button) {
+
+                        button
+                            .classList
+                            .remove(
+                                'soal-aktif'
+                            );
+
+                    }
+                );
+
+
+                /*
+                * Beri warna pada
+                * nomor soal yang sedang dibuka.
+                */
+
+                const tombolAktif =
+                    document.querySelector(
+                        '.btn-soal[data-index="' +
+                        index +
+                        '"]'
+                    );
+
+
+                if (tombolAktif) {
+
+                    tombolAktif
+                        .classList
+                        .add(
+                            'soal-aktif'
+                        );
+
+                }
 
 
             window.scrollTo({
@@ -1521,6 +1747,8 @@ document.addEventListener(
 
                             updateProgress();
 
+                            
+
 
                             try {
 
@@ -1618,8 +1846,11 @@ document.addEventListener(
                                 );
 
 
-                                alert(
-                                    'Jawaban belum berhasil disimpan. Periksa koneksi internet Anda.'
+                                window.tampilkanInformasiCbt(
+                                    'Jawaban Belum Tersimpan',
+                                    'Jawaban belum berhasil disimpan. ' +
+                                    'Periksa koneksi internet Anda, ' +
+                                    'kemudian pilih kembali jawaban tersebut.'
                                 );
 
                             }
@@ -1653,6 +1884,17 @@ document.addEventListener(
                 'timer'
             );
 
+        const timerMobileElement =
+            document.getElementById(
+                'timer-mobile'
+            );
+
+
+        const timerMobileContainer =
+            document.getElementById(
+                'timer-container-mobile'
+            );
+
 
         const timerContainer =
             document.getElementById(
@@ -1673,13 +1915,27 @@ document.addEventListener(
 
 
             /*
-             * Waktu habis.
-             */
+            |--------------------------------------------------------------------------
+            | WAKTU HABIS
+            |--------------------------------------------------------------------------
+            */
 
             if (selisih <= 0) {
 
-                timerElement.textContent =
-                    '00:00:00';
+                if (timerElement) {
+
+                    timerElement.textContent =
+                        '00:00:00';
+
+                }
+
+
+                if (timerMobileElement) {
+
+                    timerMobileElement.textContent =
+                        '00:00:00';
+
+                }
 
 
                 submitOtomatis();
@@ -1732,7 +1988,7 @@ document.addEventListener(
                 );
 
 
-            timerElement.textContent =
+            const waktuTersisa =
 
                 String(jam)
                     .padStart(
@@ -1757,6 +2013,22 @@ document.addEventListener(
                     );
 
 
+            if (timerElement) {
+
+                timerElement.textContent =
+                    waktuTersisa;
+
+            }
+
+
+            if (timerMobileElement) {
+
+                timerMobileElement.textContent =
+                    waktuTersisa;
+
+            }
+
+
             /*
              * Peringatan 5 menit.
              */
@@ -1766,15 +2038,30 @@ document.addEventListener(
                 5 * 60 * 1000
             ) {
 
-                timerContainer
-                    .classList
-                    .add(
-                        'border-danger',
-                        'text-danger'
-                    );
+                if (timerContainer) {
+
+                    timerContainer
+                        .classList
+                        .add(
+                            'border-danger',
+                            'text-danger'
+                        );
+
+                }
+
+
+                if (timerMobileContainer) {
+
+                    timerMobileContainer
+                        .classList
+                        .add(
+                            'border-danger',
+                            'text-danger'
+                        );
+
+                }
 
             }
-
         }
 
 
@@ -1821,65 +2108,262 @@ document.addEventListener(
 
 
         /*
-        |--------------------------------------------------------------------------
-        | SUBMIT MANUAL
-        |--------------------------------------------------------------------------
-        */
+|--------------------------------------------------------------------------
+| SUBMIT MANUAL
+|--------------------------------------------------------------------------
+*/
 
-        document
-            .querySelectorAll(
-                '.btn-buka-submit'
-            )
-            .forEach(
-                function (button) {
+const modalSelesaiElement =
+    document.getElementById(
+        'modalSelesaiUjian'
+    );
 
-                    button.addEventListener(
-                        'click',
-                        function () {
+const pesanKonfirmasiSelesai =
+    document.getElementById(
+        'pesanKonfirmasiSelesai'
+    );
 
-                            const terjawab =
-                                document
-                                    .querySelectorAll(
-                                        '.jawaban-radio:checked'
-                                    )
-                                    .length;
+const btnKonfirmasiSelesai =
+    document.getElementById(
+        'btnKonfirmasiSelesai'
+    );
 
 
-                            const belumDijawab =
-                                totalSoal -
-                                terjawab;
+/*
+|--------------------------------------------------------------------------
+| BUKA MODAL SELESAI UJIAN
+|--------------------------------------------------------------------------
+*/
+
+function bukaModalSelesai()
+{
+    if (! modalSelesaiElement) {
+        return;
+    }
 
 
-                            let pesan =
-                                'Apakah Anda yakin ingin menyelesaikan ujian?';
+    modalSelesaiElement
+        .classList
+        .add('show');
 
 
-                            if (belumDijawab > 0) {
-
-                                pesan =
-
-                                    'Masih ada ' +
-
-                                    belumDijawab +
-
-                                    ' soal yang belum dijawab.\n\n' +
-
-                                    'Apakah Anda tetap ingin menyelesaikan ujian?';
-
-                            }
+    modalSelesaiElement.style.display =
+        'block';
 
 
-                            if (confirm(pesan)) {
+    modalSelesaiElement.removeAttribute(
+        'aria-hidden'
+    );
 
-                                submitOtomatis();
 
-                            }
+    modalSelesaiElement.setAttribute(
+        'aria-modal',
+        'true'
+    );
+
+
+    document.body
+        .classList
+        .add('modal-open');
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| TUTUP MODAL SELESAI UJIAN
+|--------------------------------------------------------------------------
+*/
+
+function tutupModalSelesai()
+{
+    if (! modalSelesaiElement) {
+        return;
+    }
+
+
+    modalSelesaiElement
+        .classList
+        .remove('show');
+
+
+    modalSelesaiElement.style.display =
+        'none';
+
+
+    modalSelesaiElement.setAttribute(
+        'aria-hidden',
+        'true'
+    );
+
+
+    modalSelesaiElement.removeAttribute(
+        'aria-modal'
+    );
+
+
+    document.body
+        .classList
+        .remove('modal-open');
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| TOMBOL BUKA KONFIRMASI
+|--------------------------------------------------------------------------
+*/
+
+document
+    .querySelectorAll(
+        '.btn-buka-submit'
+    )
+    .forEach(
+        function (button) {
+
+            button.addEventListener(
+                'click',
+                function () {
+
+                    const terjawab =
+                        document
+                            .querySelectorAll(
+                                '.jawaban-radio:checked'
+                            )
+                            .length;
+
+
+                    const belumDijawab =
+                        totalSoal -
+                        terjawab;
+
+
+                    if (
+                        pesanKonfirmasiSelesai
+                    ) {
+
+                        if (
+                            belumDijawab === 0
+                        ) {
+
+                            pesanKonfirmasiSelesai
+                                .innerHTML =
+
+                                'Semua soal telah dijawab. ' +
+
+                                'Pastikan kembali jawaban Anda ' +
+
+                                'sebelum <strong>' +
+
+                                'menyelesaikan ujian' +
+
+                                '</strong>.';
+
+                        } else {
+
+                            pesanKonfirmasiSelesai
+                                .innerHTML =
+
+                                'Masih ada ' +
+
+                                '<strong class="text-danger">' +
+
+                                belumDijawab +
+
+                                ' soal</strong> ' +
+
+                                'yang belum dijawab. ' +
+
+                                'Apakah Anda tetap ingin ' +
+
+                                'menyelesaikan ujian?';
 
                         }
-                    );
+
+                    }
+
+
+                    /*
+                     * Matikan pengawasan sementara
+                     * agar modal tidak dianggap
+                     * sebagai pelanggaran.
+                     */
+
+                    bukaModalSelesai();
 
                 }
             );
+
+        }
+    );
+
+
+/*
+|--------------------------------------------------------------------------
+| TOMBOL BATAL
+|--------------------------------------------------------------------------
+*/
+
+const btnBatalSelesai =
+    modalSelesaiElement
+        ?.querySelector(
+            '[data-bs-dismiss="modal"]'
+        );
+
+
+if (btnBatalSelesai) {
+
+    btnBatalSelesai.addEventListener(
+        'click',
+        function () {
+
+            tutupModalSelesai();
+
+        }
+    );
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| KONFIRMASI SELESAI
+|--------------------------------------------------------------------------
+*/
+
+if (btnKonfirmasiSelesai) {
+
+    btnKonfirmasiSelesai.addEventListener(
+        'click',
+        function () {
+
+            if (sedangSubmit) {
+                return;
+            }
+
+
+            btnKonfirmasiSelesai.disabled =
+                true;
+
+
+            btnKonfirmasiSelesai.innerHTML =
+
+                '<span ' +
+
+                'class="spinner-border ' +
+
+                'spinner-border-sm me-2">' +
+
+                '</span>' +
+
+                'Menyelesaikan...';
+
+
+            submitOtomatis();
+
+        }
+    );
+
+}
 
 
         /*
@@ -2017,6 +2501,123 @@ document.addEventListener('DOMContentLoaded', function () {
     document.body.classList.add(
         'modal-open'
     );
+}
+
+/*
+|--------------------------------------------------------------------------
+| MODAL INFORMASI CBT
+|--------------------------------------------------------------------------
+*/
+
+const modalInformasiCbt =
+    document.getElementById(
+        'modalInformasiCbt'
+    );
+
+const judulModalInformasiCbt =
+    document.getElementById(
+        'judulModalInformasiCbt'
+    );
+
+const pesanModalInformasiCbt =
+    document.getElementById(
+        'pesanModalInformasiCbt'
+    );
+
+const btnTutupModalInformasiCbt =
+    document.getElementById(
+        'btnTutupModalInformasiCbt'
+    );
+
+
+window.tampilkanInformasiCbt =
+    function (
+        judul,
+        pesan
+    ) {
+
+    if (! modalInformasiCbt) {
+        return;
+    }
+
+
+    judulModalInformasiCbt.textContent =
+        judul;
+
+
+    pesanModalInformasiCbt.textContent =
+        pesan;
+
+
+    modalInformasiCbt
+        .classList
+        .add('show');
+
+
+    modalInformasiCbt.style.display =
+        'block';
+
+
+    modalInformasiCbt.removeAttribute(
+        'aria-hidden'
+    );
+
+
+    modalInformasiCbt.setAttribute(
+        'aria-modal',
+        'true'
+    );
+
+
+    document.body
+        .classList
+        .add('modal-open');
+
+}
+
+
+function tutupInformasiCbt() {
+
+    if (! modalInformasiCbt) {
+        return;
+    }
+
+
+    modalInformasiCbt
+        .classList
+        .remove('show');
+
+
+    modalInformasiCbt.style.display =
+        'none';
+
+
+    modalInformasiCbt.setAttribute(
+        'aria-hidden',
+        'true'
+    );
+
+
+    modalInformasiCbt.removeAttribute(
+        'aria-modal'
+    );
+
+
+    document.body
+        .classList
+        .remove('modal-open');
+
+}
+
+
+if (btnTutupModalInformasiCbt) {
+
+    btnTutupModalInformasiCbt
+        .addEventListener(
+            'click',
+            tutupInformasiCbt
+        );
+
 }
 
 /*
@@ -2290,7 +2891,8 @@ function tutupModalPelanggaran()
                         'Masuk Mode Ujian';
 
 
-                    alert(
+                    window.tampilkanInformasiCbt(
+                        'Mode Ujian Gagal Diaktifkan',
                         'Mode layar penuh tidak dapat diaktifkan. ' +
                         'Pastikan browser mengizinkan fullscreen.'
                     );
@@ -2950,7 +3552,8 @@ window.addEventListener(
                         'Saya Mengerti, Lanjutkan Ujian';
 
 
-                    alert(
+                    window.tampilkanInformasiCbt(
+                        'Mode Ujian Diperlukan',
                         'Anda harus kembali ke Mode Ujian untuk melanjutkan.'
                     );
 
