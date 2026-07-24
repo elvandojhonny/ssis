@@ -10,8 +10,16 @@ use App\Models\Ujian;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
+use App\Services\CBT\PenilaianUjianService;
+
 class PengerjaanUjianController extends Controller
 {
+
+public function __construct(
+        private readonly
+        PenilaianUjianService $penilaianService
+    ) {
+    }
     /*
     |--------------------------------------------------------------------------
     | Mulai Ujian
@@ -603,7 +611,9 @@ $pengerjaan = DB::transaction(
         /*
          * Selesaikan ujian otomatis.
          */
-        $this->prosesPenilaian(
+        $this
+        ->penilaianService
+        ->proses(
             $pengerjaan
         );
 
@@ -993,7 +1003,9 @@ $pengerjaan = DB::transaction(
         /*
          * Proses penilaian.
          */
-        $this->prosesPenilaian(
+        $this
+        ->penilaianService
+        ->proses(
             $pengerjaan
         );
 
@@ -1008,269 +1020,6 @@ $pengerjaan = DB::transaction(
                 'Ujian berhasil diselesaikan.'
             );
     }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Proses Penilaian
-    |--------------------------------------------------------------------------
-    */
-    private function prosesPenilaian(
-    PengerjaanUjian $pengerjaan
-): void {
-
-    /*
-     * Load soal dan jawaban.
-     */
-    $pengerjaan->load([
-        'ujian.bankSoal.soals',
-        'jawabans',
-    ]);
-
-
-    DB::transaction(
-        function () use ($pengerjaan) {
-
-            /*
-             * Lock pengerjaan agar tidak
-             * diproses dua kali bersamaan.
-             */
-            $attempt =
-                PengerjaanUjian::query()
-                    ->lockForUpdate()
-                    ->findOrFail(
-                        $pengerjaan->id
-                    );
-
-
-            /*
-             * Jangan proses ulang
-             * jika sudah selesai.
-             */
-            if (
-                $attempt->status ===
-                'selesai'
-            ) {
-                return;
-            }
-
-
-            /*
-             * Jangan nilai jika diblokir.
-             */
-            if (
-                $attempt->status ===
-                'diblokir'
-            ) {
-                return;
-            }
-
-
-            /*
-             * Hanya pengerjaan aktif
-             * yang dapat dinilai.
-             */
-            if (
-                $attempt->status !==
-                'mengerjakan'
-            ) {
-                return;
-            }
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | Total Bobot Seluruh Soal
-            |--------------------------------------------------------------------------
-            |
-            | Contoh:
-            |
-            | Soal 1 = 5
-            | Soal 2 = 10
-            | Soal 3 = 15
-            |
-            | Total bobot = 30
-            |
-            | Nilai maksimal tetap 100.
-            |
-            */
-
-            $totalBobot =
-                $pengerjaan
-                    ->ujian
-                    ->bankSoal
-                    ->soals
-                    ->sum(
-                        function ($soal) {
-
-                            return max(
-                                0,
-                                (float) $soal->bobot
-                            );
-
-                        }
-                    );
-
-
-            /*
-             * Total bobot dari jawaban benar.
-             */
-            $totalBobotBenar = 0;
-
-
-            foreach (
-                $pengerjaan
-                    ->ujian
-                    ->bankSoal
-                    ->soals
-                as $soal
-            ) {
-
-                /*
-                 * Cari jawaban siswa.
-                 */
-                $jawaban =
-                    $pengerjaan
-                        ->jawabans
-                        ->firstWhere(
-                            'soal_id',
-                            $soal->id
-                        );
-
-
-                /*
-                 * Jika tidak dijawab,
-                 * bobot yang didapat = 0.
-                 */
-                if (! $jawaban) {
-                    continue;
-                }
-
-
-                /*
-                 * Periksa benar atau salah.
-                 */
-                $benar =
-                    strtoupper(
-                        trim(
-                            (string)
-                            $jawaban->jawaban
-                        )
-                    )
-                    ===
-                    strtoupper(
-                        trim(
-                            (string)
-                            $soal->jawaban_benar
-                        )
-                    );
-
-
-                /*
-                 * Bobot soal.
-                 */
-                $bobotSoal =
-                    max(
-                        0,
-                        (float) $soal->bobot
-                    );
-
-
-                /*
-                 * Jawaban benar mendapatkan
-                 * bobot penuh.
-                 *
-                 * Jawaban salah mendapatkan 0.
-                 */
-                $skor =
-                    $benar
-                        ? $bobotSoal
-                        : 0;
-
-
-                /*
-                 * Simpan hasil setiap jawaban.
-                 */
-                $jawaban->update([
-
-                    'is_benar' =>
-                        $benar,
-
-                    'skor' =>
-                        $skor,
-
-                ]);
-
-
-                /*
-                 * Tambahkan bobot jika benar.
-                 */
-                $totalBobotBenar +=
-                    $skor;
-            }
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | Normalisasi Nilai ke Skala 100
-            |--------------------------------------------------------------------------
-            |
-            | Rumus:
-            |
-            | Nilai =
-            | (Bobot Benar / Total Bobot) × 100
-            |
-            */
-
-            $nilaiAkhir =
-                $totalBobot > 0
-                    ? (
-                        $totalBobotBenar
-                        /
-                        $totalBobot
-                    ) * 100
-                    : 0;
-
-
-            /*
-             * Maksimal 100 dan minimal 0.
-             * Dibulatkan 2 angka desimal.
-             */
-            $nilaiAkhir =
-                round(
-                    min(
-                        100,
-                        max(
-                            0,
-                            $nilaiAkhir
-                        )
-                    ),
-                    2
-                );
-
-
-            /*
-             * Simpan hasil akhir.
-             */
-            $attempt->update([
-
-                'status' =>
-                    'selesai',
-
-                'waktu_selesai' =>
-                    now(),
-
-                'nilai' =>
-                    $nilaiAkhir,
-
-            ]);
-        }
-    );
-
-
-    $pengerjaan->refresh();
-}
-
     /*
     |--------------------------------------------------------------------------
     | Hasil Ujian
@@ -1572,7 +1321,9 @@ $pengerjaan = DB::transaction(
          * Nilai jawaban yang sudah
          * tersimpan.
          */
-        $this->prosesPenilaian(
+        $this
+        ->penilaianService
+        ->proses(
             $pengerjaan
         );
     }
