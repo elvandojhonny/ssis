@@ -394,6 +394,22 @@ Route::middleware('role:guru')
             [BankSoalController::class, 'store']
         )->name('bank-soal.store');
 
+        /*
+        |--------------------------------------------------------------------------
+        | Tambah Soal Manual
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/bank-soal/{bankSoal}/soal/create',
+            [BankSoalController::class, 'createSoal']
+        )->name('bank-soal.soal.create');
+
+        Route::post(
+            '/bank-soal/{bankSoal}/soal',
+            [BankSoalController::class, 'storeSoal']
+        )->name('bank-soal.soal.store');
+
         Route::get(
             '/bank-soal/arsip',
             [BankSoalController::class, 'arsip']

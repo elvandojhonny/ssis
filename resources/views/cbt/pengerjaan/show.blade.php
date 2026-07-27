@@ -367,6 +367,8 @@
                     {{-- PILIHAN JAWABAN YANG SUDAH DIACAK --}}
                     {{-- ================================================= --}}
 
+                @if($soal->tipe === 'pilihan_ganda')
+                    
                     <div class="jawaban-list">
 
                         @foreach(
@@ -449,6 +451,27 @@
                         @endforeach
 
                     </div>
+
+                    @else
+
+                    <div class="mt-3">
+
+                        <label class="form-label fw-semibold">
+
+                            Jawaban Essay
+
+                        </label>
+
+                        <textarea
+                            class="form-control jawaban-essay"
+                            rows="8"
+                            data-soal-id="{{ $soal->id }}"
+                            placeholder="Tuliskan jawaban Anda..."
+                        >{{ $jawabanTersimpan->get($soal->id)?->jawaban_text }}</textarea>
+
+                    </div>
+
+                    @endif
 
                 </div>
 
@@ -1326,6 +1349,14 @@
 
 <style>
 
+    .jawaban-essay:focus{
+
+    border-color:var(--tblr-primary);
+
+    box-shadow:0 0 0 .2rem rgba(var(--tblr-primary-rgb),.15);
+
+}
+
     /*
     * Nomor soal yang sedang aktif
     */
@@ -1830,55 +1861,55 @@ document.addEventListener(
         |--------------------------------------------------------------------------
         */
 
-        function updateProgress() {
+        function updateProgress(){
 
-            const terjawab =
-                document.querySelectorAll(
-                    '.jawaban-radio:checked'
-                ).length;
+    const radio =
+        document.querySelectorAll(
+            '.jawaban-radio:checked'
+        ).length;
 
+    const essay =
+        Array.from(
+            document.querySelectorAll(
+                '.jawaban-essay'
+            )
+        ).filter(
+            item => item.value.trim() !== ''
+        ).length;
 
-            const jumlahElement =
-                document.getElementById(
-                    'jumlah-terjawab'
-                );
+    const terjawab =
+        radio + essay;
 
+    const jumlahElement =
+        document.getElementById(
+            'jumlah-terjawab'
+        );
 
-            const progressElement =
-                document.getElementById(
-                    'progress-jawaban'
-                );
+    const progressElement =
+        document.getElementById(
+            'progress-jawaban'
+        );
 
+    if(jumlahElement){
 
-            if (jumlahElement) {
+        jumlahElement.textContent =
+            terjawab +
+            ' / ' +
+            totalSoal;
 
-                jumlahElement.textContent =
-                    terjawab +
-                    ' / ' +
-                    totalSoal;
+    }
 
-            }
+    if(progressElement){
 
+        progressElement.style.width =
+            (
+                terjawab /
+                totalSoal
+            ) * 100 + '%';
 
-            if (progressElement) {
+    }
 
-                const persen =
-                    totalSoal > 0
-                        ? (
-                            terjawab /
-                            totalSoal
-                        ) * 100
-                        : 0;
-
-
-                progressElement.style.width =
-                    persen + '%';
-
-            }
-
-        }
-
-
+}
 
         /*
         |--------------------------------------------------------------------------
@@ -2049,6 +2080,148 @@ document.addEventListener(
 
                 }
             );
+
+
+            /*
+|--------------------------------------------------------------------------
+| AUTOSAVE ESSAY
+|--------------------------------------------------------------------------
+*/
+
+document
+.querySelectorAll(
+    '.jawaban-essay'
+)
+.forEach(function(textarea){
+
+    let timer;
+
+    textarea.addEventListener(
+        'input',
+        function(){
+
+            clearTimeout(timer);
+
+            timer = setTimeout(async()=>{
+
+                const soalId =
+                    this.dataset.soalId;
+
+                const jawaban =
+                    this.value;
+
+                /*
+                 * Update progress.
+                 */
+                updateProgress();
+
+                /*
+                 * Update warna navigasi.
+                 */
+                const tombol =
+                    document.querySelector(
+                        '.btn-soal[data-soal-id="' +
+                        soalId +
+                        '"]'
+                    );
+
+                if(tombol){
+
+                    if(jawaban.trim() !== ''){
+
+                        tombol.classList.remove(
+                            'btn-outline-secondary'
+                        );
+
+                        tombol.classList.add(
+                            'btn-success'
+                        );
+
+                    }else{
+
+                        tombol.classList.remove(
+                            'btn-success'
+                        );
+
+                        tombol.classList.add(
+                            'btn-outline-secondary'
+                        );
+
+                    }
+
+                }
+
+                try{
+
+                    const response =
+                    await fetch(
+
+                        "{{ route(
+                            'cbt.siswa.pengerjaan.jawaban',
+                            $pengerjaan
+                        ) }}",
+
+                        {
+
+                            method:'POST',
+
+                            headers:{
+
+                                'Content-Type':'application/json',
+
+                                'Accept':'application/json',
+
+                                'X-CSRF-TOKEN':
+                                document.querySelector(
+                                    'meta[name="csrf-token"]'
+                                ).content
+
+                            },
+
+                            body:JSON.stringify({
+
+                                soal_id:soalId,
+
+                                jawaban_text:jawaban
+
+                            })
+
+                        }
+
+                    );
+
+                    const data =
+                        await response.json();
+
+                    if(data.blocked){
+
+                        window.location.reload();
+
+                        return;
+
+                    }
+
+                    if(data.expired){
+
+                        submitOtomatis();
+
+                        return;
+
+                    }
+
+                }catch(error){
+
+                    console.error(error);
+
+                }
+
+            },700);
+
+        }
+
+    );
+
+});
 
 
 
@@ -2413,12 +2586,22 @@ document
                 'click',
                 function () {
 
+                    const radio =
+                    document.querySelectorAll(
+                    '.jawaban-radio:checked'
+                    ).length;
+
+                    const essay =
+                    Array.from(
+                    document.querySelectorAll(
+                    '.jawaban-essay'
+                    ))
+                    .filter(
+                    item => item.value.trim() !== ''
+                    ).length;
+
                     const terjawab =
-                        document
-                            .querySelectorAll(
-                                '.jawaban-radio:checked'
-                            )
-                            .length;
+                    radio + essay;
 
 
                     const belumDijawab =

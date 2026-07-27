@@ -1074,4 +1074,89 @@ public function restore(BankSoal $bankSoal)
         );
 }
 
+public function createSoal(BankSoal $bankSoal)
+{
+    $guru = auth()->user()->guru;
+
+    abort_unless(
+        $guru &&
+        $bankSoal->guru_id == $guru->id,
+        403
+    );
+
+    return view(
+        'cbt.bank-soal.create-soal',
+        compact('bankSoal')
+    );
+}
+
+public function storeSoal(Request $request, BankSoal $bankSoal)
+{
+    $guru = auth()->user()->guru;
+
+    abort_unless(
+        $guru &&
+        $bankSoal->guru_id == $guru->id,
+        403
+    );
+
+    $rules = [
+        'tipe' => 'required|in:pilihan_ganda,essay',
+        'pertanyaan' => 'required|string',
+        'bobot' => 'required|numeric|min:1',
+    ];
+
+    if ($request->tipe == 'pilihan_ganda') {
+
+        $rules = array_merge($rules, [
+
+            'pilihan_a' => 'required|string',
+            'pilihan_b' => 'required|string',
+            'pilihan_c' => 'required|string',
+            'pilihan_d' => 'required|string',
+            'pilihan_e' => 'nullable|string',
+
+            'jawaban_benar' => 'required|in:A,B,C,D,E',
+
+        ]);
+
+    }
+
+    $validated = $request->validate($rules);
+
+    $nomor = $bankSoal->soals()->max('nomor') + 1;
+
+    Soal::create([
+
+        'bank_soal_id' => $bankSoal->id,
+
+        'nomor' => $nomor,
+
+        'tipe' => $validated['tipe'],
+
+        'pertanyaan' => $validated['pertanyaan'],
+
+        'pilihan_a' => $validated['pilihan_a'] ?? null,
+        'pilihan_b' => $validated['pilihan_b'] ?? null,
+        'pilihan_c' => $validated['pilihan_c'] ?? null,
+        'pilihan_d' => $validated['pilihan_d'] ?? null,
+        'pilihan_e' => $validated['pilihan_e'] ?? null,
+
+        'jawaban_benar' => $validated['jawaban_benar'] ?? null,
+
+        'bobot' => $validated['bobot'],
+
+    ]);
+
+    return redirect()
+        ->route(
+            'cbt.bank-soal.show',
+            $bankSoal
+        )
+        ->with(
+            'success',
+            'Soal berhasil ditambahkan.'
+        );
+}
+
 }

@@ -41,6 +41,63 @@
 
 </div>
 
+<div class="card mb-4">
+
+    <div class="card-body">
+
+        <form method="GET">
+
+            <div class="row">
+
+                <div class="col-md-4">
+
+                    <label class="form-label">
+                        Tingkat Kelas
+                    </label>
+
+                    <select
+                        name="tingkat"
+                        class="form-select"
+                        onchange="this.form.submit()"
+                    >
+
+                        <option value="">
+                            Semua Tingkat
+                        </option>
+
+                        <option
+                            value="X"
+                            @selected(request('tingkat') == 'X')
+                        >
+                            Kelas X
+                        </option>
+
+                        <option
+                            value="XI"
+                            @selected(request('tingkat') == 'XI')
+                        >
+                            Kelas XI
+                        </option>
+
+                        <option
+                            value="XII"
+                            @selected(request('tingkat') == 'XII')
+                        >
+                            Kelas XII
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
 
 @if($ujians->isEmpty())
 

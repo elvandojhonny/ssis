@@ -11,6 +11,7 @@ class JawabanUjian extends Model
         'pengerjaan_ujian_id',
         'soal_id',
         'jawaban',
+        'jawaban_text',
         'is_benar',
         'skor',
     ];

@@ -384,18 +384,35 @@
                 </div>
 
 
-                <div class="table-responsive ssis-mobile-table">
+               <div class="d-none d-md-block">
 
-                    <table class="table table-vcenter card-table">
+                    <div class="table-responsive">
+
+                        <table class="table table-vcenter card-table">
 
                         <thead>
                             <tr>
                                 <th>Siswa</th>
-                                <th>Kelas</th>
-                                <th>NIS / NISN</th>
-                                <th>Username</th>
-                                <th>Status</th>
-                                <th class="w-1">Aksi</th>
+
+                                <th class="d-none d-md-table-cell">
+                                    Kelas
+                                </th>
+
+                                <th class="d-none d-md-table-cell">
+                                    NIS / NISN
+                                </th>
+
+                                <th class="d-none d-md-table-cell">
+                                    Username
+                                </th>
+
+                                <th class="d-none d-md-table-cell">
+                                    Status
+                                </th>
+
+                                <th class="text-end w-1">
+                                    Aksi
+                                </th>
                             </tr>
                         </thead>
 
@@ -403,172 +420,188 @@
 
                         @forelse($dataSiswa as $siswa)
 
-                            <tr>
+                        <tr>
 
-                                {{-- SISWA --}}
-                                <td data-label="Siswa">
+                            {{-- ========================= --}}
+                            {{-- SISWA --}}
+                            {{-- ========================= --}}
+                            <td>
 
-                                    <div class="d-flex align-items-center">
+                                <div class="d-flex align-items-center">
 
-                                        <span class="avatar avatar-sm me-3">
-                                            {{
-                                                strtoupper(
-                                                    substr(
-                                                        $siswa->nama,
-                                                        0,
-                                                        1
-                                                    )
-                                                )
-                                            }}
-                                        </span>
+                                    <span class="avatar avatar-sm me-3">
+                                        {{ strtoupper(substr($siswa->nama,0,1)) }}
+                                    </span>
 
-                                        <div class="text-start">
+                                    <div class="flex-fill">
 
-                                            <div class="fw-bold">
-                                                {{ $siswa->nama }}
-                                            </div>
+                                        <div class="fw-bold">
+                                            {{ $siswa->nama }}
+                                        </div>
 
-                                            <div class="text-secondary small">
+                                        {{-- Desktop --}}
+                                        <div class="text-secondary small d-none d-md-block">
 
-                                                @if($siswa->jenis_kelamin === 'L')
-                                                    Laki-laki
-                                                @elseif($siswa->jenis_kelamin === 'P')
-                                                    Perempuan
-                                                @else
-                                                    -
-                                                @endif
+                                            @if($siswa->jenis_kelamin === 'L')
+                                                Laki-laki
+                                            @elseif($siswa->jenis_kelamin === 'P')
+                                                Perempuan
+                                            @else
+                                                -
+                                            @endif
 
-                                            </div>
+                                        </div>
+
+                                        {{-- Mobile --}}
+                                        <div class="text-secondary small d-md-none">
+
+                                            {{ $siswa->kelas?->nama ?? '-' }}
+
+                                            •
+
+                                            {{ $siswa->nis }}
+
+                                            •
+
+                                            @if($siswa->is_active)
+                                                Aktif
+                                            @else
+                                                Tidak Aktif
+                                            @endif
 
                                         </div>
 
                                     </div>
 
-                                </td>
+                                </div>
+
+                            </td>
 
 
-                                {{-- KELAS --}}
-                                <td data-label="Kelas">
+                            {{-- ========================= --}}
+                            {{-- KELAS --}}
+                            {{-- ========================= --}}
+                            <td class="d-none d-md-table-cell">
 
-                                    <span class="badge bg-azure-lt">
-                                        {{ $siswa->kelas?->nama ?? '-' }}
+                                <span class="badge bg-azure-lt">
+                                    {{ $siswa->kelas?->nama ?? '-' }}
+                                </span>
+
+                            </td>
+
+
+                            {{-- ========================= --}}
+                            {{-- NIS --}}
+                            {{-- ========================= --}}
+                            <td class="d-none d-md-table-cell">
+
+                                <div>
+                                    {{ $siswa->nis }}
+                                </div>
+
+                                <div class="text-secondary small">
+                                    NISN :
+                                    {{ $siswa->nisn ?? '-' }}
+                                </div>
+
+                            </td>
+
+
+                            {{-- ========================= --}}
+                            {{-- USERNAME --}}
+                            {{-- ========================= --}}
+                            <td class="d-none d-md-table-cell">
+
+                                <i class="ti ti-user me-1 text-secondary"></i>
+
+                                {{ $siswa->user?->username ?? '-' }}
+
+                            </td>
+
+
+                            {{-- ========================= --}}
+                            {{-- STATUS --}}
+                            {{-- ========================= --}}
+                            <td class="d-none d-md-table-cell">
+
+                                @if($siswa->is_active)
+
+                                    <span class="badge bg-success-lt">
+                                        Aktif
                                     </span>
 
-                                </td>
+                                @else
+
+                                    <span class="badge bg-secondary-lt">
+                                        Tidak Aktif
+                                    </span>
+
+                                @endif
+
+                            </td>
 
 
-                                {{-- NIS / NISN --}}
-                                <td data-label="NIS / NISN">
+                            {{-- ========================= --}}
+                            {{-- AKSI --}}
+                            {{-- ========================= --}}
+                            <td class="text-end">
 
-                                    <div>
-                                        {{ $siswa->nis }}
-                                    </div>
+                                <div class="d-flex justify-content-end gap-1 flex-nowrap">
 
-                                    <div class="text-secondary small">
-                                        NISN: {{ $siswa->nisn ?? '-' }}
-                                    </div>
+                                    <a
+                                        href="{{ route('siswa.edit',$siswa) }}"
+                                        class="btn btn-sm btn-outline-primary"
+                                        title="Edit"
+                                    >
+                                        <i class="ti ti-edit"></i>
+                                    </a>
 
-                                </td>
+                                    <a
+                                        href="{{ route('siswa.qr.show',$siswa) }}"
+                                        class="btn btn-sm btn-outline-success"
+                                        title="QR Code"
+                                    >
+                                        <i class="ti ti-qrcode"></i>
+                                    </a>
 
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm btn-outline-danger"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#globalDeleteModal"
+                                        data-delete-action="{{ route('siswa.destroy',$siswa) }}"
+                                        data-delete-name="{{ $siswa->nama }}"
+                                        data-delete-warning="Jika siswa sudah memiliki riwayat absensi atau ujian, data tidak akan dihapus permanen dan akun akan dinonaktifkan."
+                                    >
+                                        <i class="ti ti-trash"></i>
+                                    </button>
 
-                                {{-- USERNAME --}}
-                                <td data-label="Username">
+                                </div>
 
-                                    <i class="ti ti-user me-1 text-secondary"></i>
+                            </td>
 
-                                    {{ $siswa->user?->username ?? '-' }}
-
-                                </td>
-
-
-                                {{-- STATUS --}}
-                                <td data-label="Status">
-
-                                    @if($siswa->is_active)
-
-                                        <span class="badge bg-success-lt">
-                                            Aktif
-                                        </span>
-
-                                    @else
-
-                                        <span class="badge bg-secondary-lt">
-                                            Tidak Aktif
-                                        </span>
-
-                                    @endif
-
-                                </td>
-
-
-                                {{-- AKSI --}}
-                                <td data-label="Aksi">
-
-                                    <div class="d-flex gap-2 justify-content-end ssis-table-actions">
-
-                                        <a
-                                            href="{{ route('siswa.edit', $siswa) }}"
-                                            class="btn btn-sm btn-outline-primary"
-                                            title="Edit"
-                                        >
-                                            <i class="ti ti-edit"></i>
-                                        </a>
-
-
-                                        <a
-                                            href="{{ route('siswa.qr.show', $siswa) }}"
-                                            class="btn btn-sm btn-outline-success"
-                                            title="QR Code"
-                                        >
-                                            <i class="ti ti-qrcode me-1"></i>
-                                            QR
-                                        </a>
-
-
-                                        <button
-                                            type="button"
-                                            class="btn btn-sm btn-outline-danger"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#globalDeleteModal"
-                                            data-delete-action="{{ route('siswa.destroy', $siswa) }}"
-                                            data-delete-name="{{ $siswa->nama }}"
-                                            data-delete-warning="Jika siswa sudah memiliki riwayat absensi atau ujian, data tidak akan dihapus permanen dan akun akan dinonaktifkan."
-                                        >
-                                            <i class="ti ti-trash"></i>
-                                        </button>
-
-                                    </div>
-
-                                </td>
-
-                            </tr>
+                        </tr>
 
                         @empty
 
-                            <tr class="ssis-empty-row">
+                        <tr class="ssis-empty-row">
 
-                                <td
-                                    colspan="6"
-                                    class="text-center py-5"
-                                >
+                            <td colspan="6" class="text-center py-5">
 
-                                    <div class="text-secondary">
+                                <div class="text-secondary">
 
-                                        <i
-                                            class="ti ti-users"
-                                            style="font-size: 36px;"
-                                        ></i>
+                                    <i class="ti ti-users" style="font-size:36px;"></i>
 
-                                        <div class="mt-2">
-                                            Belum ada siswa di tingkat
-                                            {{ $tingkat }}.
-                                        </div>
-
+                                    <div class="mt-2">
+                                        Belum ada siswa di tingkat
+                                        {{ $tingkat }}.
                                     </div>
 
-                                </td>
+                                </div>
 
-                            </tr>
+                            </td>
+
+                        </tr>
 
                         @endforelse
 
@@ -577,6 +610,133 @@
                     </table>
 
                 </div>
+
+               </div>
+
+               <div class="d-md-none">
+
+    @forelse($dataSiswa as $siswa)
+
+        <div class="mobile-siswa-item">
+
+            <div class="mobile-siswa-avatar">
+
+                {{ strtoupper(substr($siswa->nama,0,1)) }}
+
+            </div>
+
+
+            <div class="mobile-siswa-content">
+
+                <div class="mobile-siswa-name">
+
+                    {{ $siswa->nama }}
+
+                </div>
+
+
+                <div class="mobile-siswa-info">
+
+                    <span>
+
+                        <i class="ti ti-school"></i>
+
+                        {{ $siswa->kelas?->nama ?? '-' }}
+
+                    </span>
+
+                    <span>•</span>
+
+                    <span>
+
+                        <i class="ti ti-id"></i>
+
+                        {{ $siswa->nis }}
+
+                    </span>
+
+                </div>
+
+
+                <div class="mobile-siswa-status">
+
+                    @if($siswa->is_active)
+
+                        <span class="badge bg-success-lt">
+
+                            Aktif
+
+                        </span>
+
+                    @else
+
+                        <span class="badge bg-secondary-lt">
+
+                            Tidak Aktif
+
+                        </span>
+
+                    @endif
+
+                </div>
+
+            </div>
+
+
+            <div class="mobile-siswa-action">
+
+                <a
+                    href="{{ route('siswa.edit',$siswa) }}"
+                    class="btn btn-icon btn-outline-primary btn-sm"
+                >
+                    <i class="ti ti-edit"></i>
+                </a>
+
+                <a
+                    href="{{ route('siswa.qr.show',$siswa) }}"
+                    class="btn btn-icon btn-outline-success btn-sm"
+                >
+                    <i class="ti ti-qrcode"></i>
+                </a>
+
+                <button
+                    type="button"
+                    class="btn btn-icon btn-outline-danger btn-sm"
+                    data-bs-toggle="modal"
+                    data-bs-target="#globalDeleteModal"
+                    data-delete-action="{{ route('siswa.destroy',$siswa) }}"
+                    data-delete-name="{{ $siswa->nama }}"
+                    data-delete-warning="Jika siswa sudah memiliki riwayat absensi atau ujian, data tidak akan dihapus permanen dan akun akan dinonaktifkan."
+                >
+                    <i class="ti ti-trash"></i>
+                </button>
+
+            </div>
+
+        </div>
+
+    @empty
+
+        <div class="empty-state text-center py-5">
+
+            <i
+                class="ti ti-users text-secondary"
+                style="font-size:48px"
+            ></i>
+
+            <div class="mt-3 text-secondary">
+
+                Belum ada siswa.
+
+            </div>
+
+        </div>
+
+    @endforelse
+
+</div>
+
+                
 
             </div>
 

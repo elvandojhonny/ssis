@@ -80,6 +80,79 @@
 
 @endif
 
+<div class="card mb-4">
+
+    <div class="card-body">
+
+        <form method="GET">
+
+            <div class="row g-3 align-items-end">
+
+                <div class="col-md-4">
+
+                    <label class="form-label">
+                        Tingkat Kelas
+                    </label>
+
+                    <select
+                        name="tingkat"
+                        class="form-select"
+                        onchange="this.form.submit()"
+                    >
+
+                        <option value="">
+                            Semua Tingkat
+                        </option>
+
+                        <option
+                            value="X"
+                            @selected(request('tingkat') == 'X')
+                        >
+                            Kelas X
+                        </option>
+
+                        <option
+                            value="XI"
+                            @selected(request('tingkat') == 'XI')
+                        >
+                            Kelas XI
+                        </option>
+
+                        <option
+                            value="XII"
+                            @selected(request('tingkat') == 'XII')
+                        >
+                            Kelas XII
+                        </option>
+
+                    </select>
+
+                </div>
+
+                @if(request()->filled('tingkat'))
+
+                    <div class="col-md-auto">
+
+                        <a
+                            href="{{ route('cbt.ujian.index') }}"
+                            class="btn btn-outline-secondary"
+                        >
+                            <i class="ti ti-refresh me-1"></i>
+                            Reset
+                        </a>
+
+                    </div>
+
+                @endif
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
 
 <div class="row row-cards">
 
@@ -356,7 +429,7 @@
 
     <div class="mt-4">
 
-        {{ $ujians->links() }}
+        {{ $ujians->withQueryString()->links() }}
 
     </div>
 

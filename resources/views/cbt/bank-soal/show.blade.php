@@ -127,15 +127,27 @@
 
 {{-- DAFTAR SOAL --}}
 
-<div class="mb-3">
+<div class="d-flex justify-content-between align-items-center mb-3">
 
-    <h3 class="page-title">
-        Daftar Soal
-    </h3>
+    <div>
 
-    <div class="text-secondary mt-1">
-        Kunci jawaban ditampilkan khusus untuk guru.
+        <h3 class="page-title mb-1">
+            Daftar Soal
+        </h3>
+
+        <div class="text-secondary">
+            Kunci jawaban ditampilkan khusus untuk guru.
+        </div>
+
     </div>
+
+    <a
+        href="{{ route('cbt.bank-soal.soal.create', $bankSoal) }}"
+        class="btn btn-primary"
+    >
+        <i class="ti ti-plus me-1"></i>
+        Tambah Soal
+    </a>
 
 </div>
 

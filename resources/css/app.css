@@ -2490,3 +2490,157 @@ body.ssis-body {
     }
 
 }
+
+/* ===========================================================
+   MOBILE SISWA LIST
+=========================================================== */
+
+.mobile-siswa-item{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:14px;
+
+    padding:10px 14px;
+
+    border-bottom:1px solid #e9ecef;
+
+}
+
+.mobile-siswa-item:last-child{
+
+    border-bottom:none;
+
+}
+
+.mobile-siswa-avatar{
+
+    width:42px;
+
+    height:42px;
+
+    border-radius:10px;
+
+    background:#f3f6fb;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-weight:700;
+
+    color:#4b5d7a;
+
+    flex-shrink:0;
+
+    border:1px solid #dce4ef;
+
+}
+
+.mobile-siswa-content{
+
+    flex:1;
+
+    min-width:0;
+
+}
+
+.mobile-siswa-name{
+
+    font-size:16px;
+    font-weight:600;
+    line-height:1.2;
+
+    color:#1f2937;
+
+    white-space:nowrap;
+
+    overflow:hidden;
+
+    text-overflow:ellipsis;
+
+}
+
+.mobile-siswa-info{
+
+    margin-top:2px;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:6px;
+
+    font-size:11px;
+
+    color:#6c757d;
+
+    flex-wrap:wrap;
+
+}
+
+.mobile-siswa-info i{
+
+    font-size:13px;
+
+}
+
+.mobile-siswa-status{
+
+    margin-top:6px;
+
+}
+
+.mobile-siswa-action{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:8px;
+
+    flex-shrink:0;
+
+}
+
+.mobile-siswa-action .btn{
+
+    width:34px;
+
+    height:34px;
+
+    padding:0;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+}
+
+.mobile-siswa-item{
+
+    transition:.2s;
+
+}
+
+.mobile-siswa-item:hover{
+
+    background:#f8fafc;
+
+}
+
+@media(min-width:768px){
+
+    .mobile-siswa-item{
+
+        display:none;
+
+    }
+
+}

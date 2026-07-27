@@ -739,188 +739,181 @@ $pengerjaan = DB::transaction(
     |--------------------------------------------------------------------------
     */
     public function simpanJawaban(
-        Request $request,
-        PengerjaanUjian $pengerjaan
-    ) {
-        $siswa = auth()
-            ->user()
-            ->siswa;
+    Request $request,
+    PengerjaanUjian $pengerjaan
+) {
+    $siswa = auth()->user()->siswa;
+
+    abort_unless(
+        $siswa &&
+        (int)$pengerjaan->siswa_id === (int)$siswa->id,
+        403
+    );
+
+    if ($pengerjaan->status === 'diblokir') {
+
+        return response()->json([
+            'success' => false,
+            'blocked' => true,
+            'message' => 'Pengerjaan ujian telah diblokir.'
+        ],423);
+
+    }
+
+    if ($pengerjaan->status !== 'mengerjakan') {
+
+        return response()->json([
+            'success'=>false,
+            'message'=>'Pengerjaan sudah tidak aktif.'
+        ],422);
+
+    }
+
+    if(now()->gte($pengerjaan->batas_waktu)){
+
+        $this->selesaikanOtomatis($pengerjaan);
+
+        return response()->json([
+            'success'=>false,
+            'expired'=>true
+        ],422);
+
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Validasi soal
+    |--------------------------------------------------------------------------
+    */
+
+    $request->validate([
+
+        'soal_id'=>[
+            'required',
+            'integer',
+            'exists:soals,id'
+        ]
+
+    ]);
+
+    $pengerjaan->loadMissing('ujian');
+
+    $soal = Soal::query()
+
+        ->whereKey($request->soal_id)
+
+        ->where(
+            'bank_soal_id',
+            $pengerjaan
+                ->ujian
+                ->bank_soal_id
+        )
+
+        ->firstOrFail();
 
 
-        /*
-         * Pastikan pengerjaan milik siswa.
-         */
-        abort_unless(
-            $siswa &&
-            (int) $pengerjaan->siswa_id ===
-            (int) $siswa->id,
-            403
-        );
+    /*
+    |--------------------------------------------------------------------------
+    | SOAL ESSAY
+    |--------------------------------------------------------------------------
+    */
 
+    if($soal->tipe === 'essay'){
 
-        /*
-         * Pengerjaan diblokir.
-         */
-        if (
-            $pengerjaan->status ===
-            'diblokir'
-        ) {
-            return response()->json([
+        $request->validate([
 
-                'success' =>
-                    false,
+            'jawaban_text'=>[
+                'nullable',
+                'string'
+            ]
 
-                'blocked' =>
-                    true,
+        ]);
 
-                'message' =>
-                    'Pengerjaan ujian telah diblokir.',
-
-            ], 423);
-        }
-
-
-        /*
-         * Hanya pengerjaan aktif
-         * yang dapat menyimpan jawaban.
-         */
-        if (
-            $pengerjaan->status !==
-            'mengerjakan'
-        ) {
-            return response()->json([
-
-                'success' =>
-                    false,
-
-                'message' =>
-                    'Pengerjaan ujian sudah tidak aktif.',
-
-            ], 422);
-        }
-
-
-        /*
-         * Periksa batas waktu.
-         */
-        if (
-            now()->gte(
-                $pengerjaan->batas_waktu
-            )
-        ) {
-            $this->selesaikanOtomatis(
-                $pengerjaan
-            );
-
-
-            return response()->json([
-
-                'success' =>
-                    false,
-
-                'expired' =>
-                    true,
-
-                'message' =>
-                    'Waktu pengerjaan telah habis.',
-
-            ], 422);
-        }
-
-
-        /*
-         * Validasi jawaban.
-         */
-        $validated =
-            $request->validate([
-
-                'soal_id' => [
-                    'required',
-                    'integer',
-                    'exists:soals,id',
-                ],
-
-                'jawaban' => [
-                    'required',
-                    'string',
-                    'in:A,B,C,D,E',
-                ],
-
-            ]);
-
-
-        /*
-         * Load ujian.
-         */
-        $pengerjaan->loadMissing(
-            'ujian'
-        );
-
-
-        /*
-         * Pastikan soal berasal dari
-         * bank soal ujian ini.
-         */
-        $soal = Soal::query()
-            ->whereKey(
-                $validated['soal_id']
-            )
-            ->where(
-                'bank_soal_id',
-                $pengerjaan
-                    ->ujian
-                    ->bank_soal_id
-            )
-            ->firstOrFail();
-
-
-        /*
-         * Simpan jawaban.
-         */
         JawabanUjian::updateOrCreate(
 
             [
-                'pengerjaan_ujian_id' =>
-                    $pengerjaan->id,
 
-                'soal_id' =>
-                    $soal->id,
+                'pengerjaan_ujian_id'=>$pengerjaan->id,
+
+                'soal_id'=>$soal->id
+
             ],
 
             [
-                'jawaban' =>
-                    strtoupper(
-                        $validated['jawaban']
-                    ),
 
-                'is_benar' =>
-                    null,
+                'jawaban'=>null,
 
-                'skor' =>
-                    0,
+                'jawaban_text'=>$request->jawaban_text,
+
+                'is_benar'=>null,
+
+                'skor'=>0
+
             ]
 
         );
 
-
         return response()->json([
 
-            'success' =>
-                true,
+            'success'=>true,
 
-            'soal_id' =>
-                $soal->id,
-
-            'jawaban' =>
-                strtoupper(
-                    $validated['jawaban']
-                ),
-
-            'message' =>
-                'Jawaban berhasil disimpan.',
+            'mode'=>'essay'
 
         ]);
+
     }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | PILIHAN GANDA
+    |--------------------------------------------------------------------------
+    */
+
+    $request->validate([
+
+        'jawaban'=>[
+            'required',
+            'string',
+            'in:A,B,C,D,E'
+        ]
+
+    ]);
+
+
+    JawabanUjian::updateOrCreate(
+
+        [
+
+            'pengerjaan_ujian_id'=>$pengerjaan->id,
+
+            'soal_id'=>$soal->id
+
+        ],
+
+        [
+
+            'jawaban'=>strtoupper($request->jawaban),
+
+            'jawaban_text'=>null,
+
+            'is_benar'=>null,
+
+            'skor'=>0
+
+        ]
+
+    );
+
+    return response()->json([
+
+        'success'=>true,
+
+        'mode'=>'pg'
+
+    ]);
+
+}
 
 
     /*

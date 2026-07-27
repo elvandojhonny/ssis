@@ -22,26 +22,67 @@ class UjianController extends Controller
     /*
      * Daftar seluruh ujian.
      */
-    public function index()
-    {
-        $ujians = Ujian::with([
-                'bankSoal.soals',
-                'kelas',
-            ])
-            ->where(
-                'waktu_selesai',
-                '>=',
-                now()->subDays(7)
-            )
-            ->orderByDesc('waktu_mulai')
-            ->paginate(9)
-            ->withQueryString();
+    /*
+|--------------------------------------------------------------------------
+| Daftar Seluruh Ujian
+|--------------------------------------------------------------------------
+*/
+public function index(Request $request)
+{
+    /*
+    |--------------------------------------------------------------------------
+    | Query Dasar
+    |--------------------------------------------------------------------------
+    */
 
-        return view(
-            'cbt.ujian.index',
-            compact('ujians')
+    $query = Ujian::with([
+            'bankSoal.soals',
+            'kelas',
+        ])
+        ->where(
+            'waktu_selesai',
+            '>=',
+            now()->subDays(7)
         );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Filter Tingkat Kelas
+    |--------------------------------------------------------------------------
+    */
+
+    if ($request->filled('tingkat')) {
+
+        $query->whereHas('kelas', function ($kelas) use ($request) {
+
+            $kelas->where(
+                'tingkat',
+                $request->tingkat
+            );
+
+        });
+
     }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Ambil Data
+    |--------------------------------------------------------------------------
+    */
+
+    $ujians = $query
+        ->orderByDesc('waktu_mulai')
+        ->paginate(9)
+        ->withQueryString();
+
+
+    return view(
+        'cbt.ujian.index',
+        compact('ujians')
+    );
+}
 
 
     /*
@@ -540,9 +581,15 @@ public function update(
 | Rekap Hasil Ujian
 |--------------------------------------------------------------------------
 */
-public function rekap()
+public function rekap(Request $request)
 {
-    $ujians = Ujian::with([
+    /*
+    |--------------------------------------------------------------------------
+    | Query Dasar
+    |--------------------------------------------------------------------------
+    */
+
+    $query = Ujian::with([
             'kelas',
             'bankSoal',
         ])
@@ -561,10 +608,40 @@ public function rekap()
             'pengerjaans as selesai_count' => function ($query) {
                 $query->where('status', 'selesai');
             },
-        ])
+        ]);
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Filter Tingkat Kelas
+    |--------------------------------------------------------------------------
+    */
+
+    if ($request->filled('tingkat')) {
+
+        $query->whereHas('kelas', function ($kelas) use ($request) {
+
+            $kelas->where(
+                'tingkat',
+                $request->tingkat
+            );
+
+        });
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Ambil Data
+    |--------------------------------------------------------------------------
+    */
+
+    $ujians = $query
         ->orderByDesc('waktu_mulai')
         ->paginate(9)
         ->withQueryString();
+
 
     return view(
         'cbt.rekap.index',
@@ -572,8 +649,20 @@ public function rekap()
     );
 }
 
+
+/*
+|--------------------------------------------------------------------------
+| Arsip Ujian
+|--------------------------------------------------------------------------
+*/
 public function arsip(Request $request)
 {
+    /*
+    |--------------------------------------------------------------------------
+    | Query Dasar
+    |--------------------------------------------------------------------------
+    */
+
     $query = Ujian::with([
             'bankSoal.soals',
             'kelas',
@@ -583,6 +672,26 @@ public function arsip(Request $request)
             '<',
             now()->subDays(7)
         );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Filter Tingkat Kelas
+    |--------------------------------------------------------------------------
+    */
+
+    if ($request->filled('tingkat')) {
+
+        $query->whereHas('kelas', function ($kelas) use ($request) {
+
+            $kelas->where(
+                'tingkat',
+                $request->tingkat
+            );
+
+        });
+
+    }
 
 
     /*
@@ -691,8 +800,19 @@ public function arsip(Request $request)
     );
 }
 
+/*
+|--------------------------------------------------------------------------
+| Arsip Rekap Hasil Ujian
+|--------------------------------------------------------------------------
+*/
 public function rekapArsip(Request $request)
 {
+    /*
+    |--------------------------------------------------------------------------
+    | Query Dasar
+    |--------------------------------------------------------------------------
+    */
+
     $query = Ujian::with([
             'kelas',
             'bankSoal',
@@ -713,6 +833,26 @@ public function rekapArsip(Request $request)
                 $query->where('status', 'selesai');
             },
         ]);
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Filter Tingkat Kelas
+    |--------------------------------------------------------------------------
+    */
+
+    if ($request->filled('tingkat')) {
+
+        $query->whereHas('kelas', function ($kelas) use ($request) {
+
+            $kelas->where(
+                'tingkat',
+                $request->tingkat
+            );
+
+        });
+
+    }
 
 
     /*
@@ -797,6 +937,21 @@ public function rekapArsip(Request $request)
     | Daftar Tahun
     |--------------------------------------------------------------------------
     */
+
+    $daftarTahun = Ujian::query()
+    ->whereIn('status', [
+        'dipublikasi',
+        'selesai',
+    ])
+    ->where(
+        'waktu_selesai',
+        '<',
+        now()->subDays(7)
+    )
+    ->selectRaw('YEAR(waktu_selesai) as tahun')
+    ->distinct()
+    ->orderByDesc('tahun')
+    ->pluck('tahun');
 
     $daftarTahun = Ujian::query()
         ->whereIn('status', [
