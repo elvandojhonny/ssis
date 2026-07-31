@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
 use Illuminate\Support\Str;
 
 class Siswa extends Model
@@ -75,5 +77,15 @@ class Siswa extends Model
     public function sesiAbsensis()
     {
         return $this->hasMany(SesiAbsensi::class);
+    }
+
+    public function peminjamanBuku(): HasMany
+    {
+        return $this->hasMany(PeminjamanBuku::class);
+    }
+
+    public function peminjaman()
+    {
+        return $this->hasMany(Peminjaman::class);
     }
 }

@@ -734,6 +734,7 @@ if ($tingkat) {
         | Rekap Per Siswa
         |--------------------------------------------------------------------------
         */
+        
 
         $rekapSiswa = $absensis
 
@@ -1234,6 +1235,30 @@ if ($tingkat) {
             $column++;
         }
 
+        $detailHarian = collect();
+
+        foreach ($rekapSiswa as $rekap) {
+
+            foreach ($rekap['riwayat'] as $riwayat) {
+
+                $detailHarian->push([
+                    'tanggal' => $riwayat['tanggal'],
+                    'siswa' => $rekap['siswa'],
+                    'pagi' => $riwayat['pagi'],
+                    'siang' => $riwayat['siang'],
+                ]);
+
+            }
+
+        }
+
+        $detailHarian = $detailHarian
+            ->sortBy([
+                ['tanggal', 'asc'],
+                [fn ($item) => strtolower($item['siswa']->user->name), 'asc'],
+            ])
+            ->values();
+
 
         /*
         |--------------------------------------------------------------------------
@@ -1246,24 +1271,17 @@ if ($tingkat) {
         $nomorDetail = 1;
 
 
-        foreach (
-            $rekapSiswa
-            as $rekap
-        ) {
+        foreach ($detailHarian as $detail) {
 
+            $riwayat = [
+                'tanggal' => $detail['tanggal'],
+                'pagi'    => $detail['pagi'],
+                'siang'   => $detail['siang'],
+            ];
 
-            foreach (
-                $rekap['riwayat']
-                as $riwayat
-            ) {
-
-
-                $pagi =
-                    $riwayat['pagi'];
-
-
-                $siang =
-                    $riwayat['siang'];
+            $pagi = $detail['pagi'];
+            $siang = $detail['siang'];
+            $siswa = $detail['siswa'];
 
 
                 $detailSheet->setCellValue(
@@ -1284,7 +1302,7 @@ if ($tingkat) {
 
                 $detailSheet->setCellValue(
                     'C' . $detailRow,
-                    $rekap['siswa']
+                    $siswa
                         ->user
                         ?->name
                     ?? '-'
@@ -1293,14 +1311,14 @@ if ($tingkat) {
 
                 $detailSheet->setCellValue(
                     'D' . $detailRow,
-                    $rekap['siswa']
+                    $siswa
                         ->nis
                 );
 
 
                 $detailSheet->setCellValue(
                     'E' . $detailRow,
-                    $rekap['siswa']
+                    $siswa
                         ->kelas
                         ?->nama
                     ?? '-'
@@ -1424,7 +1442,7 @@ if ($tingkat) {
 
                 $nomorDetail++;
             }
-        }
+        
 
 
         /*

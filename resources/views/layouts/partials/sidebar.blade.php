@@ -213,6 +213,29 @@
 
                     </li>
 
+                    <li class="nav-item">
+
+                        <a
+                            class="nav-link {{
+                                request()->routeIs('petugas.*')
+                                    ? 'active'
+                                    : ''
+                            }}"
+                            href="{{ route('petugas.index') }}"
+                        >
+
+                            <span class="nav-link-icon">
+                                <i class="ti ti-books"></i>
+                            </span>
+
+                            <span class="nav-link-title">
+                                Petugas Perpustakaan
+                            </span>
+
+                        </a>
+
+                    </li>
+
 
                     {{-- =================================================
                         ABSENSI OPERATOR
@@ -478,6 +501,114 @@
                     </li>
 
                 @endif
+
+                {{-- =================================================
+    MENU PETUGAS
+================================================== --}}
+@if($user->isPetugas())
+
+    <li class="nav-item mt-3">
+
+        <div class="nav-link disabled">
+
+            <span class="nav-link-title text-secondary">
+                PERPUSTAKAAN
+            </span>
+
+        </div>
+
+    </li>
+
+    {{-- Master Buku --}}
+    <a
+    class="nav-link {{
+        request()->routeIs('perpustakaan.buku.*')
+            ? 'active'
+            : ''
+    }}"
+    href="{{ route('perpustakaan.buku.index') }}"
+>
+
+    <span class="nav-link-icon">
+        <i class="ti ti-book"></i>
+    </span>
+
+    <span class="nav-link-title">
+        Master Buku
+    </span>
+
+</a>
+
+    {{-- Peminjaman --}}
+    <li class="nav-item">
+
+        <a
+            class="nav-link {{
+                request()->routeIs('perpustakaan.peminjaman.*')
+                    ? 'active'
+                    : ''
+            }}"
+            href="{{ route('perpustakaan.peminjaman.index') }}"
+        >
+
+            <span class="nav-link-icon">
+                <i class="ti ti-book-upload"></i>
+            </span>
+
+            <span class="nav-link-title">
+                Peminjaman
+            </span>
+
+        </a>
+
+    </li>
+
+    {{-- Pengembalian --}}
+
+    <li class="nav-item">
+
+        <a
+            class="nav-link {{
+                request()->routeIs('perpustakaan.pengembalian.*')
+                    ? 'active'
+                    : ''
+            }}"
+            href="{{ route('perpustakaan.pengembalian.index') }}"
+        >
+
+            <span class="nav-link-icon">
+                <i class="ti ti-book-download"></i>
+            </span>
+
+            <span class="nav-link-title">
+                Pengembalian
+            </span>
+
+        </a>
+
+    </li>
+
+    {{-- Laporan --}}
+    <li class="nav-item">
+
+        <a
+            class="nav-link"
+            href="#"
+        >
+
+            <span class="nav-link-icon">
+                <i class="ti ti-report-analytics"></i>
+            </span>
+
+            <span class="nav-link-title">
+                Laporan
+            </span>
+
+        </a>
+
+    </li>
+
+@endif
 
 
                 {{-- =================================================

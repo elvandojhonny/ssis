@@ -34,6 +34,11 @@ class User extends Authenticatable
         return $this->hasOne(Guru::class, 'user_id');
     }
 
+    public function petugas()
+    {
+        return $this->hasOne(Petugas::class, 'user_id', 'id');
+    }
+
     public function siswa()
     {
         return $this->hasOne(Siswa::class, 'user_id');
@@ -55,6 +60,11 @@ class User extends Authenticatable
     public function isGuru(): bool
     {
         return $this->role === 'guru';
+    }
+
+    public function isPetugas(): bool
+    {
+        return $this->role === 'petugas';
     }
 
     public function isSiswa(): bool

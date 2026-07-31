@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Master\GuruController;
+use App\Http\Controllers\Master\PetugasController;
 use App\Http\Controllers\Master\KelasController;
 use App\Http\Controllers\Master\SiswaController;
 use App\Http\Controllers\Master\TahunAjaranController;
@@ -24,6 +25,11 @@ use App\Http\Controllers\CBT\PelanggaranUjianController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+
+use App\Http\Controllers\Perpustakaan\BukuController;
+use App\Http\Controllers\Perpustakaan\PeminjamanController;
+use App\Http\Controllers\Perpustakaan\PengembalianController;
+use App\Http\Controllers\Perpustakaan\LaporanController;
 
 
 Route::middleware('guest')->group(function () {
@@ -179,6 +185,17 @@ Route::middleware('auth')->group(function () {
             SiswaController::class
         )->except('show');
 
+        /*
+        |--------------------------------------------------------------------------
+        | Master Petugas
+        |--------------------------------------------------------------------------
+        */
+
+        Route::resource(
+            'petugas',
+            PetugasController::class
+        )->except('show');
+
         Route::get(
             '/siswa/{siswa}/qr',
             [QrSiswaController::class, 'show']
@@ -188,6 +205,8 @@ Route::middleware('auth')->group(function () {
             '/siswa/{siswa}/qr/regenerate',
             [QrSiswaController::class, 'regenerate']
         )->name('siswa.qr.regenerate');
+
+        
 
         /*
 |--------------------------------------------------------------------------
@@ -238,6 +257,91 @@ Route::middleware('auth')->group(function () {
 
 
     });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Perpustakaan - Petugas
+    |--------------------------------------------------------------------------
+    */
+
+    Route::middleware('role:petugas')
+        ->prefix('perpustakaan')
+        ->name('perpustakaan.')
+        ->group(function () {
+
+            /*
+            |--------------------------------------------------------------------------
+            | Master Buku
+            |--------------------------------------------------------------------------
+            */
+
+            Route::resource(
+                'buku',
+                BukuController::class
+            )->except('show');
+
+            Route::resource(
+                'peminjaman',
+                PeminjamanController::class
+            );
+
+            /*
+            |--------------------------------------------------------------------------
+            | Scan QR Siswa
+            |--------------------------------------------------------------------------
+            */
+
+            Route::post(
+                'peminjaman/scan-qr',
+                [PeminjamanController::class, 'scanQr']
+            )->name('peminjaman.scanQr');
+
+            Route::get(
+                'peminjaman/buku/{kelas}',
+                [PeminjamanController::class, 'bukuByKelas']
+            )->name('peminjaman.buku');
+
+            /*
+            |--------------------------------------------------------------------------
+            | Pengembalian Buku
+            |--------------------------------------------------------------------------
+            */
+
+            Route::get(
+                'pengembalian',
+                [PengembalianController::class, 'index']
+            )->name('pengembalian.index');
+
+
+            Route::post(
+                'pengembalian/scan-qr',
+                [PengembalianController::class, 'scanQr']
+            )->name('pengembalian.scanQr');
+
+
+            Route::get(
+                'pengembalian/siswa/{siswa}',
+                [PengembalianController::class, 'peminjamanSiswa']
+            )->name('pengembalian.siswa');
+
+
+            Route::get(
+                'pengembalian/{peminjaman}',
+                [PengembalianController::class, 'show']
+            )->name('pengembalian.show');
+
+
+            Route::post(
+                'pengembalian/{peminjaman}',
+                [PengembalianController::class, 'store']
+            )->name('pengembalian.store');
+
+            Route::get(
+                'pengembalian-riwayat',
+                [PengembalianController::class, 'riwayat']
+            )->name('pengembalian.riwayat');
+
+        });
 
     /*
     |--------------------------------------------------------------------------

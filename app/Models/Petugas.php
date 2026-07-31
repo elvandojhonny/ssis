@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Guru extends Model
+class Petugas extends Model
 {
-    protected $table = 'guru';
+    use HasFactory;
+
+    protected $table = 'petugas';
 
     protected $fillable = [
         'user_id',
@@ -27,14 +28,15 @@ class Guru extends Model
         ];
     }
 
-    public function user(): BelongsTo
+    /*
+    |--------------------------------------------------------------------------
+    | Relasi
+    |--------------------------------------------------------------------------
+    */
+
+    public function user()
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function bankSoals(): HasMany
-    {
-        return $this->hasMany(BankSoal::class);
     }
 
     public function peminjaman()
