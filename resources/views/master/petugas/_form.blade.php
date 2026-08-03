@@ -68,6 +68,74 @@
 
 </div>
 
+{{-- ========================================================= --}}
+{{-- AKSES PETUGAS --}}
+{{-- ========================================================= --}}
+
+<div class="row">
+
+    <div class="col-12 mb-3">
+
+        <label class="form-label">
+            Jenis Petugas
+            <span class="text-danger">*</span>
+        </label>
+
+        <select
+            name="role"
+            class="form-select @error('role') is-invalid @enderror"
+            required
+        >
+
+            <option value="">
+                Pilih jenis petugas
+            </option>
+
+            <option
+                value="petugas"
+                @selected(
+                    old(
+                        'role',
+                        $petugas->user->role ?? ''
+                    ) === 'petugas'
+                )
+            >
+                Petugas Perpustakaan
+            </option>
+
+            <option
+                value="petugas_absensi"
+                @selected(
+                    old(
+                        'role',
+                        $petugas->user->role ?? ''
+                    ) === 'petugas_absensi'
+                )
+            >
+                Petugas Absensi
+            </option>
+
+        </select>
+
+        @error('role')
+
+            <div class="invalid-feedback">
+                {{ $message }}
+            </div>
+
+        @enderror
+
+        <div class="form-hint">
+
+            Pilih akses sistem yang diberikan
+            kepada petugas.
+
+        </div>
+
+    </div>
+
+</div>
+
 <div class="row">
 
     <div class="col-md-6 mb-3">

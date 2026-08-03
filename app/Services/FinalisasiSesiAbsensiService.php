@@ -71,18 +71,15 @@ class FinalisasiSesiAbsensiService
             ->findOrFail($sesi->id);
 
         /*
-         * Ambil semua siswa aktif
-         * pada kelas sesi ini.
-         */
+        * Ambil seluruh siswa aktif
+        * yang memiliki kelas aktif.
+        */
         $siswaKelas = Siswa::query()
-        ->where('is_active', true)
-        ->whereHas('kelas', function ($query) use ($sesiTerkunci) {
-            $query->where(
-                'tingkat',
-                $sesiTerkunci->tingkat
-            );
-        })
-        ->get();
+            ->where('is_active', true)
+            ->whereHas('kelas', function ($query) {
+                $query->where('is_active', true);
+            })
+            ->get();
 
 
         foreach ($siswaKelas as $siswa) {

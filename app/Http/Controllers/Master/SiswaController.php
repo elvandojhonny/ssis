@@ -1049,7 +1049,6 @@ public function import(Request $request)
                     'nullable',
                     'email',
                     'max:255',
-                    'unique:users,email',
                 ],
 
                 'password' => [

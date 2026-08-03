@@ -225,11 +225,11 @@
                         >
 
                             <span class="nav-link-icon">
-                                <i class="ti ti-books"></i>
+                                <i class="ti ti-user-cog"></i>
                             </span>
 
                             <span class="nav-link-title">
-                                Petugas Perpustakaan
+                                Petugas
                             </span>
 
                         </a>
@@ -417,52 +417,6 @@
 
                         <div class="nav-link disabled">
 
-                            <span
-                                class="
-                                    nav-link-title
-                                    text-secondary
-                                "
-                            >
-                                ABSENSI
-                            </span>
-
-                        </div>
-
-                    </li>
-
-
-                    {{-- Absensi --}}
-                    <li class="nav-item">
-
-                        <a
-                            class="nav-link {{
-                                request()->routeIs(
-                                    'absensi.sesi.*'
-                                )
-                                    ? 'active'
-                                    : ''
-                            }}"
-                            href="{{
-                                route('absensi.sesi.index')
-                            }}"
-                        >
-
-                            <span class="nav-link-icon">
-                                <i class="ti ti-qrcode"></i>
-                            </span>
-
-                            <span class="nav-link-title">
-                                Absensi
-                            </span>
-
-                        </a>
-
-                    </li>
-
-                    <li class="nav-item mt-3">
-
-                        <div class="nav-link disabled">
-
                             <span class="nav-link-title text-secondary">
                                 CBT
                             </span>
@@ -503,8 +457,60 @@
                 @endif
 
                 {{-- =================================================
-    MENU PETUGAS
+    MENU PETUGAS ABSENSI
 ================================================== --}}
+
+@if($user->isPetugasAbsensi())
+
+    {{-- =================================================
+        ABSENSI
+    ================================================== --}}
+
+    <li class="nav-item mt-3">
+
+        <div class="nav-link disabled">
+
+            <span class="nav-link-title text-secondary">
+                ABSENSI
+            </span>
+
+        </div>
+
+    </li>
+
+
+    {{-- =================================================
+        SESI ABSENSI
+    ================================================== --}}
+
+    <li class="nav-item">
+
+        <a
+            class="nav-link {{
+                request()->routeIs('absensi.sesi.*')
+                    ? 'active'
+                    : ''
+            }}"
+            href="{{ route('absensi.sesi.index') }}"
+        >
+
+            <span class="nav-link-icon">
+                <i class="ti ti-qrcode"></i>
+            </span>
+
+            <span class="nav-link-title">
+                Sesi Absensi
+            </span>
+
+        </a>
+
+    </li>
+
+@endif
+
+                {{-- =================================================
+                    MENU PETUGAS
+                ================================================== --}}
 @if($user->isPetugas())
 
     <li class="nav-item mt-3">

@@ -6,6 +6,7 @@ use App\Models\Guru;
 use App\Models\Kelas;
 use App\Models\Siswa;
 use App\Models\Petugas;
+use App\Models\SesiAbsensi;
 use App\Models\TahunAjaran;
 
 use App\Models\Buku;
@@ -62,6 +63,18 @@ class DashboardController extends Controller
         if ($user->isPetugas()) {
 
             return $this->petugasDashboard();
+
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | PETUGAS ABSENSI
+        |--------------------------------------------------------------------------
+        */
+
+        if ($user->isPetugasAbsensi()) {
+
+            return $this->petugasAbsensiDashboard();
 
         }
 
@@ -393,4 +406,113 @@ class DashboardController extends Controller
         )
     );
 }
+
+/*
+    |--------------------------------------------------------------------------
+    | DASHBOARD PETUGAS ABSENSI
+    |--------------------------------------------------------------------------
+    */
+
+private function petugasAbsensiDashboard()
+    {
+        /*
+        |--------------------------------------------------------------------------
+        | SESI PAGI HARI INI
+        |--------------------------------------------------------------------------
+        */
+
+        $sesiPagi =
+            SesiAbsensi::with([
+                'pembuka',
+            ])
+            ->whereDate(
+                'tanggal',
+                today()
+            )
+            ->where(
+                'jenis',
+                'pagi'
+            )
+            ->latest('id')
+            ->first();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | SESI SIANG HARI INI
+        |--------------------------------------------------------------------------
+        */
+
+        $sesiSiang =
+            SesiAbsensi::with([
+                'pembuka',
+            ])
+            ->whereDate(
+                'tanggal',
+                today()
+            )
+            ->where(
+                'jenis',
+                'siang'
+            )
+            ->latest('id')
+            ->first();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | SELURUH SESI HARI INI
+        |--------------------------------------------------------------------------
+        */
+
+        $sesiHariIni =
+            SesiAbsensi::with([
+                'pembuka',
+            ])
+            ->whereDate(
+                'tanggal',
+                today()
+            )
+            ->orderByRaw("
+                CASE
+                    WHEN jenis = 'pagi'
+                        THEN 1
+                    WHEN jenis = 'siang'
+                        THEN 2
+                    ELSE 3
+                END
+            ")
+            ->get();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | TOTAL SISWA AKTIF
+        |--------------------------------------------------------------------------
+        */
+
+        $totalSiswa =
+            Siswa::where(
+                'is_active',
+                true
+            )
+            ->count();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | TAMPILKAN DASHBOARD
+        |--------------------------------------------------------------------------
+        */
+
+        return view(
+            'dashboard.petugas-absensi',
+            compact(
+                'sesiPagi',
+                'sesiSiang',
+                'sesiHariIni',
+                'totalSiswa'
+            )
+        );
+    }
 }

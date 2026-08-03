@@ -17,7 +17,7 @@
         </h2>
 
         <div class="text-secondary mt-1">
-            Pilih tingkat dan jenis absensi yang akan dibuka.
+            Buka satu sesi absensi yang berlaku untuk seluruh siswa.
         </div>
 
     </div>
@@ -57,93 +57,6 @@
         >
 
             @csrf
-
-
-            {{-- TINGKAT --}}
-
-            <div class="mb-4">
-
-                <label class="form-label">
-
-                    Tingkat
-
-                    <span class="text-danger">*</span>
-
-                </label>
-
-
-                <div class="row g-3">
-
-                    @foreach($tingkats as $tingkat)
-
-                        <div class="col-12 col-md-4">
-
-                            <label
-                                class="form-selectgroup-item w-100"
-                            >
-
-                                <input
-                                    type="radio"
-                                    name="tingkat"
-                                    value="{{ $tingkat }}"
-                                    class="form-selectgroup-input"
-                                    @checked(
-                                        old('tingkat') === $tingkat
-                                    )
-                                    required
-                                >
-
-
-                                <span
-                                    class="
-                                        form-selectgroup-label
-                                        d-flex
-                                        align-items-center
-                                        justify-content-center
-                                        py-3
-                                    "
-                                >
-
-                                    <i
-                                        class="
-                                            ti
-                                            ti-school
-                                            me-2
-                                        "
-                                    ></i>
-
-                                    Kelas {{ $tingkat }}
-
-                                </span>
-
-                            </label>
-
-                        </div>
-
-                    @endforeach
-
-                </div>
-
-
-                @error('tingkat')
-
-                    <div class="text-danger small mt-2">
-
-                        {{ $message }}
-
-                    </div>
-
-                @enderror
-
-
-                <div class="form-hint mt-2">
-
-                    Sesi berlaku untuk seluruh jurusan pada tingkat
-                    yang dipilih.
-
-                </div>
-
-            </div>
 
 
             {{-- JENIS ABSENSI --}}
@@ -426,14 +339,14 @@
                     <div>
 
                         <div class="fw-bold mb-1">
-                            Satu sesi untuk seluruh jurusan
+                            Satu sesi untuk seluruh sekolah
                         </div>
 
                         <div>
-                            Jika membuka sesi untuk Kelas X,
-                            seluruh siswa Kelas X dapat melakukan
-                            absensi menggunakan QR yang sama,
-                            termasuk siswa X IPA dan X IPS.
+                            Setelah sesi dibuka, seluruh siswa aktif
+                            dari semua kelas dan jurusan dapat
+                            melakukan absensi menggunakan QR masing-masing
+                            selama sesi masih aktif.
                         </div>
 
                     </div>

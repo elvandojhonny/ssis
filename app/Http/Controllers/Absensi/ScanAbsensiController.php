@@ -84,33 +84,27 @@ class ScanAbsensiController extends Controller
         }
 
         /*
-         * Pastikan siswa aktif.
-         */
-        if (! $siswa->is_active) {
-            return response()->json([
-                'message' =>
-                    'Data siswa sudah tidak aktif.',
-            ], 403);
-        }
+ * Pastikan siswa memiliki kelas aktif.
+ *
+ * Karena sekarang satu sesi absensi berlaku
+ * untuk seluruh sekolah, siswa tidak lagi
+ * dibatasi berdasarkan tingkat.
+ */
+$siswa->loadMissing('kelas');
 
-        /*
-         * Pastikan siswa berasal dari
-         * kelas sesi yang sedang dibuka.
-         */
-        $siswa->loadMissing('kelas');
-
-if (
-    ! $siswa->kelas ||
-    $siswa->kelas->tingkat !== $sesi->tingkat
-) {
+if (! $siswa->kelas) {
     return response()->json([
         'message' =>
-            'Siswa bukan anggota tingkat '
-            . $sesi->tingkat
-            . ' pada sesi absensi ini.',
+            'Siswa belum memiliki kelas.',
     ], 403);
 }
 
+if (! $siswa->kelas->is_active) {
+    return response()->json([
+        'message' =>
+            'Kelas siswa sudah tidak aktif.',
+    ], 403);
+}
         /*
          * Pastikan sesi untuk hari ini.
          */

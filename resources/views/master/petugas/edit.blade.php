@@ -16,10 +16,7 @@
 
         </div>
 
-        <form
-            action="{{ route('petugas.update', $petugas) }}"
-            method="POST"
-        >
+        <form action="{{ route('petugas.update', $petugas->id) }}" method="POST">
 
             @csrf
             @method('PUT')

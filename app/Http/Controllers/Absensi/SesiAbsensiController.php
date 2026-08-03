@@ -47,7 +47,7 @@ class SesiAbsensiController extends Controller
     ->whereDate(
         'tanggal',
         '>=',
-        now()->subDays(7)->toDateString()
+        now()->subDays(2)->toDateString()
     )
 
     ->orderByDesc('tanggal')
@@ -67,23 +67,13 @@ class SesiAbsensiController extends Controller
 }
 
     public function create()
-{
-    $tingkats = ['X', 'XI', 'XII'];
-
-    return view(
-        'absensi.sesi.create',
-        compact('tingkats')
-    );
-}
+    {
+        return view('absensi.sesi.create');
+    }
 
     public function store(Request $request)
 {
     $validated = $request->validate([
-        'tingkat' => [
-            'required',
-            Rule::in(['X', 'XI', 'XII']),
-        ],
-
         'jenis' => [
             'required',
             Rule::in(['pagi', 'siang']),
@@ -108,38 +98,67 @@ class SesiAbsensiController extends Controller
     ]);
 
     /*
-     * Pastikan tingkat tersebut benar-benar
-     * memiliki kelas aktif.
+     * Pastikan minimal ada satu kelas aktif.
      */
-    $kelasTersedia = Kelas::where(
-            'tingkat',
-            $validated['tingkat']
-        )
-        ->where('is_active', true)
-        ->exists();
+    $kelasTersedia = Kelas::where('is_active', true)->exists();
 
     if (! $kelasTersedia) {
         return back()
             ->withInput()
             ->with(
                 'error',
-                'Tidak ada kelas aktif untuk tingkat '
-                . $validated['tingkat']
-                . '.'
+                'Belum ada kelas aktif.'
             );
     }
 
     /*
-     * Satu tingkat hanya memiliki satu sesi
-     * pagi atau siang dalam satu hari.
+     * Hanya boleh ada satu sesi aktif
+     * untuk jenis yang sama dalam satu hari.
      */
-    $sudahAda = SesiAbsensi::where(
-            'tingkat',
-            $validated['tingkat']
-        )
-        ->whereDate('tanggal', today())
-        ->where('jenis', $validated['jenis'])
-        ->exists();
+    /*
+|--------------------------------------------------------------------------
+| CEK SESI HARI INI
+|--------------------------------------------------------------------------
+|
+| Dalam satu hari hanya boleh:
+|
+| - 1 sesi pagi
+| - 1 sesi siang
+|
+| Status sesi tidak diperhitungkan.
+| Walaupun sesi sebelumnya sudah selesai,
+| sesi dengan jenis yang sama tidak boleh dibuat lagi
+| pada tanggal yang sama.
+|
+*/
+
+$sudahAda = SesiAbsensi::whereDate(
+        'tanggal',
+        today()
+    )
+    ->where(
+        'jenis',
+        $validated['jenis']
+    )
+    ->exists();
+
+
+if ($sudahAda) {
+
+    $jenisLabel =
+        $validated['jenis'] === 'pagi'
+            ? 'pagi'
+            : 'siang';
+
+    return back()
+        ->withInput()
+        ->with(
+            'error',
+            'Absensi ' .
+            $jenisLabel .
+            ' sudah pernah dibuka hari ini.'
+        );
+}
 
     if ($sudahAda) {
         return back()
@@ -148,17 +167,17 @@ class SesiAbsensiController extends Controller
                 'error',
                 'Sesi absensi '
                 . $validated['jenis']
-                . ' untuk tingkat '
-                . $validated['tingkat']
-                . ' sudah dibuat hari ini.'
+                . ' sudah dibuka hari ini.'
             );
     }
 
     $sesi = DB::transaction(function () use ($validated) {
+
         return SesiAbsensi::create([
+
             'kelas_id' => null,
 
-            'tingkat' => $validated['tingkat'],
+            'tingkat' => null,
 
             'dibuka_oleh' => auth()->id(),
 
@@ -166,16 +185,16 @@ class SesiAbsensiController extends Controller
 
             'jenis' => $validated['jenis'],
 
-            'waktu_mulai' =>
-                $validated['waktu_mulai'],
+            'waktu_mulai' => $validated['waktu_mulai'],
 
             'batas_terlambat' =>
-                $validated['batas_terlambat'] ?? null,
+                $validated['batas_terlambat'],
 
             'waktu_selesai' =>
                 $validated['waktu_selesai'],
 
             'status' => 'aktif',
+
         ]);
     });
 
@@ -183,26 +202,37 @@ class SesiAbsensiController extends Controller
         ->route('absensi.sesi.show', $sesi)
         ->with(
             'success',
-            'Sesi absensi tingkat '
-            . $validated['tingkat']
-            . ' berhasil dibuka.'
+            'Sesi absensi berhasil dibuka untuk seluruh sekolah.'
         );
 }
 
-   public function show(
+public function show(
     SesiAbsensi $sesi,
     FinalisasiSesiAbsensiService $finalisasiService
 ) {
     /*
-     * Finalisasi semua sesi yang waktunya
-     * sudah berakhir.
-     */
+    |--------------------------------------------------------------------------
+    | FINALISASI SESI KEDALUWARSA
+    |--------------------------------------------------------------------------
+    */
+
     $finalisasiService->finalisasiKedaluwarsa();
 
+
     /*
-     * Ambil ulang data sesi setelah finalisasi.
-     */
+    |--------------------------------------------------------------------------
+    | REFRESH SESI
+    |--------------------------------------------------------------------------
+    */
+
     $sesi->refresh();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | LOAD RELASI SESI
+    |--------------------------------------------------------------------------
+    */
 
     $sesi->load([
         'kelas.tahunAjaran',
@@ -210,20 +240,87 @@ class SesiAbsensiController extends Controller
         'absensis.siswa.user',
     ]);
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | AMBIL SEMUA SISWA AKTIF
+    |--------------------------------------------------------------------------
+    |
+    | Satu sesi absensi berlaku untuk seluruh tingkat:
+    |
+    | X
+    | XI
+    | XII
+    |
+    | Pemisahan tingkat dilakukan pada Blade menggunakan tab.
+    |
+    */
+
     $daftarSiswa = Siswa::with([
         'user',
         'kelas',
     ])
     ->where('is_active', true)
-    ->whereHas('kelas', function ($query) use ($sesi) {
+
+    /*
+    |--------------------------------------------------------------------------
+    | SISWA HARUS MEMILIKI KELAS AKTIF
+    |--------------------------------------------------------------------------
+    */
+
+    ->whereHas('kelas', function ($query) {
+
         $query->where(
-            'tingkat',
-            $sesi->tingkat
+            'is_active',
+            true
         );
+
     })
-    ->orderBy('kelas_id')
-    ->orderBy('nis')
+
+    /*
+    |--------------------------------------------------------------------------
+    | URUTKAN BERDASARKAN TINGKAT
+    |--------------------------------------------------------------------------
+    */
+
     ->get()
+
+    ->sortBy(function ($siswa) {
+
+        /*
+         * Supaya urutannya:
+         *
+         * X
+         * XI
+         * XII
+         */
+
+        $urutanTingkat = [
+            'X'   => 1,
+            'XI'  => 2,
+            'XII' => 3,
+        ];
+
+        return [
+            $urutanTingkat[
+                $siswa->kelas?->tingkat
+            ] ?? 99,
+
+            $siswa->kelas?->nama ?? '',
+
+            $siswa->nis ?? '',
+        ];
+
+    })
+
+    ->values()
+
+    /*
+    |--------------------------------------------------------------------------
+    | PASANG DATA ABSENSI KE MASING-MASING SISWA
+    |--------------------------------------------------------------------------
+    */
+
     ->map(function ($siswa) use ($sesi) {
 
         $siswa->data_absensi =
@@ -233,30 +330,59 @@ class SesiAbsensiController extends Controller
             );
 
         return $siswa;
+
     });
 
-    $totalSiswa = $daftarSiswa->count();
 
-    $hadir = $daftarSiswa
-        ->filter(
-            fn ($siswa) =>
-                $siswa->data_absensi?->status === 'hadir'
-        )
-        ->count();
+    /*
+    |--------------------------------------------------------------------------
+    | STATISTIK
+    |--------------------------------------------------------------------------
+    */
 
-    $terlambat = $daftarSiswa
-        ->filter(
-            fn ($siswa) =>
-                $siswa->data_absensi?->status === 'terlambat'
-        )
-        ->count();
+    $totalSiswa =
+        $daftarSiswa->count();
 
-    $belumAbsen = $daftarSiswa
-        ->filter(
-            fn ($siswa) =>
-                $siswa->data_absensi === null
-        )
-        ->count();
+
+    $hadir =
+        $daftarSiswa
+            ->filter(
+                fn ($siswa) =>
+                    $siswa
+                        ->data_absensi
+                        ?->status
+                    === 'hadir'
+            )
+            ->count();
+
+
+    $terlambat =
+        $daftarSiswa
+            ->filter(
+                fn ($siswa) =>
+                    $siswa
+                        ->data_absensi
+                        ?->status
+                    === 'terlambat'
+            )
+            ->count();
+
+
+    $belumAbsen =
+        $daftarSiswa
+            ->filter(
+                fn ($siswa) =>
+                    $siswa->data_absensi
+                    === null
+            )
+            ->count();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | TAMPILKAN HALAMAN
+    |--------------------------------------------------------------------------
+    */
 
     return view(
         'absensi.sesi.show',
@@ -270,7 +396,6 @@ class SesiAbsensiController extends Controller
         )
     );
 }
-
 public function updateStatus(
     Request $request,
     SesiAbsensi $sesi,
@@ -283,10 +408,9 @@ public function updateStatus(
     $siswa->loadMissing('kelas');
 
     abort_unless(
-        $siswa->kelas
-        && $siswa->kelas->tingkat === $sesi->tingkat,
+        $siswa->kelas,
         403,
-        'Siswa bukan anggota tingkat ini.'
+        'Siswa belum memiliki kelas.'
     );
 
     $validated = $request->validate([
@@ -372,7 +496,7 @@ public function updateStatus(
         ->whereDate(
             'tanggal',
             '<',
-            now()->subDays(7)->toDateString()
+            now()->subDays(2)->toDateString()
         );
 
 

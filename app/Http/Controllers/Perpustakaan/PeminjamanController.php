@@ -568,31 +568,24 @@ public function bukuByKelas($kelasId)
 
             DB::commit();
 
-            return redirect()
-
-                ->route(
-                    'perpustakaan.peminjaman.show',
-                    $peminjaman
-                )
-
-                ->with(
-                    'success',
-                    'Peminjaman berhasil disimpan.'
-                );
+return redirect()
+    ->route('perpustakaan.peminjaman.index')
+    ->with(
+        'success',
+        'Peminjaman berhasil disimpan.'
+    );
 
         } catch (\Throwable $e) {
 
-            DB::rollBack();
+    DB::rollBack();
 
-            return back()
-
-                ->withInput()
-
-                ->with(
-                    'error',
-                    $e->getMessage()
-                );
-        }
+    return back()
+        ->withInput()
+        ->with(
+            'error',
+            $e->getMessage()
+        );
+}
     }
         /*
     |--------------------------------------------------------------------------
@@ -600,8 +593,20 @@ public function bukuByKelas($kelasId)
     |--------------------------------------------------------------------------
     */
 
-    public function show(Peminjaman $peminjaman)
+   /*
+|--------------------------------------------------------------------------
+| Detail Peminjaman
+|--------------------------------------------------------------------------
+*/
+
+public function show(Peminjaman $peminjaman)
 {
+    /*
+    |--------------------------------------------------------------------------
+    | Load Relasi
+    |--------------------------------------------------------------------------
+    */
+
     $peminjaman->load([
         'petugas.user',
         'siswa.kelas',
@@ -609,51 +614,65 @@ public function bukuByKelas($kelasId)
         'detailPeminjaman.buku.kelas',
     ]);
 
+
     /*
     |--------------------------------------------------------------------------
-    | UPDATE STATUS TERLAMBAT
+    | Sinkronisasi Status
     |--------------------------------------------------------------------------
     |
     | Contoh:
     |
     | Jatuh tempo : 31 Juli
-    | 31 Juli     : masih DIPINJAM
-    | 1 Agustus   : TERLAMBAT
+    | 31 Juli     : Dipinjam
+    | 1 Agustus   : Terlambat
     |
     */
 
     if (
-    in_array(
-        $peminjaman->status,
-        [
-            'dipinjam',
-            'terlambat',
-        ]
-    )
-) {
-
-    $statusBaru =
-        $peminjaman
-            ->tanggal_jatuh_tempo
-            ->startOfDay()
-            ->lt(today())
-
-        ? 'terlambat'
-        : 'dipinjam';
-
-
-    if (
-        $peminjaman->status !== $statusBaru
+        in_array(
+            $peminjaman->status,
+            [
+                'dipinjam',
+                'terlambat',
+            ]
+        )
     ) {
 
-        $peminjaman->update([
-            'status' => $statusBaru,
-        ]);
+        $statusBaru =
+            $peminjaman
+                ->tanggal_jatuh_tempo
+                ->startOfDay()
+                ->lt(today())
 
-        $peminjaman->refresh();
+                ? 'terlambat'
+                : 'dipinjam';
+
+
+        if (
+            $peminjaman->status
+            !==
+            $statusBaru
+        ) {
+
+            $peminjaman->update([
+                'status' => $statusBaru,
+            ]);
+
+            $peminjaman->refresh();
+        }
     }
-}
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Tampilkan Detail
+    |--------------------------------------------------------------------------
+    */
+
+    return view(
+        'perpustakaan.peminjaman.show',
+        compact('peminjaman')
+    );
 }
 
     /*

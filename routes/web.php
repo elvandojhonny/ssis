@@ -191,11 +191,12 @@ Route::middleware('auth')->group(function () {
         |--------------------------------------------------------------------------
         */
 
-        Route::resource(
-            'petugas',
-            PetugasController::class
-        )->except('show');
-
+        Route::resource('petugas', PetugasController::class)
+        ->parameters([
+            'petugas' => 'petugas',
+        ])
+        ->except('show');
+        
         Route::get(
             '/siswa/{siswa}/qr',
             [QrSiswaController::class, 'show']
@@ -366,7 +367,7 @@ Route::middleware('auth')->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('role:operator,guru')
+Route::middleware('role:operator,petugas_absensi')
     ->prefix('absensi')
     ->name('absensi.')
     ->group(function () {

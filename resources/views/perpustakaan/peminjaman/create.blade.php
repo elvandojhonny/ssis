@@ -46,6 +46,7 @@
 <form
     id="formPeminjaman"
     action="{{ route('perpustakaan.peminjaman.store') }}"
+    class="no-loading"
     method="POST">
 
     @csrf

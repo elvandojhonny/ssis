@@ -11,175 +11,522 @@ use Illuminate\Validation\Rule;
 
 class PetugasController extends Controller
 {
-    /**
-     * Menampilkan daftar petugas.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | DAFTAR PETUGAS
+    |--------------------------------------------------------------------------
+    */
+
     public function index()
     {
         $petugas = Petugas::with('user')
             ->latest()
             ->paginate(10);
 
-        return view('master.petugas.index', compact('petugas'));
+        return view(
+            'master.petugas.index',
+            compact('petugas')
+        );
     }
 
-    /**
-     * Form tambah petugas.
-     */
+
+    /*
+    |--------------------------------------------------------------------------
+    | FORM TAMBAH PETUGAS
+    |--------------------------------------------------------------------------
+    */
+
     public function create()
     {
         return view('master.petugas.create');
     }
 
-    /**
-     * Simpan petugas baru.
-     */
+
+    /*
+    |--------------------------------------------------------------------------
+    | SIMPAN PETUGAS
+    |--------------------------------------------------------------------------
+    */
+
     public function store(Request $request)
-{
-    $validated = $request->validate([
-        'nip' => ['nullable', 'string', 'max:50', 'unique:petugas,nip'],
-        'nama' => ['required', 'string', 'max:255'],
-        'username' => ['required', 'string', 'max:50', 'unique:users,username'],
-        'email' => ['nullable', 'email', 'max:255', 'unique:users,email'],
-        'password' => ['required', 'string', 'min:8', 'confirmed'],
-        'jenis_kelamin' => ['nullable', Rule::in(['L', 'P'])],
-        'no_hp' => ['nullable', 'string', 'max:20'],
-        'alamat' => ['nullable', 'string'],
-        'is_active' => ['nullable', 'boolean'],
-    ]);
+    {
+        $validated = $request->validate([
 
-    DB::transaction(function () use ($validated) {
+            'nip' => [
+                'nullable',
+                'string',
+                'max:50',
+                'unique:petugas,nip',
+            ],
 
-        $isActive = (bool) ($validated['is_active'] ?? false);
+            'nama' => [
+                'required',
+                'string',
+                'max:255',
+            ],
 
-        $user = User::create([
-            'name' => $validated['nama'],
-            'username' => $validated['username'],
-            'email' => $validated['email'] ?? null,
-            'password' => $validated['password'],
-            'role' => 'petugas',
-            'is_active' => $isActive,
+            'username' => [
+                'required',
+                'string',
+                'max:50',
+                'unique:users,username',
+            ],
+
+            'email' => [
+                'nullable',
+                'email',
+                'max:255',
+                
+            ],
+
+            /*
+            |--------------------------------------------------------------------------
+            | JENIS PETUGAS
+            |--------------------------------------------------------------------------
+            */
+
+            'role' => [
+                'required',
+                Rule::in([
+                    'petugas',
+                    'petugas_absensi',
+                ]),
+            ],
+
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'confirmed',
+            ],
+
+            'jenis_kelamin' => [
+                'nullable',
+                Rule::in([
+                    'L',
+                    'P',
+                ]),
+            ],
+
+            'no_hp' => [
+                'nullable',
+                'string',
+                'max:20',
+            ],
+
+            'alamat' => [
+                'nullable',
+                'string',
+            ],
+
+            'is_active' => [
+                'nullable',
+                'boolean',
+            ],
+
         ]);
 
-        Petugas::create([
-            'user_id' => $user->id,
-            'nip' => $validated['nip'] ?? null,
-            'nama' => $validated['nama'],
-            'jenis_kelamin' => $validated['jenis_kelamin'] ?? null,
-            'no_hp' => $validated['no_hp'] ?? null,
-            'alamat' => $validated['alamat'] ?? null,
-            'is_active' => $isActive,
-        ]);
 
-    });
+        DB::transaction(
+            function () use ($validated) {
 
-    return redirect()
-        ->route('petugas.index')
-        ->with(
-            'success',
-            'Data dan akun petugas berhasil dibuat.'
+                $isActive =
+                    (bool) (
+                        $validated['is_active']
+                        ?? false
+                    );
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | BUAT USER
+                |--------------------------------------------------------------------------
+                */
+
+                $user = User::create([
+
+                    'name' =>
+                        $validated['nama'],
+
+                    'username' =>
+                        $validated['username'],
+
+                    'email' =>
+                        $validated['email']
+                        ?? null,
+
+                    'password' =>
+                        $validated['password'],
+
+                    /*
+                     * petugas
+                     * =
+                     * Petugas Perpustakaan
+                     *
+                     * petugas_absensi
+                     * =
+                     * Petugas Absensi
+                     */
+
+                    'role' =>
+                        $validated['role'],
+
+                    'is_active' =>
+                        $isActive,
+
+                ]);
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | BUAT PROFIL PETUGAS
+                |--------------------------------------------------------------------------
+                */
+
+                Petugas::create([
+
+                    'user_id' =>
+                        $user->id,
+
+                    'nip' =>
+                        $validated['nip']
+                        ?? null,
+
+                    'nama' =>
+                        $validated['nama'],
+
+                    'jenis_kelamin' =>
+                        $validated['jenis_kelamin']
+                        ?? null,
+
+                    'no_hp' =>
+                        $validated['no_hp']
+                        ?? null,
+
+                    'alamat' =>
+                        $validated['alamat']
+                        ?? null,
+
+                    'is_active' =>
+                        $isActive,
+
+                ]);
+
+            }
         );
-}
 
-    /**
-     * Form edit petugas.
-     */
+
+        return redirect()
+            ->route('petugas.index')
+            ->with(
+                'success',
+                'Data dan akun petugas berhasil dibuat.'
+            );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | FORM EDIT PETUGAS
+    |--------------------------------------------------------------------------
+    */
+
     public function edit(Petugas $petugas)
     {
         $petugas->load('user');
 
-        return view('master.petugas.edit', compact('petugas'));
+        return view(
+            'master.petugas.edit',
+            compact('petugas')
+        );
     }
 
-    /**
-     * Update data petugas.
-     */
-    public function update(Request $request, Petugas $petugas)
-{
-    $validated = $request->validate([
-        'nip' => [
-            'nullable',
-            'string',
-            'max:50',
-            Rule::unique('petugas', 'nip')->ignore($petugas->id),
-        ],
-        'nama' => ['required', 'string', 'max:255'],
-        'username' => [
-            'required',
-            'string',
-            'max:50',
-            Rule::unique('users', 'username')->ignore($petugas->user_id),
-        ],
-        'email' => [
-            'nullable',
-            'email',
-            'max:255',
-            Rule::unique('users', 'email')->ignore($petugas->user_id),
-        ],
-        'password' => ['nullable', 'string', 'min:8', 'confirmed'],
-        'jenis_kelamin' => ['nullable', Rule::in(['L', 'P'])],
-        'no_hp' => ['nullable', 'string', 'max:20'],
-        'alamat' => ['nullable', 'string'],
-        'is_active' => ['nullable', 'boolean'],
-    ]);
 
-    DB::transaction(function () use ($validated, $petugas) {
+    /*
+    |--------------------------------------------------------------------------
+    | UPDATE PETUGAS
+    |--------------------------------------------------------------------------
+    */
 
-        $isActive = (bool) ($validated['is_active'] ?? false);
+    public function update(
+        Request $request,
+        Petugas $petugas
+    ) {
+        /*
+        |--------------------------------------------------------------------------
+        | PASTIKAN USER TERSEDIA
+        |--------------------------------------------------------------------------
+        */
 
-        $userData = [
-            'name' => $validated['nama'],
-            'username' => $validated['username'],
-            'email' => $validated['email'] ?? null,
-            'is_active' => $isActive,
-        ];
+        $petugas->load('user');
 
-        if (!empty($validated['password'])) {
-            $userData['password'] = $validated['password'];
-        }
 
-        $petugas->user->update($userData);
+        abort_unless(
+            $petugas->user,
+            404,
+            'Akun petugas tidak ditemukan.'
+        );
 
-        $petugas->update([
-            'nip' => $validated['nip'] ?? null,
-            'nama' => $validated['nama'],
-            'jenis_kelamin' => $validated['jenis_kelamin'] ?? null,
-            'no_hp' => $validated['no_hp'] ?? null,
-            'alamat' => $validated['alamat'] ?? null,
-            'is_active' => $isActive,
+
+        $validated = $request->validate([
+
+            'nip' => [
+                'nullable',
+                'string',
+                'max:50',
+
+                Rule::unique(
+                    'petugas',
+                    'nip'
+                )->ignore(
+                    $petugas->id
+                ),
+            ],
+
+            'nama' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+
+            'username' => [
+                'required',
+                'string',
+                'max:50',
+
+                Rule::unique(
+                    'users',
+                    'username'
+                )->ignore(
+                    $petugas->user_id
+                ),
+            ],
+
+            'email' => [
+                'nullable',
+                'email',
+                'max:255',
+            ],
+
+            /*
+            |--------------------------------------------------------------------------
+            | JENIS PETUGAS
+            |--------------------------------------------------------------------------
+            */
+
+            'role' => [
+                'required',
+
+                Rule::in([
+                    'petugas',
+                    'petugas_absensi',
+                ]),
+            ],
+
+            'password' => [
+                'nullable',
+                'string',
+                'min:8',
+                'confirmed',
+            ],
+
+            'jenis_kelamin' => [
+                'nullable',
+
+                Rule::in([
+                    'L',
+                    'P',
+                ]),
+            ],
+
+            'no_hp' => [
+                'nullable',
+                'string',
+                'max:20',
+            ],
+
+            'alamat' => [
+                'nullable',
+                'string',
+            ],
+
+            'is_active' => [
+                'nullable',
+                'boolean',
+            ],
+
         ]);
 
-    });
 
-    return redirect()
-        ->route('petugas.index')
-        ->with('success', 'Data petugas berhasil diperbarui.');
-}
+        DB::transaction(
+            function () use (
+                $validated,
+                $petugas
+            ) {
 
-    /**
-     * Hapus petugas.
-     */
-    public function destroy(Petugas $petugas)
-{
-    $petugas->load('user');
+                $isActive =
+                    (bool) (
+                        $validated['is_active']
+                        ?? false
+                    );
 
-    DB::transaction(function () use ($petugas) {
 
-        $user = $petugas->user;
+                /*
+                |--------------------------------------------------------------------------
+                | UPDATE USER
+                |--------------------------------------------------------------------------
+                */
 
-        $petugas->delete();
+                $userData = [
 
-        if ($user) {
-            $user->delete();
-        }
+                    'name' =>
+                        $validated['nama'],
 
-    });
+                    'username' =>
+                        $validated['username'],
 
-    return redirect()
-        ->route('petugas.index')
-        ->with(
-            'success',
-            'Data dan akun petugas berhasil dihapus.'
+                    'email' =>
+                        $validated['email']
+                        ?? null,
+
+                    /*
+                     * Role juga boleh diubah.
+                     *
+                     * Contoh:
+                     *
+                     * Petugas Perpustakaan
+                     *          ↓
+                     * Petugas Absensi
+                     */
+
+                    'role' =>
+                        $validated['role'],
+
+                    'is_active' =>
+                        $isActive,
+
+                ];
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | PASSWORD
+                |--------------------------------------------------------------------------
+                */
+
+                if (
+                    ! empty(
+                        $validated['password']
+                    )
+                ) {
+
+                    $userData['password'] =
+                        $validated['password'];
+
+                }
+
+
+                $petugas
+                    ->user
+                    ->update(
+                        $userData
+                    );
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | UPDATE PROFIL PETUGAS
+                |--------------------------------------------------------------------------
+                */
+
+                $petugas->update([
+
+                    'nip' =>
+                        $validated['nip']
+                        ?? null,
+
+                    'nama' =>
+                        $validated['nama'],
+
+                    'jenis_kelamin' =>
+                        $validated['jenis_kelamin']
+                        ?? null,
+
+                    'no_hp' =>
+                        $validated['no_hp']
+                        ?? null,
+
+                    'alamat' =>
+                        $validated['alamat']
+                        ?? null,
+
+                    'is_active' =>
+                        $isActive,
+
+                ]);
+
+            }
         );
-}
+
+
+        return redirect()
+            ->route('petugas.index')
+            ->with(
+                'success',
+                'Data petugas berhasil diperbarui.'
+            );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | HAPUS PETUGAS
+    |--------------------------------------------------------------------------
+    */
+
+    public function destroy(
+        Petugas $petugas
+    ) {
+        $petugas->load('user');
+
+
+        DB::transaction(
+            function () use ($petugas) {
+
+                $user =
+                    $petugas->user;
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | HAPUS PROFIL PETUGAS
+                |--------------------------------------------------------------------------
+                */
+
+                $petugas->delete();
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | HAPUS AKUN USER
+                |--------------------------------------------------------------------------
+                */
+
+                if ($user) {
+
+                    $user->delete();
+
+                }
+
+            }
+        );
+
+
+        return redirect()
+            ->route('petugas.index')
+            ->with(
+                'success',
+                'Data dan akun petugas berhasil dihapus.'
+            );
+    }
 }

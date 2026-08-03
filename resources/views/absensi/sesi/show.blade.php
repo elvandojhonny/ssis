@@ -356,7 +356,7 @@
                         </div>
 
                         <div class="fw-bold mt-1">
-                            Kelas {{ $sesi->tingkat }}
+                            X XI XII {{ $sesi->tingkat }}
                         </div>
 
                     </div>
@@ -369,7 +369,7 @@
                         </div>
 
                         <div class="fw-bold mt-1">
-                            Seluruh Kelas Tingkat {{ $sesi->tingkat }}
+                            Seluruh Kelas {{ $sesi->tingkat }}
                         </div>
 
                     </div>
@@ -658,10 +658,26 @@
 </div>
 
 
-
 {{-- ========================================================= --}}
 {{-- DAFTAR KEHADIRAN --}}
 {{-- ========================================================= --}}
+
+@php
+
+    /*
+    |--------------------------------------------------------------------------
+    | TAB TINGKAT
+    |--------------------------------------------------------------------------
+    */
+
+    $daftarTingkat = [
+        'X',
+        'XI',
+        'XII',
+    ];
+
+@endphp
+
 
 <div class="card">
 
@@ -679,10 +695,102 @@
 
             <div class="text-secondary small mt-1">
 
-                Seluruh siswa aktif yang terdaftar
-                pada tingkat ini.
+                Pilih kelas untuk melihat daftar
+                kehadiran siswa.
 
             </div>
+
+        </div>
+
+    </div>
+
+
+    {{-- ===================================================== --}}
+    {{-- TAB KELAS --}}
+    {{-- ===================================================== --}}
+
+    <div class="card-header border-top py-0">
+
+        <div
+            class="
+                absensi-class-tabs
+                nav
+                nav-tabs
+                card-header-tabs
+                flex-nowrap
+            "
+            role="tablist"
+        >
+
+            {{-- SEMUA --}}
+
+            <button
+                type="button"
+                class="nav-link active"
+                data-filter-semua
+            >
+
+                <i class="ti ti-users me-1"></i>
+
+                Semua
+
+                <span
+                    class="
+                        badge
+                        bg-secondary-lt
+                        ms-1
+                    "
+                >
+                    {{ $daftarSiswa->count() }}
+                </span>
+
+            </button>
+
+
+            {{-- PER TINGKAT --}}
+
+@foreach($daftarTingkat as $tingkat)
+
+    @php
+
+        $jumlahSiswaTingkat =
+            $daftarSiswa
+                ->filter(function ($siswa) use ($tingkat) {
+
+                    return
+                        optional($siswa->kelas)->tingkat
+                        === $tingkat;
+
+                })
+                ->count();
+
+    @endphp
+
+
+    <button
+        type="button"
+        class="nav-link"
+        data-filter-tingkat="{{ $tingkat }}"
+    >
+
+        <i class="ti ti-school me-1"></i>
+
+        Kelas {{ $tingkat }}
+
+        <span
+            class="
+                badge
+                bg-blue-lt
+                text-blue
+                ms-1
+            "
+        >
+            {{ $jumlahSiswaTingkat }}
+        </span>
+
+    </button>
+
+@endforeach
 
         </div>
 
@@ -738,6 +846,8 @@
 
                     <tr
                         id="siswa-row-{{ $siswa->id }}"
+                        class="absensi-siswa-item"
+                        data-tingkat="{{ $siswa->kelas->tingkat ?? '' }}"
                     >
 
 
@@ -1084,7 +1194,9 @@
                     p-3
                     border-bottom
                     absensi-mobile-card
+                    absensi-siswa-item
                 "
+                data-tingkat="{{ $siswa->kelas->tingkat ?? '' }}"
             >
 
 
@@ -1503,6 +1615,45 @@
         @endforelse
 
     </div>
+
+    {{-- ===================================================== --}}
+{{-- DATA KELAS KOSONG --}}
+{{-- ===================================================== --}}
+
+<div
+    id="absensi-empty-filter"
+    class="
+        text-center
+        text-secondary
+        py-5
+        px-3
+        d-none
+    "
+>
+
+    <span
+        class="
+            avatar
+            avatar-lg
+            bg-secondary-lt
+            text-secondary
+            mb-3
+        "
+    >
+
+        <i class="ti ti-users-off"></i>
+
+    </span>
+
+    <div class="fw-bold text-body">
+        Tidak ada siswa
+    </div>
+
+    <div class="small mt-1">
+        Tidak ada siswa pada kelas yang dipilih.
+    </div>
+
+</div>
 
 </div>
 
@@ -2364,6 +2515,128 @@ document.addEventListener(
 
 @endif
 
+<script>
+
+document.addEventListener(
+    'DOMContentLoaded',
+    function () {
+
+        const tabs =
+            document.querySelectorAll(
+                '[data-filter-tingkat], [data-filter-semua]'
+            );
+
+        const siswaItems =
+            document.querySelectorAll(
+                '.absensi-siswa-item'
+            );
+
+        const emptyState =
+            document.getElementById(
+                'absensi-empty-filter'
+            );
+
+
+        tabs.forEach(function (tab) {
+
+            tab.addEventListener(
+                'click',
+                function () {
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | ACTIVE TAB
+                    |--------------------------------------------------------------------------
+                    */
+
+                    tabs.forEach(function (item) {
+
+                        item.classList.remove(
+                            'active'
+                        );
+
+                    });
+
+                    this.classList.add(
+                        'active'
+                    );
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | FILTER
+                    |--------------------------------------------------------------------------
+                    */
+
+                    const semua =
+                        this.hasAttribute(
+                            'data-filter-semua'
+                        );
+
+                    const tingkat =
+                        this.dataset.filterTingkat;
+
+
+                    let jumlahTampil = 0;
+
+
+                    siswaItems.forEach(
+                        function (siswa) {
+
+                            const tampil =
+                                semua
+                                ||
+                                siswa.dataset.tingkat
+                                    === tingkat;
+
+
+                            if (tampil) {
+
+                                siswa.classList.remove(
+                                    'd-none'
+                                );
+
+                                jumlahTampil++;
+
+                            }
+
+                            else {
+
+                                siswa.classList.add(
+                                    'd-none'
+                                );
+
+                            }
+
+                        }
+                    );
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | EMPTY STATE
+                    |--------------------------------------------------------------------------
+                    */
+
+                    if (emptyState) {
+
+                        emptyState.classList.toggle(
+                            'd-none',
+                            jumlahTampil > 0
+                        );
+
+                    }
+
+                }
+            );
+
+        });
+
+    }
+);
+
+</script>
+
 @endpush
 
 
@@ -2609,6 +2882,56 @@ document.addEventListener(
 
         flex-wrap: wrap;
 
+    }
+
+}
+
+/*
+|--------------------------------------------------------------------------
+| TAB KELAS ABSENSI
+|--------------------------------------------------------------------------
+*/
+
+.absensi-class-tabs {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    scrollbar-width: thin;
+}
+
+.absensi-class-tabs .nav-link {
+    flex: 0 0 auto;
+
+    display: flex;
+    align-items: center;
+
+    white-space: nowrap;
+
+    padding: .85rem 1rem;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| MOBILE
+|--------------------------------------------------------------------------
+*/
+
+@media (max-width: 768px) {
+
+    .absensi-class-tabs {
+        margin-left: 0;
+        margin-right: 0;
+
+        padding-left: .25rem;
+        padding-right: .25rem;
+    }
+
+    .absensi-class-tabs .nav-link {
+        padding: .75rem .85rem;
+
+        font-size: .875rem;
     }
 
 }
