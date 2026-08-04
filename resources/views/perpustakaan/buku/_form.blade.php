@@ -18,7 +18,7 @@
                     value="{{ $item->id }}"
                     {{ old('kelas_id', $buku->kelas_id ?? '') == $item->id ? 'selected' : '' }}
                 >
-                    {{ $item->tingkat }} - {{ $item->nama }}
+                    {{ $item->tingkat }}
                 </option>
             @endforeach
 

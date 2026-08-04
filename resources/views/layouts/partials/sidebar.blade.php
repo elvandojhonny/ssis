@@ -598,8 +598,12 @@
     <li class="nav-item">
 
         <a
-            class="nav-link"
-            href="#"
+            class="nav-link {{
+                request()->routeIs('perpustakaan.laporan.*')
+                    ? 'active'
+                    : ''
+            }}"
+            href="{{ route('perpustakaan.laporan.index') }}"
         >
 
             <span class="nav-link-icon">

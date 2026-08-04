@@ -342,6 +342,17 @@ Route::middleware('auth')->group(function () {
                 [PengembalianController::class, 'riwayat']
             )->name('pengembalian.riwayat');
 
+
+            Route::get(
+            '/laporan',
+            [LaporanController::class, 'index']
+            )->name('laporan.index');
+
+            Route::get(
+                '/laporan/export',
+                [LaporanController::class, 'export']
+            )->name('laporan.export');
+
         });
 
     /*

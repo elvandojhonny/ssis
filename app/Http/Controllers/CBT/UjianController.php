@@ -15,6 +15,13 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
+use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
+
+use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
+
+
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
+
 use Illuminate\Support\Facades\DB;
 
 class UjianController extends Controller
@@ -1241,666 +1248,931 @@ public function exportRekap(
             ->pengerjaans
             ->keyBy('siswa_id');
 
+/*
+|--------------------------------------------------------------------------
+| SPREADSHEET
+|--------------------------------------------------------------------------
+*/
 
-    /*
-     * Buat spreadsheet.
-     */
-    $spreadsheet =
-        new Spreadsheet();
+$spreadsheet = new Spreadsheet();
 
-    $sheet =
-        $spreadsheet
-            ->getActiveSheet();
+$sheet = $spreadsheet->getActiveSheet();
 
+$sheet->setTitle('Rekap Ujian');
 
-    /*
-     * Nama sheet maksimal
-     * 31 karakter.
-     */
-    $sheet->setTitle(
-        'Rekap Hasil Ujian'
-    );
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | JUDUL
-    |--------------------------------------------------------------------------
-    */
-
-    $sheet->mergeCells(
-        'A1:H1'
-    );
-
-    $sheet->setCellValue(
-        'A1',
-        'REKAP HASIL UJIAN'
-    );
-
-
-    $sheet->mergeCells(
-        'A2:H2'
-    );
-
-    $sheet->setCellValue(
-        'A2',
-        $ujian->judul
-    );
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | INFORMASI UJIAN
-    |--------------------------------------------------------------------------
-    */
-
-    $sheet->setCellValue(
-        'A4',
-        'Mata Pelajaran'
-    );
-
-    $sheet->setCellValue(
-        'B4',
-        $ujian
-            ->bankSoal
-            ->mata_pelajaran
-        ?? '-'
-    );
-
-
-    $sheet->setCellValue(
-        'A5',
-        'Kelas'
-    );
-
-    $sheet->setCellValue(
-        'B5',
-        $ujian
-            ->kelas
-            ->nama
-        ?? '-'
-    );
-
-
-    $sheet->setCellValue(
-        'A6',
-        'Tahun Ajaran'
-    );
-
-    $sheet->setCellValue(
-        'B6',
-        $ujian
-            ->kelas
-            ->tahunAjaran
-            ->nama
-        ?? '-'
-    );
-
-
-    $sheet->setCellValue(
-        'D4',
-        'Tanggal Ujian'
-    );
-
-    $sheet->setCellValue(
-        'E4',
-        $ujian
-            ->waktu_mulai
-            ?->format(
-                'd/m/Y'
-            )
-        ?? '-'
-    );
-
-
-    $sheet->setCellValue(
-        'D5',
-        'Waktu'
-    );
-
-    $sheet->setCellValue(
-        'E5',
-        (
-            $ujian
-                ->waktu_mulai
-                ?->format('H:i')
-            ?? '-'
-        )
-        .
-        ' - '
-        .
-        (
-            $ujian
-                ->waktu_selesai
-                ?->format('H:i')
-            ?? '-'
-        )
-    );
-
-
-    $sheet->setCellValue(
-        'D6',
-        'Durasi'
-    );
-
-    $sheet->setCellValue(
-        'E6',
-        $ujian->durasi_menit
-        . ' menit'
-    );
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | HEADER TABEL
-    |--------------------------------------------------------------------------
-    */
-
-    $headerRow = 8;
-
-    $headers = [
-        'No',
-        'NIS',
-        'Nama Siswa',
-        'Status',
-        'Waktu Mulai',
-        'Waktu Selesai',
-        'Nilai',
-        'Keterangan',
-    ];
-
-
-    foreach (
-        $headers
-        as $index => $header
-    ) {
-
-        $column =
-            chr(
-                65 + $index
-            );
-
-        $sheet->setCellValue(
-            $column
-            . $headerRow,
-            $header
-        );
-
-    }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | DATA SISWA
-    |--------------------------------------------------------------------------
-    */
-
-    $row = 9;
-
-    $nomor = 1;
-
-
-    foreach (
-        $siswas
-        as $siswa
-    ) {
-
-        $pengerjaan =
-            $pengerjaanPerSiswa
-                ->get(
-                    $siswa->id
-                );
-
-
-        /*
-         * Tentukan status.
-         */
-        if (! $pengerjaan) {
-
-            $status =
-                'Belum Mengerjakan';
-
-        } elseif (
-            $pengerjaan->status
-            === 'mengerjakan'
-        ) {
-
-            $status =
-                'Mengerjakan';
-
-        } elseif (
-            $pengerjaan->status
-            === 'selesai'
-        ) {
-
-            $status =
-                'Selesai';
-
-        } else {
-
-            $status =
-                ucfirst(
-                    $pengerjaan
-                        ->status
-                );
-
-        }
-
-
-        /*
-         * Tentukan keterangan.
-         */
-        if (! $pengerjaan) {
-
-            $keterangan =
-                'Belum mengikuti ujian';
-
-        } elseif (
-            $pengerjaan->status
-            === 'mengerjakan'
-        ) {
-
-            $keterangan =
-                'Belum menyelesaikan ujian';
-
-        } else {
-
-            $keterangan =
-                'Telah menyelesaikan ujian';
-
-        }
-
-
-        $sheet->setCellValue(
-            'A' . $row,
-            $nomor
-        );
-
-
-        $sheet->setCellValueExplicit(
-            'B' . $row,
-            (string) (
-                $siswa->nis
-                ?? '-'
-            ),
-            \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING
-        );
-
-
-        $sheet->setCellValue(
-            'C' . $row,
-            $siswa->nama
-        );
-
-
-        $sheet->setCellValue(
-            'D' . $row,
-            $status
-        );
-
-
-        $sheet->setCellValue(
-            'E' . $row,
-
-            $pengerjaan
-                ?->waktu_mulai
-                ?->format(
-                    'd/m/Y H:i'
-                )
-            ?? '-'
-        );
-
-
-        $sheet->setCellValue(
-            'F' . $row,
-
-            $pengerjaan
-                ?->waktu_selesai
-                ?->format(
-                    'd/m/Y H:i'
-                )
-            ?? '-'
-        );
-
-
-        /*
-         * Nilai hanya ditampilkan
-         * jika ujian sudah selesai.
-         */
-        if (
-            $pengerjaan &&
-            $pengerjaan->status
-            === 'selesai'
-        ) {
-
-            $sheet->setCellValue(
-                'G' . $row,
-                (float)
-                $pengerjaan->nilai
-            );
-
-        } else {
-
-            $sheet->setCellValue(
-                'G' . $row,
-                '-'
-            );
-
-        }
-
-
-        $sheet->setCellValue(
-            'H' . $row,
-            $keterangan
-        );
-
-
-        $row++;
-
-        $nomor++;
-
-    }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | STYLE JUDUL
-    |--------------------------------------------------------------------------
-    */
-
-    $sheet
-        ->getStyle('A1:H1')
-        ->getFont()
-        ->setBold(true)
-        ->setSize(16);
-
-
-    $sheet
-        ->getStyle('A2:H2')
-        ->getFont()
-        ->setBold(true)
-        ->setSize(13);
-
-
-    $sheet
-        ->getStyle('A1:H2')
-        ->getAlignment()
-        ->setHorizontal(
-            Alignment::HORIZONTAL_CENTER
-        );
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | STYLE HEADER
-    |--------------------------------------------------------------------------
-    */
-
-    $sheet
-        ->getStyle(
-            'A8:H8'
-        )
-        ->getFont()
-        ->setBold(true);
-
-
-    $sheet
-        ->getStyle(
-            'A8:H8'
-        )
-        ->getAlignment()
-        ->setHorizontal(
-            Alignment::HORIZONTAL_CENTER
-        );
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | BORDER TABEL
-    |--------------------------------------------------------------------------
-    */
-
-    $lastRow =
-        max(
-            8,
-            $row - 1
-        );
-
-
-    $sheet
-        ->getStyle(
-            'A8:H'
-            . $lastRow
-        )
-        ->getBorders()
-        ->getAllBorders()
-        ->setBorderStyle(
-            Border::BORDER_THIN
-        );
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | ALIGNMENT
-    |--------------------------------------------------------------------------
-    */
-
-    $sheet
-        ->getStyle(
-            'A9:A'
-            . $lastRow
-        )
-        ->getAlignment()
-        ->setHorizontal(
-            Alignment::HORIZONTAL_CENTER
-        );
-
-
-    $sheet
-        ->getStyle(
-            'D9:G'
-            . $lastRow
-        )
-        ->getAlignment()
-        ->setHorizontal(
-            Alignment::HORIZONTAL_CENTER
-        );
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | LEBAR KOLOM
-    |--------------------------------------------------------------------------
-    */
-
-    $sheet
-        ->getColumnDimension('A')
-        ->setWidth(7);
-
-    $sheet
-        ->getColumnDimension('B')
-        ->setWidth(18);
-
-    $sheet
-        ->getColumnDimension('C')
-        ->setWidth(30);
-
-    $sheet
-        ->getColumnDimension('D')
-        ->setWidth(22);
-
-    $sheet
-        ->getColumnDimension('E')
-        ->setWidth(22);
-
-    $sheet
-        ->getColumnDimension('F')
-        ->setWidth(22);
-
-    $sheet
-        ->getColumnDimension('G')
-        ->setWidth(12);
-
-    $sheet
-        ->getColumnDimension('H')
-        ->setWidth(30);
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | SIMPAN FILE SEMENTARA
-    |--------------------------------------------------------------------------
-    */
-
-    $fileName =
-        'Rekap-Ujian-'
-        .
-        str($ujian->judul)
-            ->slug()
-        .
-        '.xlsx';
-
-
-    $tempPath =
-        storage_path(
-            'app/'
-            . $fileName
-        );
-
-
-    $writer =
-        new Xlsx(
-            $spreadsheet
-        );
-
-    $writer->save(
-        $tempPath
-    );
-
-
-    /*
-     * Bersihkan object spreadsheet
-     * dari memory.
-     */
-    $spreadsheet
-        ->disconnectWorksheets();
-
-
-    unset(
-        $spreadsheet
-    );
-
-
-    /*
-     * Download dan hapus file
-     * setelah dikirim.
-     */
-    return response()
-        ->download(
-            $tempPath,
-            $fileName
-        )
-        ->deleteFileAfterSend(
-            true
-        );
-}
 
 /*
 |--------------------------------------------------------------------------
-| Daftar Peserta Ujian Terblokir
+| PAGE SETUP
 |--------------------------------------------------------------------------
 */
-public function blokirIndex(Request $request)
-{
-    $query = PengerjaanUjian::query()
-        ->with([
-            'siswa.kelas',
-            'ujian.kelas',
-            'ujian.bankSoal',
-        ])
-        ->where('status', 'diblokir');
+
+$sheet->getPageSetup()
+    ->setOrientation(PageSetup::ORIENTATION_LANDSCAPE);
+
+$sheet->getPageSetup()
+    ->setPaperSize(PageSetup::PAPERSIZE_A4);
+
+$sheet->getPageSetup()
+    ->setFitToWidth(1);
+
+$sheet->getPageSetup()
+    ->setFitToHeight(0);
+
+$sheet->getPageMargins()->setTop(0.25);
+$sheet->getPageMargins()->setBottom(0.25);
+$sheet->getPageMargins()->setLeft(0.20);
+$sheet->getPageMargins()->setRight(0.20);
+
+
+/*
+|--------------------------------------------------------------------------
+| DEFAULT FONT
+|--------------------------------------------------------------------------
+*/
+
+$spreadsheet
+    ->getDefaultStyle()
+    ->getFont()
+    ->setName('Times New Roman')
+    ->setSize(11);
+
+
+/*
+|--------------------------------------------------------------------------
+| COLUMN WIDTH
+|--------------------------------------------------------------------------
+*/
+
+$sheet->getColumnDimension('A')->setWidth(7);
+$sheet->getColumnDimension('B')->setWidth(15);
+$sheet->getColumnDimension('C')->setWidth(36);
+$sheet->getColumnDimension('D')->setWidth(18);
+$sheet->getColumnDimension('E')->setWidth(20);
+$sheet->getColumnDimension('F')->setWidth(20);
+$sheet->getColumnDimension('G')->setWidth(10);
+$sheet->getColumnDimension('H')->setWidth(34);
+
+
+/*
+|--------------------------------------------------------------------------
+| ROW HEIGHT
+|--------------------------------------------------------------------------
+*/
+
+for ($i = 1; $i <= 18; $i++) {
+
+    $sheet->getRowDimension($i)->setRowHeight(18);
+
+}
+
+$sheet->getRowDimension(3)->setRowHeight(30);
+
+$sheet->getRowDimension(8)->setRowHeight(4);
+
+$sheet->getRowDimension(9)->setRowHeight(2);
+
+$sheet->getRowDimension(10)->setRowHeight(24);
+
+$sheet->getRowDimension(11)->setRowHeight(20);
+
+
+/*
+|--------------------------------------------------------------------------
+| MERGE
+|--------------------------------------------------------------------------
+*/
+
+$sheet->mergeCells('A1:H1');
+$sheet->mergeCells('A2:H2');
+$sheet->mergeCells('A3:H3');
+$sheet->mergeCells('A4:H4');
+$sheet->mergeCells('A5:H5');
+$sheet->mergeCells('A6:H6');
+$sheet->mergeCells('A7:H7');
+
+$sheet->mergeCells('A10:H10');
+$sheet->mergeCells('A11:H11');
+
+
+/*
+|--------------------------------------------------------------------------
+| LOGO KIRI
+|--------------------------------------------------------------------------
+*/
+
+$logoProvinsi =
+    public_path('images/kaltara.png');
+
+if (file_exists($logoProvinsi)) {
+
+    $logo = new Drawing();
+
+    $logo->setPath($logoProvinsi);
+
+    $logo->setCoordinates('A1');
+
+    $logo->setHeight(78);
+
+    $logo->setOffsetX(3);
+
+    $logo->setOffsetY(3);
+
+    $logo->setWorksheet($sheet);
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| LOGO KANAN
+|--------------------------------------------------------------------------
+*/
+
+$logoSekolah =
+    public_path('images/logo SMAN 6.png');
+
+if (file_exists($logoSekolah)) {
+
+    $logo = new Drawing();
+
+    $logo->setPath($logoSekolah);
+
+    $logo->setCoordinates('H1');
+
+    $logo->setHeight(78);
+
+    $logo->setOffsetX(40);
+
+    $logo->setOffsetY(3);
+
+    $logo->setWorksheet($sheet);
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| KOP SURAT
+|--------------------------------------------------------------------------
+*/
+
+$sheet->setCellValue(
+    'A1',
+    'PEMERINTAH PROVINSI KALIMANTAN UTARA'
+);
+
+$sheet->setCellValue(
+    'A2',
+    'DINAS PENDIDIKAN DAN KEBUDAYAAN'
+);
+
+$sheet->setCellValue(
+    'A3',
+    'SMA NEGERI 6 MALINAU'
+);
+
+$sheet->setCellValue(
+    'A4',
+    'NSS : 30.1.16.07.09.009      NPSN : 30405857'
+);
+
+$sheet->setCellValue(
+    'A5',
+    'Akreditasi "C" No.1337/BAN-SM/SK/2019'
+);
+
+$sheet->setCellValue(
+    'A6',
+    'Jl. Pendidikan RT.001 Desa Mahak Baru Kecamatan Sungai Boh'
+);
+
+$sheet->setCellValue(
+    'A7',
+    'Email : sman6malinau2@gmail.com'
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| STYLE KOP
+|--------------------------------------------------------------------------
+*/
+
+$sheet->getStyle('A1:H7')
+    ->getAlignment()
+    ->setHorizontal(
+        Alignment::HORIZONTAL_CENTER
+    );
+
+$sheet->getStyle('A1:H7')
+    ->getAlignment()
+    ->setVertical(
+        Alignment::VERTICAL_CENTER
+    );
+
+$sheet->getStyle('B1')
+    ->getFont()
+    ->setBold(true)
+    ->setSize(15);
+
+$sheet->getStyle('B2')
+    ->getFont()
+    ->setBold(true)
+    ->setSize(13);
+
+$sheet->getStyle('B3')
+    ->getFont()
+    ->setBold(true)
+    ->setSize(21);
+
+$sheet->getStyle('B4:B7')
+    ->getFont()
+    ->setSize(10);
+
+
+/*
+|--------------------------------------------------------------------------
+| GARIS
+|--------------------------------------------------------------------------
+*/
+
+$sheet->getStyle('A8:H8')
+    ->getBorders()
+    ->getBottom()
+    ->setBorderStyle(
+        Border::BORDER_THICK
+    );
+
+$sheet->getStyle('A9:H9')
+    ->getBorders()
+    ->getBottom()
+    ->setBorderStyle(
+        Border::BORDER_THIN
+    );
+
+
+/*
+|--------------------------------------------------------------------------
+| JUDUL LAPORAN
+|--------------------------------------------------------------------------
+*/
+
+$sheet->setCellValue(
+    'A10',
+    'REKAP HASIL UJIAN CBT'
+);
+
+$sheet->setCellValue(
+    'A11',
+    strtoupper($ujian->judul)
+);
+
+$sheet->getStyle('A10:H10')
+    ->getAlignment()
+    ->setHorizontal(
+        Alignment::HORIZONTAL_CENTER
+    );
+
+$sheet->getStyle('A11:H11')
+    ->getAlignment()
+    ->setHorizontal(
+        Alignment::HORIZONTAL_CENTER
+    );
+
+$sheet->getStyle('A10')
+    ->getFont()
+    ->setBold(true)
+    ->setSize(15);
+
+$sheet->getStyle('A11')
+    ->getFont()
+    ->setBold(true)
+    ->setSize(12);
+
+
+/*
+|--------------------------------------------------------------------------
+| INFORMASI UJIAN
+|--------------------------------------------------------------------------
+*/
+
+$sheet->setCellValue('A13','Mata Pelajaran');
+$sheet->setCellValue('B13',':');
+$sheet->setCellValue('C13',$ujian->bankSoal->mata_pelajaran ?? '-');
+
+$sheet->setCellValue('A14','Guru');
+$sheet->setCellValue('B14',':');
+$sheet->setCellValue('C14',$ujian->bankSoal->guru->nama ?? '-');
+
+$sheet->setCellValue('A15','Kelas');
+$sheet->setCellValue('B15',':');
+$sheet->setCellValue('C15',$ujian->kelas->nama ?? '-');
+
+$sheet->setCellValue('E13','Tanggal');
+$sheet->setCellValue('F13',':');
+$sheet->setCellValue(
+    'G13',
+    optional($ujian->waktu_mulai)->format('d-m-Y')
+);
+
+$sheet->setCellValue('E14','Jam');
+$sheet->setCellValue('F14',':');
+$sheet->setCellValue(
+    'G14',
+    optional($ujian->waktu_mulai)->format('H:i')
+    .' - '.
+    optional($ujian->waktu_selesai)->format('H:i')
+);
+
+$sheet->setCellValue('E15','Durasi');
+$sheet->setCellValue('F15',':');
+$sheet->setCellValue(
+    'G15',
+    $ujian->durasi_menit.' Menit'
+);
+
+/*
+|--------------------------------------------------------------------------
+| HEADER TABEL
+|--------------------------------------------------------------------------
+*/
+
+$headerRow = 18;
+
+$sheet->getRowDimension($headerRow)->setRowHeight(28);
+
+$headers = [
+    'No',
+    'NIS',
+    'Nama Siswa',
+    'Status',
+    'Mulai',
+    'Selesai',
+    'Nilai',
+    'Keterangan',
+];
+
+foreach ($headers as $i => $judul) {
+
+    $kolom = chr(65 + $i);
+
+    $sheet->setCellValue(
+        $kolom.$headerRow,
+        $judul
+    );
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| STYLE HEADER
+|--------------------------------------------------------------------------
+*/
+
+$sheet->getStyle("A{$headerRow}:H{$headerRow}")
+    ->getFont()
+    ->setBold(true)
+    ->setSize(11);
+
+$sheet->getStyle("A{$headerRow}:H{$headerRow}")
+    ->getAlignment()
+    ->setHorizontal(
+        Alignment::HORIZONTAL_CENTER
+    );
+
+$sheet->getStyle("A{$headerRow}:H{$headerRow}")
+    ->getAlignment()
+    ->setVertical(
+        Alignment::VERTICAL_CENTER
+    );
+
+$sheet->getStyle("A{$headerRow}:H{$headerRow}")
+    ->getFill()
+    ->setFillType(
+        \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID
+    );
+
+$sheet->getStyle("A{$headerRow}:H{$headerRow}")
+    ->getFill()
+    ->getStartColor()
+    ->setRGB('1F4E78');
+
+$sheet->getStyle("A{$headerRow}:H{$headerRow}")
+    ->getFont()
+    ->getColor()
+    ->setRGB('FFFFFF');
+
+
+/*
+|--------------------------------------------------------------------------
+| DATA
+|--------------------------------------------------------------------------
+*/
+
+$row = $headerRow + 1;
+
+$nomor = 1;
+
+$totalNilai = 0;
+
+$totalSelesai = 0;
+
+$totalBelum = 0;
+
+$totalMengerjakan = 0;
+
+foreach ($siswas as $siswa) {
+
+    $pengerjaan =
+        $pengerjaanPerSiswa
+            ->get($siswa->id);
+
+    if (!$pengerjaan) {
+
+        $status = 'Belum';
+
+        $ket = 'Belum mengikuti';
+
+        $nilai = '-';
+
+        $totalBelum++;
+
+    } elseif ($pengerjaan->status == 'mengerjakan') {
+
+        $status = 'Mengerjakan';
+
+        $ket = 'Sedang ujian';
+
+        $nilai = '-';
+
+        $totalMengerjakan++;
+
+    } else {
+
+        $status = 'Selesai';
+
+        $ket = 'Selesai';
+
+        $nilai = $pengerjaan->nilai;
+
+        $totalSelesai++;
+
+        $totalNilai += $nilai;
+
+    }
+
+
+    $sheet->setCellValue(
+        'A'.$row,
+        $nomor
+    );
+
+    $sheet->setCellValueExplicit(
+        'B'.$row,
+        (string)$siswa->nis,
+        DataType::TYPE_STRING
+    );
+
+    $sheet->setCellValue(
+        'C'.$row,
+        $siswa->nama
+    );
+
+    $sheet->setCellValue(
+        'D'.$row,
+        $status
+    );
+
+    $sheet->setCellValue(
+        'E'.$row,
+        optional(
+            $pengerjaan?->waktu_mulai
+        )->format('d/m/Y H:i')
+        ?? '-'
+    );
+
+    $sheet->setCellValue(
+        'F'.$row,
+        optional(
+            $pengerjaan?->waktu_selesai
+        )->format('d/m/Y H:i')
+        ?? '-'
+    );
+
+    $sheet->setCellValue(
+        'G'.$row,
+        $nilai
+    );
+
+    $sheet->setCellValue(
+        'H'.$row,
+        $ket
+    );
 
 
     /*
     |--------------------------------------------------------------------------
-    | Pencarian
+    | ALIGN
     |--------------------------------------------------------------------------
-    |
-    | Bisa mencari berdasarkan:
-    | - Nama siswa
-    | - NISN
-    | - Judul ujian
-    |
     */
 
-    if ($request->filled('search')) {
+    $sheet->getStyle("A{$row}:H{$row}")
+        ->getAlignment()
+        ->setVertical(
+            Alignment::VERTICAL_CENTER
+        );
 
-        $search = trim($request->search);
+    $sheet->getStyle("A{$row}")
+        ->getAlignment()
+        ->setHorizontal(
+            Alignment::HORIZONTAL_CENTER
+        );
 
-        $query->where(function ($query) use ($search) {
+    $sheet->getStyle("B{$row}")
+        ->getAlignment()
+        ->setHorizontal(
+            Alignment::HORIZONTAL_CENTER
+        );
 
-            $query
-                ->whereHas('siswa', function ($siswa) use ($search) {
+    $sheet->getStyle("D{$row}:G{$row}")
+        ->getAlignment()
+        ->setHorizontal(
+            Alignment::HORIZONTAL_CENTER
+        );
 
-                    $siswa
-                        ->where(
-                            'nama',
-                            'like',
-                            '%' . $search . '%'
-                        )
-                        ->orWhere(
-                            'nisn',
-                            'like',
-                            '%' . $search . '%'
-                        );
 
-                })
+    /*
+    |--------------------------------------------------------------------------
+    | WARNA STATUS
+    |--------------------------------------------------------------------------
+    */
 
-                ->orWhereHas('ujian', function ($ujian) use ($search) {
+    if ($status == 'Selesai') {
 
-                    $ujian->where(
-                        'judul',
-                        'like',
-                        '%' . $search . '%'
-                    );
+        $sheet->getStyle("D{$row}")
+            ->getFill()
+            ->setFillType(
+                \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID
+            );
 
-                });
+        $sheet->getStyle("D{$row}")
+            ->getFill()
+            ->getStartColor()
+            ->setRGB('C6EFCE');
 
-        });
+    }
+
+    if ($status == 'Belum') {
+
+        $sheet->getStyle("D{$row}")
+            ->getFill()
+            ->setFillType(
+                \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID
+            );
+
+        $sheet->getStyle("D{$row}")
+            ->getFill()
+            ->getStartColor()
+            ->setRGB('F8CBAD');
+
+    }
+
+    if ($status == 'Mengerjakan') {
+
+        $sheet->getStyle("D{$row}")
+            ->getFill()
+            ->setFillType(
+                \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID
+            );
+
+        $sheet->getStyle("D{$row}")
+            ->getFill()
+            ->getStartColor()
+            ->setRGB('FFF2CC');
 
     }
 
 
     /*
     |--------------------------------------------------------------------------
-    | Ambil Peserta Terblokir
+    | NILAI
     |--------------------------------------------------------------------------
     */
 
-    $pengerjaans = $query
-        ->orderByDesc('diblokir_pada')
-        ->paginate(10)
-        ->withQueryString();
+    if (is_numeric($nilai)) {
+
+        if ($nilai >= 75) {
+
+            $sheet->getStyle("G{$row}")
+                ->getFont()
+                ->getColor()
+                ->setRGB('008000');
+
+        } else {
+
+            $sheet->getStyle("G{$row}")
+                ->getFont()
+                ->getColor()
+                ->setRGB('C00000');
+
+        }
+
+        $sheet->getStyle("G{$row}")
+            ->getFont()
+            ->setBold(true);
+
+    }
 
 
     /*
     |--------------------------------------------------------------------------
-    | Statistik
+    | ZEBRA
     |--------------------------------------------------------------------------
     */
 
-    $totalDiblokir = PengerjaanUjian::query()
-        ->where('status', 'diblokir')
-        ->count();
+    if ($row % 2 == 0) {
+
+        $sheet->getStyle("A{$row}:H{$row}")
+            ->getFill()
+            ->setFillType(
+                \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID
+            );
+
+        $sheet->getStyle("A{$row}:H{$row}")
+            ->getFill()
+            ->getStartColor()
+            ->setRGB('F8F9FA');
+
+    }
+
+    $sheet->getRowDimension($row)
+        ->setRowHeight(22);
+
+    $row++;
+
+    $nomor++;
+
+}
 
 
-    return view(
-        'cbt.blokir.index',
-        compact(
-            'pengerjaans',
-            'totalDiblokir'
-        )
+/*
+|--------------------------------------------------------------------------
+| BORDER
+|--------------------------------------------------------------------------
+*/
+
+$lastRow = $row - 1;
+
+$sheet->getStyle("A{$headerRow}:H{$lastRow}")
+    ->getBorders()
+    ->getAllBorders()
+    ->setBorderStyle(
+        Border::BORDER_THIN
     );
+
+
+/*
+|--------------------------------------------------------------------------
+| OUTLINE
+|--------------------------------------------------------------------------
+*/
+
+$sheet->getStyle("A{$headerRow}:H{$lastRow}")
+    ->getBorders()
+    ->getOutline()
+    ->setBorderStyle(
+        Border::BORDER_MEDIUM
+    );
+
+
+/*
+|--------------------------------------------------------------------------
+| FREEZE
+|--------------------------------------------------------------------------
+*/
+
+$sheet->freezePane('A19');
+
+    /*
+|--------------------------------------------------------------------------
+| RINGKASAN HASIL
+|--------------------------------------------------------------------------
+*/
+
+$row += 2;
+
+$rataRata = $totalSelesai > 0
+    ? round($totalNilai / $totalSelesai, 2)
+    : 0;
+
+$sheet->mergeCells("A{$row}:C{$row}");
+$sheet->setCellValue(
+    "A{$row}",
+    "RINGKASAN HASIL UJIAN"
+);
+
+$sheet->getStyle("A{$row}:H{$row}")
+    ->getFont()
+    ->setBold(true)
+    ->setSize(12);
+
+$sheet->getStyle("A{$row}:H{$row}")
+    ->getAlignment()
+    ->setHorizontal(
+        Alignment::HORIZONTAL_LEFT
+    );
+
+$row++;
+
+$sheet->setCellValue("A{$row}", "Jumlah Peserta");
+$sheet->setCellValue("B{$row}", ":");
+$sheet->setCellValue("C{$row}", $siswas->count());
+
+$row++;
+
+$sheet->setCellValue("A{$row}", "Sudah Selesai");
+$sheet->setCellValue("B{$row}", ":");
+$sheet->setCellValue("C{$row}", $totalSelesai);
+
+$row++;
+
+$sheet->setCellValue("A{$row}", "Sedang Mengerjakan");
+$sheet->setCellValue("B{$row}", ":");
+$sheet->setCellValue("C{$row}", $totalMengerjakan);
+
+$row++;
+
+$sheet->setCellValue("A{$row}", "Belum Mengerjakan");
+$sheet->setCellValue("B{$row}", ":");
+$sheet->setCellValue("C{$row}", $totalBelum);
+
+$row++;
+
+$sheet->setCellValue("A{$row}", "Rata-rata Nilai");
+$sheet->setCellValue("B{$row}", ":");
+$sheet->setCellValue("C{$row}", $rataRata);
+
+$sheet->getStyle("A".($row-4).":C{$row}")
+    ->getBorders()
+    ->getAllBorders()
+    ->setBorderStyle(
+        Border::BORDER_THIN
+    );
+
+
+/*
+|--------------------------------------------------------------------------
+| TANDA TANGAN
+|--------------------------------------------------------------------------
+*/
+
+$row += 5;
+
+$ttd = max($lastRow + 6, 35);
+
+$sheet->mergeCells("F{$ttd}:H{$ttd}");
+
+$sheet->setCellValue(
+    "F{$ttd}",
+    "Malinau, ".
+    now()->translatedFormat('d F Y')
+);
+
+$ttd++;
+
+$sheet->mergeCells("F{$ttd}:H{$ttd}");
+
+$sheet->setCellValue(
+    "F{$ttd}",
+    "Guru Mata Pelajaran"
+);
+
+$ttd += 5;
+
+$sheet->mergeCells("F{$ttd}:H{$ttd}");
+
+$sheet->setCellValue(
+    "F{$ttd}",
+    $ujian->bankSoal->guru->nama ?? '-'
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| AUTO FILTER
+|--------------------------------------------------------------------------
+*/
+
+$sheet->setAutoFilter(
+    "A{$headerRow}:H{$lastRow}"
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| BORDER HEADER
+|--------------------------------------------------------------------------
+*/
+
+$sheet->getStyle(
+    "A{$headerRow}:H{$headerRow}"
+)
+->getBorders()
+->getBottom()
+->setBorderStyle(
+    Border::BORDER_MEDIUM
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| WRAP TEXT
+|--------------------------------------------------------------------------
+*/
+
+$sheet->getStyle(
+    "A1:H{$row}"
+)
+->getAlignment()
+->setWrapText(true);
+
+
+/*
+|--------------------------------------------------------------------------
+| PRINT AREA
+|--------------------------------------------------------------------------
+*/
+
+$sheet->getPageSetup()
+    ->setPrintArea(
+        "A1:H{$row}"
+    );
+
+
+/*
+|--------------------------------------------------------------------------
+| FOOTER
+|--------------------------------------------------------------------------
+*/
+
+$sheet->getHeaderFooter()
+    ->setOddFooter(
+        '&LDicetak : '
+        . now()->format('d-m-Y H:i')
+        . '&RHalaman &P / &N'
+    );
+
+
+/*
+|--------------------------------------------------------------------------
+| SIMPAN FILE
+|--------------------------------------------------------------------------
+*/
+
+$fileName =
+    'Rekap-Ujian-'
+    .
+    str($ujian->judul)
+        ->slug()
+    .
+    '.xlsx';
+
+$tempPath =
+    storage_path(
+        'app/'.$fileName
+    );
+
+$writer =
+    new Xlsx($spreadsheet);
+
+$writer->save($tempPath);
+
+
+/*
+|--------------------------------------------------------------------------
+| BERSIHKAN MEMORY
+|--------------------------------------------------------------------------
+*/
+
+$spreadsheet->disconnectWorksheets();
+
+unset($spreadsheet);
+
+
+/*
+|--------------------------------------------------------------------------
+| DOWNLOAD
+|--------------------------------------------------------------------------
+*/
+
+return response()
+    ->download(
+        $tempPath,
+        $fileName
+    )
+    ->deleteFileAfterSend(true);
 }
 
 /*
