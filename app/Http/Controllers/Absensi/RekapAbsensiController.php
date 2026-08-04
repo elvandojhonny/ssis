@@ -12,6 +12,9 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+
 class RekapAbsensiController extends Controller
 {
     /*
@@ -94,38 +97,26 @@ class RekapAbsensiController extends Controller
                 'siswa.kelas',
                 'sesiAbsensi',
             ])
-            ->whereHas(
-                'sesiAbsensi',
-                function ($query) use (
-                    $bulan,
-                    $tahun,
-                    $tingkat
-                ) {
+            ->whereHas('sesiAbsensi', function ($query) use (
+    $bulan,
+    $tahun
+) {
 
-                    $query
-                        ->whereMonth(
-                            'tanggal',
-                            $bulan
-                        )
-                        ->whereYear(
-                            'tanggal',
-                            $tahun
-                        );
+    $query
+        ->whereMonth('tanggal', $bulan)
+        ->whereYear('tanggal', $tahun);
 
+})
 
-                    /*
-                     * Filter langsung berdasarkan
-                     * kolom tingkat pada sesi_absensis.
-                     */
-                    if ($tingkat) {
+->when($tingkat, function ($query) use ($tingkat) {
 
-                        $query->where(
-                            'tingkat',
-                            $tingkat
-                        );
-                    }
-                }
-            )
+    $query->whereHas('siswa.kelas', function ($kelas) use ($tingkat) {
+
+        $kelas->where('tingkat', $tingkat);
+
+    });
+
+})
             ->get();
 
 
@@ -697,34 +688,22 @@ if ($tingkat) {
 
             ])
 
-            ->whereHas(
+            ->whereHas('sesiAbsensi', function ($query) use (
+    $bulan,
+    $tahun
+) {
 
-                'sesiAbsensi',
+    $query
+        ->whereMonth('tanggal', $bulan)
+        ->whereYear('tanggal', $tahun);
 
-                function ($query) use (
-                    $bulan,
-                    $tahun,
-                    $tingkat
-                ) {
+})
 
-                    $query
+->whereHas('siswa.kelas', function ($kelas) use ($tingkat) {
 
-                        ->whereMonth(
-                            'tanggal',
-                            $bulan
-                        )
+    $kelas->where('tingkat', $tingkat);
 
-                        ->whereYear(
-                            'tanggal',
-                            $tahun
-                        )
-
-                        ->where(
-                            'tingkat',
-                            $tingkat
-                        );
-                }
-            )
+})
 
             ->get();
 
@@ -1270,8 +1249,61 @@ if ($tingkat) {
 
         $nomorDetail = 1;
 
+        /*
+        |--------------------------------------------------------------------------
+        | Penanda Pergantian Tanggal
+        |--------------------------------------------------------------------------
+        */
+        $tanggalSebelumnya = null;
+
 
         foreach ($detailHarian as $detail) {
+
+
+        $tanggalSekarang = $detail['tanggal'];
+
+    /*
+    |--------------------------------------------------------------------------
+    | Jika tanggal berubah,
+    | tambahkan baris penanda
+    |--------------------------------------------------------------------------
+    */
+    if ($tanggalSekarang !== $tanggalSebelumnya) {
+
+        $detailSheet->mergeCells(
+            "A{$detailRow}:J{$detailRow}"
+        );
+
+        $detailSheet->setCellValue(
+            "A{$detailRow}",
+            'Tanggal : ' .
+            \Carbon\Carbon::parse($tanggalSekarang)
+                ->translatedFormat('d F Y')
+        );
+
+        $detailSheet
+            ->getStyle("A{$detailRow}:J{$detailRow}")
+            ->getFont()
+            ->setBold(true);
+
+        $detailSheet
+            ->getStyle("A{$detailRow}:J{$detailRow}")
+            ->getFill()
+            ->setFillType(Fill::FILL_SOLID)
+            ->getStartColor()
+            ->setARGB('D9EAD3');
+
+        $detailSheet
+            ->getStyle("A{$detailRow}:J{$detailRow}")
+            ->getAlignment()
+            ->setHorizontal(
+                \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER
+            );
+
+        $detailRow++;
+
+        $tanggalSebelumnya = $tanggalSekarang;
+    }
 
             $riwayat = [
                 'tanggal' => $detail['tanggal'],
