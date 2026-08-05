@@ -2175,6 +2175,96 @@ return response()
     ->deleteFileAfterSend(true);
 }
 
+
+/*
+|--------------------------------------------------------------------------
+| Daftar Peserta yang Diblokir
+|--------------------------------------------------------------------------
+*/
+public function blokirIndex(Request $request)
+{
+    /*
+    |--------------------------------------------------------------------------
+    | Query Dasar
+    |--------------------------------------------------------------------------
+    */
+
+    $query = PengerjaanUjian::with([
+            'ujian.kelas',
+            'ujian.bankSoal',
+            'siswa.user',
+        ])
+        ->where('status', 'diblokir');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Pencarian
+    |--------------------------------------------------------------------------
+    */
+
+    if ($request->filled('search')) {
+
+        $search = $request->search;
+
+        $query->where(function ($q) use ($search) {
+
+            $q->whereHas('siswa', function ($siswa) use ($search) {
+
+                $siswa->where('nama', 'like', "%{$search}%")
+                      ->orWhere('nis', 'like', "%{$search}%");
+
+            })
+
+            ->orWhereHas('ujian', function ($ujian) use ($search) {
+
+                $ujian->where('judul', 'like', "%{$search}%");
+
+            })
+
+            ->orWhereHas('ujian.kelas', function ($kelas) use ($search) {
+
+                $kelas->where('nama', 'like', "%{$search}%");
+
+            });
+
+        });
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Data
+    |--------------------------------------------------------------------------
+    */
+
+    $pengerjaans = $query
+        ->orderByDesc('diblokir_pada')
+        ->paginate(10)
+        ->withQueryString();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Statistik
+    |--------------------------------------------------------------------------
+    */
+
+    $totalDiblokir = PengerjaanUjian::where(
+        'status',
+        'diblokir'
+    )->count();
+
+
+    return view(
+        'cbt.blokir.index',
+        compact(
+            'pengerjaans',
+            'totalDiblokir'
+        )
+    );
+}
 /*
 |--------------------------------------------------------------------------
 | Buka Blokir Peserta Ujian

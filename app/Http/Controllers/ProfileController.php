@@ -21,6 +21,10 @@ class ProfileController extends Controller
             ]);
         }
 
+        if (in_array($user->role, ['petugas', 'petugas_absensi'])) {
+            $user->load('petugas');
+        }
+
         return view(
             'profile.show',
             compact('user')

@@ -136,24 +136,19 @@
 
                 @if($user->role === 'operator')
 
-                    <a
-                        href="{{ route('profile.edit') }}"
-                        class="btn btn-outline-primary"
-                    >
-                        <i class="ti ti-edit me-1"></i>
-                        Edit Profil
-                    </a>
+    <a href="{{ route('profile.edit') }}"
+       class="btn btn-outline-primary">
+        <i class="ti ti-edit me-1"></i>
+        Edit Profil
+    </a>
 
-                @endif
+    <a href="{{ route('profile.password.edit') }}"
+       class="btn btn-primary">
+        <i class="ti ti-lock me-1"></i>
+        Ubah Password
+    </a>
 
-
-                <a
-                    href="{{ route('profile.password.edit') }}"
-                    class="btn btn-primary"
-                >
-                    <i class="ti ti-lock me-1"></i>
-                    Ubah Password
-                </a>
+@endif
 
             </div>
 
@@ -570,6 +565,66 @@
                         </div>
 
                     </div>
+
+
+                @elseif(in_array($user->role, ['petugas', 'petugas_absensi']))
+
+<div class="row g-4">
+
+    <div class="col-md-6">
+        <div class="text-secondary small mb-1">
+            Nama Lengkap
+        </div>
+        <div class="fw-bold">
+            {{ $user->petugas?->nama ?? $user->name }}
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="text-secondary small mb-1">
+            NIP
+        </div>
+        <div class="fw-bold">
+            {{ $user->petugas?->nip ?? '-' }}
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="text-secondary small mb-1">
+            Jenis Kelamin
+        </div>
+        <div class="fw-bold">
+
+            @if($user->petugas?->jenis_kelamin == 'L')
+                Laki-laki
+            @elseif($user->petugas?->jenis_kelamin == 'P')
+                Perempuan
+            @else
+                -
+            @endif
+
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="text-secondary small mb-1">
+            Nomor HP
+        </div>
+        <div class="fw-bold">
+            {{ $user->petugas?->no_hp ?? '-' }}
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="text-secondary small mb-1">
+            Alamat
+        </div>
+        <div class="fw-bold">
+            {{ $user->petugas?->alamat ?? '-' }}
+        </div>
+    </div>
+
+</div>
 
 
 

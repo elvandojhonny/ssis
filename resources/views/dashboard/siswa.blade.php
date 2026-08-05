@@ -591,20 +591,13 @@
     </div>
 
 
-
     {{-- ===================================================== --}}
-    {{-- PERPUSTAKAAN --}}
+    {{-- Perpustakaan --}}
     {{-- ===================================================== --}}
 
     <div class="col-12 col-md-6 col-xl-4">
 
-        <div
-            class="
-                card
-                siswa-service-card
-                siswa-service-card-disabled
-            "
-        >
+        <div class="card siswa-service-card">
 
 
             <div class="card-body">
@@ -632,11 +625,11 @@
                     </div>
 
 
-                    <span class="badge bg-secondary-lt">
+                    <span class="badge bg-orange-lt">
 
-                        <i class="ti ti-clock me-1"></i>
+                        <i class="ti ti-circle-check me-1"></i>
 
-                        Segera Hadir
+                        Aktif
 
                     </span>
 
@@ -668,21 +661,16 @@
 
             <div class="card-footer bg-transparent">
 
-                <button
-                    type="button"
-                    class="
-                        btn
-                        btn-outline-secondary
-                        w-100
-                    "
-                    disabled
+                <a
+                    href="{{ route('perpustakaan.siswa.index') }}"
+                    class="btn btn-primary w-100"
                 >
 
                     <i class="ti ti-books me-2"></i>
 
-                    Lihat Perpustakaan
+                    Riwayat Peminjaman
 
-                </button>
+                </a>
 
             </div>
 

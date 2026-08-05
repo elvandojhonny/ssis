@@ -31,6 +31,8 @@ use App\Http\Controllers\Perpustakaan\PeminjamanController;
 use App\Http\Controllers\Perpustakaan\PengembalianController;
 use App\Http\Controllers\Perpustakaan\LaporanController;
 
+use App\Http\Controllers\Perpustakaan\PerpustakaanSiswaController;
+
 
 Route::middleware('guest')->group(function () {
 
@@ -613,6 +615,36 @@ Route::middleware('role:guru')
             '/ujian/{ujian}/publikasi',
             [UjianController::class, 'publish']
         )->name('ujian.publish');
+
+    });
+
+
+/*
+|--------------------------------------------------------------------------
+| Perpustakaan Siswa
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('role:siswa')
+    ->prefix('perpustakaan')
+    ->name('perpustakaan.siswa.')
+    ->group(function () {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Riwayat Peminjaman
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/',
+            [PerpustakaanSiswaController::class, 'index']
+        )->name('index');
+
+        Route::get(
+            '/arsip',
+            [PerpustakaanSiswaController::class, 'arsip']
+        )->name('arsip');
 
     });
 
