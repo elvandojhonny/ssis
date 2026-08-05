@@ -8,6 +8,7 @@ use App\Models\Kelas;
 use Illuminate\Http\Request;
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -923,6 +924,20 @@ if ($tingkat) {
             12 => 'Desember',
         ];
 
+        /*
+|--------------------------------------------------------------------------
+| Identitas Sekolah
+|--------------------------------------------------------------------------
+*/
+
+$namaSekolah = 'SMA NEGERI 6 TANAH TINGGI';
+
+$alamatSekolah = 'Jl. ................................................';
+
+$logoKiri = public_path('images/kaltara.png');
+
+$logoKanan = public_path('images/logo SMAN 6.png');
+
 
         /*
         |--------------------------------------------------------------------------
@@ -950,38 +965,67 @@ if ($tingkat) {
         );
 
 
-        $sheet->setCellValue(
-            'A1',
-            'REKAP ABSENSI SISWA'
-        );
+        $sheet->setCellValue('A1', 'REKAP ABSENSI SISWA');
+$sheet->setCellValue('A2', $namaSekolah);
+$sheet->setCellValue('A3', $alamatSekolah);
+$sheet->setCellValue('A4', 'Tingkat ' . $tingkat);
+$sheet->setCellValue(
+    'A5',
+    'Periode ' . $namaBulan[$bulan] . ' ' . $tahun
+);
+
+$sheet->mergeCells('A1:J1');
+$sheet->mergeCells('A2:J2');
+$sheet->mergeCells('A3:J3');
+$sheet->mergeCells('A4:J4');
+$sheet->mergeCells('A5:J5');
 
 
-        $sheet->setCellValue(
-            'A2',
-            'Tingkat ' . $tingkat
-        );
+/*
+|--------------------------------------------------------------------------
+| Logo Kiri
+|--------------------------------------------------------------------------
+*/
 
+if (file_exists($logoKiri)) {
 
-        $sheet->setCellValue(
-            'A3',
-            'Periode '
-            . $namaBulan[$bulan]
-            . ' '
-            . $tahun
-        );
+    $drawing = new Drawing();
 
+    $drawing->setName('Logo Kiri');
 
-        $sheet->mergeCells(
-            'A1:J1'
-        );
+    $drawing->setPath($logoKiri);
 
-        $sheet->mergeCells(
-            'A2:J2'
-        );
+    $drawing->setHeight(65);
 
-        $sheet->mergeCells(
-            'A3:J3'
-        );
+    $drawing->setCoordinates('A1');
+
+    $drawing->setWorksheet($sheet);
+
+}
+
+/*
+|--------------------------------------------------------------------------
+| Logo Kanan
+|--------------------------------------------------------------------------
+*/
+
+if (file_exists($logoKanan)) {
+
+    $drawing2 = new Drawing();
+
+    $drawing2->setName('Logo Kanan');
+
+    $drawing2->setPath($logoKanan);
+
+    $drawing2->setHeight(65);
+
+    $drawing2->setCoordinates('J1');
+
+    $drawing2->setOffsetX(20);
+
+    $drawing2->setWorksheet($sheet);
+
+}
 
 
         /*
@@ -1023,7 +1067,7 @@ if ($tingkat) {
         ) {
 
             $sheet->setCellValue(
-                $column . '5',
+                $column . '7',
                 $header
             );
 
@@ -1037,7 +1081,7 @@ if ($tingkat) {
         |--------------------------------------------------------------------------
         */
 
-        $row = 6;
+        $row = 8;
 
 
         foreach (
@@ -1133,38 +1177,66 @@ if ($tingkat) {
         );
 
 
-        $detailSheet->setCellValue(
-            'A1',
-            'DETAIL ABSENSI HARIAN SISWA'
-        );
+        $detailSheet->setCellValue('A1', 'DETAIL ABSENSI HARIAN SISWA');
+$detailSheet->setCellValue('A2', $namaSekolah);
+$detailSheet->setCellValue('A3', $alamatSekolah);
+$detailSheet->setCellValue('A4', 'Tingkat ' . $tingkat);
+$detailSheet->setCellValue(
+    'A5',
+    'Periode ' . $namaBulan[$bulan] . ' ' . $tahun
+);
 
+$detailSheet->mergeCells('A1:J1');
+$detailSheet->mergeCells('A2:J2');
+$detailSheet->mergeCells('A3:J3');
+$detailSheet->mergeCells('A4:J4');
+$detailSheet->mergeCells('A5:J5');
 
-        $detailSheet->setCellValue(
-            'A2',
-            'Tingkat ' . $tingkat
-        );
+/*
+|--------------------------------------------------------------------------
+| Logo Kiri
+|--------------------------------------------------------------------------
+*/
 
+if (file_exists($logoKiri)) {
 
-        $detailSheet->setCellValue(
-            'A3',
-            'Periode '
-            . $namaBulan[$bulan]
-            . ' '
-            . $tahun
-        );
+    $drawing = new Drawing();
 
+    $drawing->setName('Logo Kiri');
 
-        $detailSheet->mergeCells(
-            'A1:J1'
-        );
+    $drawing->setPath($logoKiri);
 
-        $detailSheet->mergeCells(
-            'A2:J2'
-        );
+    $drawing->setHeight(65);
 
-        $detailSheet->mergeCells(
-            'A3:J3'
-        );
+    $drawing->setCoordinates('A1');
+
+    $drawing->setWorksheet($detailSheet);
+
+}
+
+/*
+|--------------------------------------------------------------------------
+| Logo Kanan
+|--------------------------------------------------------------------------
+*/
+
+if (file_exists($logoKanan)) {
+
+    $drawing2 = new Drawing();
+
+    $drawing2->setName('Logo Kanan');
+
+    $drawing2->setPath($logoKanan);
+
+    $drawing2->setHeight(65);
+
+    $drawing2->setCoordinates('J1');
+
+    $drawing2->setOffsetX(380);
+
+    $drawing2->setWorksheet($detailSheet);
+
+}
 
 
         /*
@@ -1207,7 +1279,7 @@ if ($tingkat) {
 
             $detailSheet
                 ->setCellValue(
-                    $column . '5',
+                    $column . '7',
                     $header
                 );
 
@@ -1245,7 +1317,7 @@ if ($tingkat) {
         |--------------------------------------------------------------------------
         */
 
-        $detailRow = 6;
+        $detailRow = 8;
 
         $nomorDetail = 1;
 
@@ -1491,61 +1563,46 @@ if ($tingkat) {
             as $worksheet
         ) {
 
+        /*
+|--------------------------------------------------------------------------
+| Tinggi Baris
+|--------------------------------------------------------------------------
+*/
 
-            /*
-             * Judul.
-             */
-            $worksheet
-
-                ->getStyle(
-                    'A1:J1'
-                )
-
-                ->getFont()
-
-                ->setBold(true)
-
-                ->setSize(16);
+$worksheet->getRowDimension(1)->setRowHeight(60);
+$worksheet->getRowDimension(2)->setRowHeight(24);
+$worksheet->getRowDimension(3)->setRowHeight(20);
+$worksheet->getRowDimension(4)->setRowHeight(20);
+$worksheet->getRowDimension(5)->setRowHeight(20);
 
 
-            $worksheet
+/*
+|--------------------------------------------------------------------------
+| Judul
+|--------------------------------------------------------------------------
+*/
 
-                ->getStyle(
-                    'A1:J3'
-                )
+$worksheet->getStyle('A1:J1')
+    ->getFont()
+    ->setBold(true)
+    ->setSize(16);
 
-                ->getAlignment()
+$worksheet->getStyle('A2:J2')
+    ->getFont()
+    ->setBold(true)
+    ->setSize(13);
 
-                ->setHorizontal(
-                    'center'
-                );
+$worksheet->getStyle('A3:J5')
+    ->getFont()
+    ->setSize(11);
 
+$worksheet->getStyle('A1:J5')
+    ->getAlignment()
+    ->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
-            /*
-             * Header tabel.
-             */
-            $worksheet
-
-                ->getStyle(
-                    'A5:J5'
-                )
-
-                ->getFont()
-
-                ->setBold(true);
-
-
-            $worksheet
-
-                ->getStyle(
-                    'A5:J5'
-                )
-
-                ->getAlignment()
-
-                ->setHorizontal(
-                    'center'
-                );
+$worksheet->getStyle('A1:J5')
+    ->getAlignment()
+    ->setVertical(Alignment::VERTICAL_CENTER);
 
 
             /*
@@ -1576,7 +1633,7 @@ if ($tingkat) {
              */
             $worksheet
                 ->freezePane(
-                    'A6'
+                    'A8'
                 );
 
 
@@ -1585,7 +1642,7 @@ if ($tingkat) {
              */
             $worksheet
                 ->setAutoFilter(
-                    'A5:J5'
+                    'A7:J7'
                 );
         }
 
@@ -1606,7 +1663,7 @@ if ($tingkat) {
         $sheet
 
             ->getStyle(
-                'A5:J'
+                'A7:J'
                 . $lastRekapRow
             )
 
@@ -1635,7 +1692,7 @@ if ($tingkat) {
         $detailSheet
 
             ->getStyle(
-                'A5:J'
+                'A7:J'
                 . $lastDetailRow
             )
 
