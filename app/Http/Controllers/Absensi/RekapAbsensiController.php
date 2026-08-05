@@ -932,7 +932,7 @@ if ($tingkat) {
 
 $namaSekolah = 'SMA NEGERI 6 TANAH TINGGI';
 
-$alamatSekolah = 'Jl. ................................................';
+$alamatSekolah = 'Jl. Sungai Lidung, Mahak Baru, Kec. Sungai Boh, Kabupaten Malinau';
 
 $logoKiri = public_path('images/kaltara.png');
 
