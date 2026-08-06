@@ -9,7 +9,7 @@
         content="width=device-width, initial-scale=1"
     >
 
-    <title>Login | SSIS</title>
+    <title>Login | SMA 6</title>
 
     @vite([
         'resources/css/app.css',
