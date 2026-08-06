@@ -9,8 +9,37 @@
         content="width=device-width, initial-scale=1"
     >
 
-    <title>Login | SMA 6</title>
+    <title>SSIS | Smart School Information System - SMA Negeri 6 Malinau</title>
 
+    <meta name="description"
+    content="Portal resmi Smart School Information System (SSIS) SMA Negeri 6 Malinau. Akses sistem akademik, absensi siswa, perpustakaan digital, CBT, dan layanan sekolah secara online.">
+    
+    <meta name="keywords"
+    content="SSIS, SMA Negeri 6 Malinau, Smart School, Sistem Informasi Sekolah, Absensi, Perpustakaan, CBT">
+    
+    <meta name="robots" content="index, follow">
+    
+    <link rel="canonical"
+    href="https://ssis-production.up.railway.app/">
+    
+    <meta property="og:title"
+    content="SSIS | Smart School Information System">
+    
+    <meta property="og:description"
+    content="Portal resmi Smart School Information System SMA Negeri 6 Malinau.">
+    
+    <meta property="og:type"
+    content="website">
+    
+    <meta property="og:url"
+    content="https://ssis-production.up.railway.app/">
+    
+    <meta property="og:site_name"
+    content="SSIS">
+    
+    <meta property="og:image"
+    content="{{ asset('images/logo SMAN 6.png') }}">
+    
     @vite([
         'resources/css/app.css',
         'resources/js/app.js'
@@ -922,7 +951,7 @@
 
 
                 <h1 class="login-school-name">
-                    SMA Negeri 6
+                    SMA Negeri 6 Malinau
                 </h1>
 
 
