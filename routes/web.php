@@ -36,6 +36,21 @@ use App\Http\Controllers\Perpustakaan\PerpustakaanSiswaController;
 use Spatie\Sitemap\Sitemap;
 use Spatie\Sitemap\Tags\Url;
 
+Route::get('/sitemap.xml', function () {
+    return Sitemap::create()
+        ->add(
+            Url::create('/')
+                ->setPriority(1.0)
+                ->setChangeFrequency(Url::CHANGE_FREQUENCY_DAILY)
+        )
+        ->add(
+            Url::create('/login')
+                ->setPriority(0.8)
+                ->setChangeFrequency(Url::CHANGE_FREQUENCY_WEEKLY)
+        )
+        ->toResponse(request());
+});
+
 Route::middleware('guest')->group(function () {
 
     Route::get(
@@ -775,27 +790,6 @@ Route::middleware('role:siswa')
         )->name('pengerjaan.pelanggaran');
 
     });
-
-
-    Route::get('/sitemap.xml', function () {
-
-    return Sitemap::create()
-
-        ->add(
-            Url::create('/')
-                ->setPriority(1.0)
-                ->setChangeFrequency(Url::CHANGE_FREQUENCY_DAILY)
-        )
-
-        ->add(
-            Url::create('/login')
-                ->setPriority(0.8)
-                ->setChangeFrequency(Url::CHANGE_FREQUENCY_WEEKLY)
-        )
-
-        ->toResponse(request());
-
-});
     
 
 });
