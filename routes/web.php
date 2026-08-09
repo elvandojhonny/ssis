@@ -36,6 +36,10 @@ use App\Http\Controllers\Perpustakaan\PerpustakaanSiswaController;
 use Spatie\Sitemap\Sitemap;
 use Spatie\Sitemap\Tags\Url;
 
+use App\Http\Controllers\LandingController;
+
+Route::get('/', [LandingController::class, 'index'])->name('landing');
+
 Route::get('/sitemap.xml', function () {
     return Sitemap::create()
         ->add(
@@ -122,7 +126,7 @@ Route::middleware('auth')->group(function () {
     */
 
     Route::get(
-        '/',
+        '/dashboard',
         [DashboardController::class, 'index']
     )->name('dashboard');
 

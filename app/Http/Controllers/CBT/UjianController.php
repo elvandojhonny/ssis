@@ -24,6 +24,8 @@ use PhpOffice\PhpSpreadsheet\Cell\DataType;
 
 use Illuminate\Support\Facades\DB;
 
+use App\Services\CBT\FinalisasiUjianService;
+
 class UjianController extends Controller
 {
     /*
@@ -36,6 +38,8 @@ class UjianController extends Controller
 */
 public function index(Request $request)
 {
+    app(FinalisasiUjianService::class)->handle();
+
     /*
     |--------------------------------------------------------------------------
     | Query Dasar
@@ -43,15 +47,13 @@ public function index(Request $request)
     */
 
     $query = Ujian::with([
-            'bankSoal.soals',
-            'kelas',
-        ])
-        ->where(
-            'waktu_selesai',
-            '>=',
-            now()->subDays(7)
-        );
-
+        'bankSoal.soals',
+        'kelas',
+    ])
+    ->whereIn('status', [
+        'draft',
+        'dipublikasi',
+    ]);
 
     /*
     |--------------------------------------------------------------------------
@@ -72,7 +74,6 @@ public function index(Request $request)
 
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Ambil Data
@@ -83,7 +84,6 @@ public function index(Request $request)
         ->orderByDesc('waktu_mulai')
         ->paginate(9)
         ->withQueryString();
-
 
     return view(
         'cbt.ujian.index',
@@ -664,6 +664,8 @@ public function rekap(Request $request)
 */
 public function arsip(Request $request)
 {
+
+app(FinalisasiUjianService::class)->handle();
     /*
     |--------------------------------------------------------------------------
     | Query Dasar
@@ -671,15 +673,10 @@ public function arsip(Request $request)
     */
 
     $query = Ujian::with([
-            'bankSoal.soals',
-            'kelas',
-        ])
-        ->where(
-            'waktu_selesai',
-            '<',
-            now()->subDays(7)
-        );
-
+        'bankSoal.soals',
+        'kelas',
+    ])
+    ->where('status', 'selesai');
 
     /*
     |--------------------------------------------------------------------------
@@ -995,6 +992,8 @@ public function rekapArsip(Request $request)
 */
 public function rekapShow(Ujian $ujian)
 {
+
+app(FinalisasiUjianService::class)->handle();
     $ujian->load([
         'bankSoal.guru',
         'kelas.tahunAjaran',

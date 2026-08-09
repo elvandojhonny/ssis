@@ -19,6 +19,13 @@
         @yield('title', 'Dashboard') | SSIS
     </title>
 
+    {{-- Favicon --}}
+    <link
+        rel="icon"
+        type="image/png"
+        href="{{ asset('images/logo SMAN 6.png') }}"
+    >
+
     @vite([
         'resources/css/app.css',
         'resources/js/app.js'

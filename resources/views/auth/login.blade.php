@@ -907,6 +907,33 @@
 
         }
 
+
+        #panduanModal iframe{
+
+    width:100%;
+
+    height:70vh;
+
+    border:none;
+
+}
+
+@media(max-width:768px){
+
+    #panduanModal .modal-dialog{
+
+        margin:.5rem;
+
+    }
+
+    #panduanModal iframe{
+
+        height:60vh;
+
+    }
+
+}
+
     </style>
 
 </head>
@@ -1147,6 +1174,21 @@
                             Login
                         </button>
 
+                        <div class="d-grid gap-2 mt-3">
+
+                            <button
+                                type="button"
+                                class="btn btn-outline-primary"
+                                data-bs-toggle="modal"
+                                data-bs-target="#panduanModal">
+
+                                <i class="ti ti-book me-2"></i>
+                                Buku Panduan Pengguna
+
+                            </button>
+
+                        </div>
+
 
                     </form>
 
@@ -1183,7 +1225,86 @@
 
 
     </main>
+<!-- ===========================================
+     MODAL PANDUAN
+=========================================== -->
 
+<div
+    class="modal fade"
+    id="panduanModal"
+    tabindex="-1">
+
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+
+                    <i class="ti ti-book me-2"></i>
+
+                    Buku Panduan SSIS
+
+                </h5>
+
+                <button
+                    class="btn-close"
+                    data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+            <div class="modal-body p-0">
+
+                <iframe
+                    src="{{ asset('panduan/buku-panduan-ssis.pdf') }}"
+                    width="100%"
+                    height="650"
+                    style="border:none;">
+                </iframe>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <a
+                    href="{{ asset('panduan/buku-panduan-ssis.pdf') }}"
+                    class="btn btn-outline-primary"
+                    target="_blank">
+
+                    <i class="ti ti-external-link me-1"></i>
+
+                    Buka Tab Baru
+
+                </a>
+
+                <a
+                    href="{{ asset('panduan/buku-panduan-ssis.pdf') }}"
+                    download
+                    class="btn btn-success">
+
+                    <i class="ti ti-download me-1"></i>
+
+                    Download PDF
+
+                </a>
+
+                <button
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal">
+
+                    Tutup
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
 
 </body>
 
