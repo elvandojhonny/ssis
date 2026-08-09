@@ -10,7 +10,7 @@
         content="width=device-width, initial-scale=1.0">
 
     <title>
-        SSIS - Smart School Information System
+        SSIS - SMA Negeri 6 Malinau
     </title>
 
     <meta
