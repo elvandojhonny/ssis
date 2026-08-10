@@ -1178,7 +1178,7 @@
             <div class="modal-body p-0">
 
                 <iframe
-                    src="{{ asset('panduan/buku-panduan-ssis.pdf') }}"
+                    src="{{ asset('panduan/Buku Panduan SSIS Siswa V2.pdf') }}"
                     width="100%"
                     height="650"
                     style="border:none">
