@@ -1189,7 +1189,7 @@
             <div class="modal-footer">
 
                 <a
-                    href="{{ asset('panduan/buku-panduan-ssis.pdf') }}"
+                    href="{{ asset('panduan/Buku Panduan SSIS Siswa V2.pdf') }}"
                     target="_blank"
                     class="btn btn-outline-primary">
 
