@@ -89,22 +89,7 @@ class UjianSiswaController extends Controller
             * Hanya ujian yang dijadwalkan
             * pada hari ini.
             */
-            ->whereDate(
-                'waktu_mulai',
-                today()
-            )
-
-
-            /*
-            * Jangan tampilkan ujian
-            * yang waktu pelaksanaannya
-            * sudah berakhir.
-            */
-            ->where(
-                'waktu_selesai',
-                '>',
-                now()
-            )
+            
 
 
             /*
