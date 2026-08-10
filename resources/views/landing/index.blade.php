@@ -15,26 +15,93 @@
 
     <meta
         name="description"
-        content="Smart School Information System SMA Negeri 6 Malinau">
+        content="SSIS SMA Negeri 6 Malinau adalah sistem informasi sekolah berbasis web untuk mendukung administrasi, akademik, absensi, perpustakaan, CBT, dan layanan digital sekolah."
+    >
 
+    <meta
+        name="author"
+        content="SMA Negeri 6 Malinau"
+    >
+
+    <meta
+        name="keywords"
+        content="SSIS, SMA Negeri 6 Malinau, Sistem Informasi Sekolah, Smart School Information System, sekolah Malinau"
+    >
+
+    <meta
+        property="og:type"
+        content="website"
+    >
+
+    <meta
+        property="og:title"
+        content="SSIS SMA Negeri 6 Malinau | Smart School Information System"
+    >
+
+    <meta
+        property="og:description"
+        content="Sistem informasi sekolah SMA Negeri 6 Malinau untuk mendukung administrasi, akademik, absensi, perpustakaan, CBT, dan layanan digital sekolah."
+    >
+
+    <meta
+        property="og:url"
+        content="https://ssis-production.up.railway.app/"
+    >
+
+    <meta
+        property="og:site_name"
+        content="SSIS SMA Negeri 6 Malinau"
+    >
+
+    <meta
+        property="og:image"
+        content="{{ asset('images/logo SMAN 6.png') }}"
+    >
+
+    <meta
+        name="robots"
+        content="index, follow"
+    >
+
+    {{-- Favicon Sekolah --}}
     <link
         rel="icon"
-        href="{{ asset('images/logo SMAN 6.png') }}">
+        type="image/png"
+        href="{{ asset('images/logo SMAN 6.png') }}"
+    >
+
+    <link
+        rel="apple-touch-icon"
+        href="{{ asset('images/logo SMAN 6.png') }}"
+    >
 
     {{-- Bootstrap --}}
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-        rel="stylesheet">
+        rel="stylesheet"
+    >
 
     {{-- Bootstrap Icons --}}
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-        rel="stylesheet">
+        rel="stylesheet"
+    >
 
     {{-- Google Font --}}
     <link
         href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
+        rel="stylesheet"
+    >
+
+    <script type="application/ld+json">
+{
+    "@@context": "https://schema.org",
+    "@@type": "WebSite",
+    "name": "SSIS SMA Negeri 6 Malinau",
+    "alternateName": "SSIS",
+    "url": "https://ssis-production.up.railway.app/"
+}
+</script>
 
     <style>
 
@@ -1184,8 +1251,6 @@ document.querySelectorAll('.nav-link[href^="#"]').forEach(link => {
             bsCollapse.hide();
         }
     });
-});
-
 });
 
 </script>
