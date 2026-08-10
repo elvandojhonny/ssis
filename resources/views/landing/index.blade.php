@@ -1178,7 +1178,7 @@
             <div class="modal-body p-0">
 
                 <iframe
-                    src="{{ asset('panduan/Buku Panduan SSIS Siswa V2.pdf') }}"
+                    src="{{ asset('panduan/buku-panduan-v2.pdf') }}"
                     width="100%"
                     height="650"
                     style="border:none">
@@ -1189,7 +1189,7 @@
             <div class="modal-footer">
 
                 <a
-                    href="{{ asset('panduan/Buku Panduan SSIS Siswa V2.pdf') }}"
+                    href="{{ asset('panduan/buku-panduan-v2.pdf') }}"
                     target="_blank"
                     class="btn btn-outline-primary">
 
