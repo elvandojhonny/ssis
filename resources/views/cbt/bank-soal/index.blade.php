@@ -610,139 +610,228 @@
 
                             {{-- PERTANYAAN --}}
 
-                            <div class="mb-4">
+<div class="mb-4">
 
-                                <div
-                                    class="
-                                        text-secondary
-                                        small
-                                        mb-1
-                                    "
-                                >
-                                    Pertanyaan
-                                </div>
+    <div
+        class="
+            text-secondary
+            small
+            mb-1
+        "
+    >
+        Pertanyaan
+    </div>
 
-                                <div class="fw-medium">
 
-                                    {{ $soal['pertanyaan'] }}
+    @if(!empty($soal['pertanyaan']))
 
-                                </div>
+        <div class="fw-medium">
 
-                            </div>
+            {{ $soal['pertanyaan'] }}
+
+        </div>
+
+    @endif
+
+
+    @if(!empty($soal['gambar_pertanyaan']))
+
+        <div class="mt-3">
+
+            <img
+                src="{{ asset('storage/' . $soal['gambar_pertanyaan']) }}"
+                alt="Gambar Pertanyaan"
+                class="img-fluid rounded border"
+                style="
+                    max-width: 700px;
+                    max-height: 450px;
+                    object-fit: contain;
+                "
+            >
+
+        </div>
+
+    @endif
+
+</div>
 
 
                             {{-- PILIHAN JAWABAN --}}
 
-                            <div class="row g-2">
+<div class="row g-2">
 
-                                @foreach(
-                                    [
-                                        'A' => 'pilihan_a',
-                                        'B' => 'pilihan_b',
-                                        'C' => 'pilihan_c',
-                                        'D' => 'pilihan_d',
-                                        'E' => 'pilihan_e',
-                                    ]
-                                    as $huruf => $field
-                                )
+    @foreach(
+        [
+            'A' => [
+                'text' => 'pilihan_a',
+                'image' => 'gambar_a',
+            ],
 
-                                    @if(!empty($soal[$field]))
+            'B' => [
+                'text' => 'pilihan_b',
+                'image' => 'gambar_b',
+            ],
 
-                                        <div class="col-12 col-md-6">
+            'C' => [
+                'text' => 'pilihan_c',
+                'image' => 'gambar_c',
+            ],
 
-                                            <div
-                                                class="
-                                                    border
-                                                    rounded
-                                                    p-3
-                                                    h-100
-                                                "
-                                            >
+            'D' => [
+                'text' => 'pilihan_d',
+                'image' => 'gambar_d',
+            ],
 
-                                                <div
-                                                    class="
-                                                        d-flex
-                                                        align-items-start
-                                                        gap-2
-                                                    "
-                                                >
+            'E' => [
+                'text' => 'pilihan_e',
+                'image' => 'gambar_e',
+            ],
+        ]
+        as $huruf => $data
+    )
 
-                                                    <span
-                                                        class="
-                                                            avatar
-                                                            avatar-sm
-                                                            {{
-                                                                $soal['jawaban_benar']
-                                                                === $huruf
-                                                                    ? 'bg-success text-white'
-                                                                    : 'bg-secondary-lt'
-                                                            }}
-                                                        "
-                                                    >
+        @php
 
-                                                        {{ $huruf }}
+            $text =
+                $soal[$data['text']]
+                ?? '';
 
-                                                    </span>
+            $image =
+                $soal[$data['image']]
+                ?? null;
+
+        @endphp
 
 
-                                                    <div class="flex-fill">
+        {{-- Tampilkan jika ada teks ATAU gambar --}}
+        @if(
+            !empty($text)
+            || !empty($image)
+        )
 
-                                                        <div>
+            <div class="col-12 col-md-6">
 
-                                                            {{
-                                                                $soal[
-                                                                    $field
-                                                                ]
-                                                            }}
+                <div
+                    class="
+                        border
+                        rounded
+                        p-3
+                        h-100
+                    "
+                >
 
-                                                        </div>
+                    <div
+                        class="
+                            d-flex
+                            align-items-start
+                            gap-2
+                        "
+                    >
+
+                        {{-- HURUF JAWABAN --}}
+
+                        <span
+                            class="
+                                avatar
+                                avatar-sm
+                                {{
+                                    $soal['jawaban_benar']
+                                    === $huruf
+                                        ? 'bg-success text-white'
+                                        : 'bg-secondary-lt'
+                                }}
+                            "
+                        >
+                            {{ $huruf }}
+                        </span>
 
 
-                                                        @if(
-                                                            $soal[
-                                                                'jawaban_benar'
-                                                            ]
-                                                            === $huruf
-                                                        )
+                        {{-- ISI JAWABAN --}}
 
-                                                            <div class="mt-2">
+                        <div class="flex-fill">
 
-                                                                <span
-                                                                    class="
-                                                                        badge
-                                                                        bg-success-lt
-                                                                    "
-                                                                >
+                            {{-- TEKS --}}
 
-                                                                    <i
-                                                                        class="
-                                                                            ti
-                                                                            ti-check
-                                                                            me-1
-                                                                        "
-                                                                    ></i>
+                            @if(!empty($text))
 
-                                                                    Jawaban Benar
+                                <div>
 
-                                                                </span>
+                                    {{ $text }}
 
-                                                            </div>
+                                </div>
 
-                                                        @endif
+                            @endif
 
-                                                    </div>
 
-                                                </div>
+                            {{-- GAMBAR --}}
 
-                                            </div>
+                            @if(!empty($image))
 
-                                        </div>
+                                <div class="mt-3">
 
-                                    @endif
+                                    <img
+                                        src="{{ asset('storage/' . $image) }}"
+                                        alt="Gambar Pilihan {{ $huruf }}"
+                                        class="img-fluid rounded border"
+                                        style="
+                                            max-width: 500px;
+                                            max-height: 350px;
+                                            object-fit: contain;
+                                        "
+                                    >
 
-                                @endforeach
+                                </div>
 
-                            </div>
+                            @endif
+
+
+                            {{-- JAWABAN BENAR --}}
+
+                            @if(
+                                $soal['jawaban_benar']
+                                === $huruf
+                            )
+
+                                <div class="mt-2">
+
+                                    <span
+                                        class="
+                                            badge
+                                            bg-success-lt
+                                        "
+                                    >
+
+                                        <i
+                                            class="
+                                                ti
+                                                ti-check
+                                                me-1
+                                            "
+                                        ></i>
+
+                                        Jawaban Benar
+
+                                    </span>
+
+                                </div>
+
+                            @endif
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        @endif
+
+    @endforeach
+
+</div>
+
+                        
 
                         </div>
 

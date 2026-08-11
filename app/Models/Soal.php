@@ -11,11 +11,23 @@ class Soal extends Model
         'bank_soal_id',
         'tipe',
         'pertanyaan',
+        'gambar_pertanyaan',
+
         'pilihan_a',
+        'gambar_a',
+
         'pilihan_b',
+        'gambar_b',
+
         'pilihan_c',
+        'gambar_c',
+
         'pilihan_d',
+        'gambar_d',
+
         'pilihan_e',
+        'gambar_e',
+
         'jawaban_benar',
         'bobot',
         'nomor',

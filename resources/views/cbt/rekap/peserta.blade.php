@@ -311,10 +311,20 @@
 
 
                     <div class="mb-4">
+    {{ $soal->pertanyaan }}
+</div>
 
-                        {{ $soal->pertanyaan }}
+@if(!empty($soal->gambar_pertanyaan))
+    <div class="mb-4 text-center">
+        <img
+            src="{{ asset('storage/' . $soal->gambar_pertanyaan) }}"
+            alt="Gambar soal"
+            class="img-fluid rounded"
+            style="max-height: 500px; object-fit: contain;"
+        >
+    </div>
+@endif
 
-                    </div>
 
 
                     <div class="row g-3">

@@ -360,6 +360,16 @@
 
                         {!! nl2br(e($soal->pertanyaan)) !!}
 
+                        @if($soal->gambar_pertanyaan)
+    <div class="soal-gambar mt-4 text-center">
+        <img
+            src="{{ asset('storage/' . $soal->gambar_pertanyaan) }}"
+            alt="Gambar soal"
+            class="img-fluid rounded"
+        >
+    </div>
+@endif
+
                     </div>
 
 
@@ -435,16 +445,81 @@
                                 </span>
 
 
-                                {{-- Isi pilihan --}}
-                                <span class="flex-fill">
+                                {{-- =========================================================
+     ISI PILIHAN + GAMBAR
+========================================================= --}}
 
-                                    {{
-                                        $pilihan[
-                                            'teks'
-                                        ]
-                                    }}
+<span class="flex-fill">
 
-                                </span>
+    {{-- TEKS PILIHAN --}}
+    @if(
+        isset($pilihan['teks']) &&
+        trim((string) $pilihan['teks']) !== ''
+    )
+
+        <div class="jawaban-teks">
+
+            {!! nl2br(
+                e($pilihan['teks'])
+            ) !!}
+
+        </div>
+
+    @endif
+
+
+    {{-- =====================================================
+         GAMBAR PILIHAN
+    ====================================================== --}}
+
+    @php
+
+        $kolomGambar =
+            'gambar_' .
+            strtolower(
+                $pilihan['huruf_asli']
+            );
+
+        $gambarPilihan =
+            $soal->{$kolomGambar}
+            ?? null;
+
+    @endphp
+
+
+    @if(
+        !empty($gambarPilihan)
+    )
+
+        <div
+            class="
+                jawaban-gambar
+                mt-3
+            "
+        >
+
+            <img
+                src="{{ asset(
+                    'storage/' .
+                    $gambarPilihan
+                ) }}"
+                alt="
+                    Gambar pilihan
+                    {{ $pilihan['huruf_tampilan'] }}
+                "
+                class="
+                    img-fluid
+                    rounded
+                    border
+                "
+                loading="lazy"
+            >
+
+        </div>
+
+    @endif
+
+</span>
 
                             </label>
 
@@ -1625,6 +1700,192 @@
 
     .jawaban-option {
         min-height: 48px;
+    }
+
+}
+
+/* =========================================================
+   GAMBAR SOAL
+   ---------------------------------------------------------
+   Gambar hanya disesuaikan saat ditampilkan di pengerjaan.
+   File asli tidak diubah.
+========================================================= */
+
+.soal-gambar {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+
+/*
+ * Gambar soal otomatis menyesuaikan ukuran layar.
+ *
+ * width: auto
+ * height: auto
+ *
+ * menjaga rasio asli gambar.
+ */
+.soal-gambar img {
+    display: block;
+
+    width: auto;
+    height: auto;
+
+    /*
+     * Jangan pernah keluar dari card.
+     */
+    max-width: 100%;
+
+    /*
+     * Batas tinggi supaya gambar besar
+     * tidak memenuhi seluruh halaman.
+     */
+    max-height: 500px;
+
+    /*
+     * Rasio gambar tetap asli.
+     */
+    object-fit: contain;
+
+    /*
+     * Tampilan lebih rapi.
+     */
+    border-radius: 0.5rem;
+
+    /*
+     * Gambar kecil tidak dipaksa membesar.
+     */
+}
+
+
+/* =========================================================
+   GAMBAR PILIHAN JAWABAN
+========================================================= */
+
+.jawaban-gambar {
+    width: 100%;
+
+    display: flex;
+
+    justify-content: flex-start;
+
+    align-items: center;
+
+    overflow: hidden;
+}
+
+
+/*
+ * Ukuran gambar pilihan dibuat lebih kecil
+ * daripada gambar pertanyaan.
+ */
+.jawaban-gambar img {
+    display: block;
+
+    width: auto;
+    height: auto;
+
+    /*
+     * Tidak boleh melebihi lebar
+     * area jawaban.
+     */
+    max-width: 100%;
+
+    /*
+     * Supaya satu gambar pilihan
+     * tidak terlalu memenuhi jawaban.
+     */
+    max-height: 300px;
+
+    /*
+     * Rasio asli tetap dipertahankan.
+     */
+    object-fit: contain;
+
+    border-radius: 0.5rem;
+
+    border: 1px solid
+        var(--tblr-border-color);
+}
+
+
+/* =========================================================
+   TEKS PILIHAN
+========================================================= */
+
+.jawaban-teks {
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 991.98px) {
+
+    .soal-gambar img {
+        max-height: 430px;
+    }
+
+    .jawaban-gambar img {
+        max-height: 270px;
+    }
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 575.98px) {
+
+    /*
+     * Gambar soal pada HP
+     */
+    .soal-gambar {
+        margin-top: 1rem;
+    }
+
+
+    .soal-gambar img {
+        max-width: 100%;
+        max-height: 320px;
+    }
+
+
+    /*
+     * Gambar pilihan pada HP
+     */
+    .jawaban-gambar {
+        margin-top: 0.75rem;
+    }
+
+
+    .jawaban-gambar img {
+        max-width: 100%;
+        max-height: 220px;
+    }
+
+}
+
+
+/* =========================================================
+   HP SANGAT KECIL
+========================================================= */
+
+@media (max-width: 380px) {
+
+    .soal-gambar img {
+        max-height: 280px;
+    }
+
+    .jawaban-gambar img {
+        max-height: 190px;
     }
 
 }

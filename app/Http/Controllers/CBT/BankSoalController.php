@@ -19,6 +19,9 @@ use App\Models\BankSoal;
 use App\Models\Soal;
 use Illuminate\Support\Facades\DB;
 
+use PhpOffice\PhpWord\Element\Image;
+use Illuminate\Support\Facades\Storage;
+
 class BankSoalController extends Controller
 {
 
@@ -305,7 +308,7 @@ class BankSoalController extends Controller
             ->deleteFileAfterSend(true);
     }
 
-    public function upload(Request $request)
+public function upload(Request $request)
 {
     /*
      * Validasi file terlebih dahulu.
@@ -393,6 +396,8 @@ class BankSoalController extends Controller
 
         /*
          * Ambil header dari baris pertama.
+         *
+         * Header tidak boleh mengandung gambar.
          */
         $actualHeaders = [];
 
@@ -401,10 +406,15 @@ class BankSoalController extends Controller
             as $cell
         ) {
 
+            $content = $this->getCellContent(
+                $cell,
+                'soal'
+            );
+
             $actualHeaders[] =
                 strtoupper(
                     trim(
-                        $this->getCellText($cell)
+                        $content['text']
                     )
                 );
         }
@@ -438,13 +448,32 @@ class BankSoalController extends Controller
 
             $cells = $row->getCells();
 
+
+            /*
+             * Teks dan gambar setiap cell.
+             */
             $values = [];
+
+            $images = [];
+
 
             foreach ($cells as $cell) {
 
-                $values[] = trim(
-                    $this->getCellText($cell)
+                /*
+                 * Baca teks + gambar dari cell.
+                 */
+                $content = $this->getCellContent(
+                    $cell,
+                    'soal'
                 );
+
+
+                $values[] =
+                    $content['text'];
+
+
+                $images[] =
+                    $content['images'];
             }
 
 
@@ -458,21 +487,47 @@ class BankSoalController extends Controller
             );
 
 
+            $images = array_pad(
+                $images,
+                9,
+                []
+            );
+
+
             /*
              * Abaikan baris kosong sepenuhnya.
+             *
+             * Baris dianggap kosong jika:
+             * - tidak memiliki teks
+             * - tidak memiliki gambar
              */
+            $hasText = collect($values)
+                ->filter(
+                    fn ($value) =>
+                        trim($value) !== ''
+                )
+                ->isNotEmpty();
+
+
+            $hasImages = collect($images)
+                ->filter(
+                    fn ($cellImages) =>
+                        ! empty($cellImages)
+                )
+                ->isNotEmpty();
+
+
             if (
-                collect($values)
-                    ->filter(
-                        fn ($value) =>
-                            $value !== ''
-                    )
-                    ->isEmpty()
+                ! $hasText
+                && ! $hasImages
             ) {
                 continue;
             }
 
 
+            /*
+             * Ambil data teks.
+             */
             [
                 $nomor,
                 $pertanyaan,
@@ -490,19 +545,85 @@ class BankSoalController extends Controller
             );
 
 
+            /*
+             * Ambil data gambar.
+             */
+            [
+                $gambarNomor,
+                $gambarPertanyaan,
+                $gambarA,
+                $gambarB,
+                $gambarC,
+                $gambarD,
+                $gambarE,
+                $gambarKunci,
+                $gambarSkor,
+            ] = array_slice(
+                $images,
+                0,
+                9
+            );
+
+
+            /*
+             * Untuk database kita menggunakan
+             * gambar pertama dari setiap cell.
+             */
+            $gambarPertanyaan =
+                $gambarPertanyaan[0]
+                ?? null;
+
+
+            $gambarA =
+                $gambarA[0]
+                ?? null;
+
+
+            $gambarB =
+                $gambarB[0]
+                ?? null;
+
+
+            $gambarC =
+                $gambarC[0]
+                ?? null;
+
+
+            $gambarD =
+                $gambarD[0]
+                ?? null;
+
+
+            $gambarE =
+                $gambarE[0]
+                ?? null;
+
+
+            /*
+             * Nomor baris Word.
+             */
             $baris = $index + 2;
 
+
+            /*
+             * Normalisasi kunci jawaban.
+             */
             $kunci = strtoupper(
                 trim($kunci)
             );
 
 
             /*
-             * Validasi setiap soal.
+             * Validasi data dasar.
+             *
+             * Pertanyaan dan pilihan tidak lagi
+             * wajib berupa teks karena sekarang
+             * dapat berupa gambar.
              */
             $validator = Validator::make(
                 [
-                    'nomor' => $nomor,
+                    'nomor' =>
+                        $nomor,
 
                     'pertanyaan' =>
                         $pertanyaan,
@@ -536,27 +657,27 @@ class BankSoalController extends Controller
                     ],
 
                     'pertanyaan' => [
-                        'required',
+                        'nullable',
                         'string',
                     ],
 
                     'pilihan_a' => [
-                        'required',
+                        'nullable',
                         'string',
                     ],
 
                     'pilihan_b' => [
-                        'required',
+                        'nullable',
                         'string',
                     ],
 
                     'pilihan_c' => [
-                        'required',
+                        'nullable',
                         'string',
                     ],
 
                     'pilihan_d' => [
-                        'required',
+                        'nullable',
                         'string',
                     ],
 
@@ -597,18 +718,110 @@ class BankSoalController extends Controller
 
 
             /*
-             * Jika jawaban benar E,
-             * pilihan E wajib tersedia.
+             * Pertanyaan harus memiliki
+             * teks ATAU gambar.
+             */
+            if (
+                trim($pertanyaan) === ''
+                && empty($gambarPertanyaan)
+            ) {
+
+                $errors[] =
+                    "Baris {$baris}: "
+                    . "Pertanyaan harus memiliki teks "
+                    . "atau gambar.";
+
+                continue;
+            }
+
+
+            /*
+             * Pilihan A harus memiliki
+             * teks ATAU gambar.
+             */
+            if (
+                trim($pilihanA) === ''
+                && empty($gambarA)
+            ) {
+
+                $errors[] =
+                    "Baris {$baris}: "
+                    . "Pilihan A harus memiliki teks "
+                    . "atau gambar.";
+
+                continue;
+            }
+
+
+            /*
+             * Pilihan B harus memiliki
+             * teks ATAU gambar.
+             */
+            if (
+                trim($pilihanB) === ''
+                && empty($gambarB)
+            ) {
+
+                $errors[] =
+                    "Baris {$baris}: "
+                    . "Pilihan B harus memiliki teks "
+                    . "atau gambar.";
+
+                continue;
+            }
+
+
+            /*
+             * Pilihan C harus memiliki
+             * teks ATAU gambar.
+             */
+            if (
+                trim($pilihanC) === ''
+                && empty($gambarC)
+            ) {
+
+                $errors[] =
+                    "Baris {$baris}: "
+                    . "Pilihan C harus memiliki teks "
+                    . "atau gambar.";
+
+                continue;
+            }
+
+
+            /*
+             * Pilihan D harus memiliki
+             * teks ATAU gambar.
+             */
+            if (
+                trim($pilihanD) === ''
+                && empty($gambarD)
+            ) {
+
+                $errors[] =
+                    "Baris {$baris}: "
+                    . "Pilihan D harus memiliki teks "
+                    . "atau gambar.";
+
+                continue;
+            }
+
+
+            /*
+             * Pilihan E hanya wajib jika
+             * kunci jawaban adalah E.
              */
             if (
                 $kunci === 'E'
-                && $pilihanE === ''
+                && trim($pilihanE) === ''
+                && empty($gambarE)
             ) {
 
                 $errors[] =
                     "Baris {$baris}: "
                     . "Kunci jawaban E dipilih, "
-                    . "tetapi pilihan E kosong.";
+                    . "tetapi pilihan E tidak memiliki "
+                    . "teks atau gambar.";
 
                 continue;
             }
@@ -622,24 +835,69 @@ class BankSoalController extends Controller
                 'nomor' =>
                     (int) $nomor,
 
+                /*
+                 * Pertanyaan.
+                 */
                 'pertanyaan' =>
                     $pertanyaan,
 
+                'gambar_pertanyaan' =>
+                    $gambarPertanyaan,
+
+
+                /*
+                 * Pilihan A.
+                 */
                 'pilihan_a' =>
                     $pilihanA,
 
+                'gambar_a' =>
+                    $gambarA,
+
+
+                /*
+                 * Pilihan B.
+                 */
                 'pilihan_b' =>
                     $pilihanB,
 
+                'gambar_b' =>
+                    $gambarB,
+
+
+                /*
+                 * Pilihan C.
+                 */
                 'pilihan_c' =>
                     $pilihanC,
 
+                'gambar_c' =>
+                    $gambarC,
+
+
+                /*
+                 * Pilihan D.
+                 */
                 'pilihan_d' =>
                     $pilihanD,
 
+                'gambar_d' =>
+                    $gambarD,
+
+
+                /*
+                 * Pilihan E.
+                 */
                 'pilihan_e' =>
                     $pilihanE ?: null,
 
+                'gambar_e' =>
+                    $gambarE,
+
+
+                /*
+                 * Jawaban dan skor.
+                 */
                 'jawaban_benar' =>
                     $kunci,
 
@@ -685,7 +943,9 @@ class BankSoalController extends Controller
 
 
         if (
-            $nomorSoal->duplicates()->isNotEmpty()
+            $nomorSoal
+                ->duplicates()
+                ->isNotEmpty()
         ) {
 
             return back()->with(
@@ -712,9 +972,17 @@ class BankSoalController extends Controller
         session([
             'cbt_preview_soals' =>
                 $soals,
+
+            'cbt_preview_nama_file' =>
+                $request
+                    ->file('file_soal')
+                    ->getClientOriginalName(),
         ]);
 
 
+        /*
+         * Redirect ke halaman bank soal.
+         */
         return redirect()
             ->route(
                 'cbt.bank-soal.index'
@@ -739,60 +1007,338 @@ class BankSoalController extends Controller
     }
 }
 
-    private function getCellText(
-    $cell
-): string {
-
+private function getCellContent($cell, string $folder = 'soal'): array
+{
     $texts = [];
+    $images = [];
 
-
-    foreach (
-        $cell->getElements()
-        as $element
-    ) {
+    foreach ($cell->getElements() as $element) {
 
         /*
-         * Teks biasa.
-         */
+        |--------------------------------------------------------------------------
+        | TEXT BIASA
+        |--------------------------------------------------------------------------
+        */
         if ($element instanceof Text) {
 
-            $texts[] =
-                $element->getText();
+            $text = trim($element->getText());
+
+            if ($text !== '') {
+                $texts[] = $text;
+            }
 
             continue;
         }
 
 
         /*
-         * TextRun.
-         */
+        |--------------------------------------------------------------------------
+        | TEXT RUN
+        |--------------------------------------------------------------------------
+        */
         if ($element instanceof TextRun) {
 
-            foreach (
-                $element->getElements()
-                as $textElement
-            ) {
+            foreach ($element->getElements() as $textElement) {
 
-                if (
-                    $textElement
-                    instanceof Text
-                ) {
+                if ($textElement instanceof Text) {
 
-                    $texts[] =
-                        $textElement
-                            ->getText();
+                    $text = trim($textElement->getText());
+
+                    if ($text !== '') {
+                        $texts[] = $text;
+                    }
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | GAMBAR DI DALAM TEXT RUN
+                |--------------------------------------------------------------------------
+                */
+                if ($textElement instanceof Image) {
+
+                    $images[] = $this->savePhpWordImage(
+                        $textElement,
+                        $folder
+                    );
                 }
             }
+
+            continue;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | GAMBAR LANGSUNG DI DALAM CELL
+        |--------------------------------------------------------------------------
+        */
+        if ($element instanceof Image) {
+
+            $images[] = $this->savePhpWordImage(
+                $element,
+                $folder
+            );
+
+            continue;
         }
     }
 
 
-    return trim(
-        implode(
-            ' ',
-            $texts
-        )
-    );
+    return [
+        'text' => trim(
+            implode(' ', $texts)
+        ),
+
+        'images' => array_values(
+            array_filter($images)
+        ),
+    ];
+}
+
+private function savePhpWordImage(
+    Image $image,
+    string $folder = 'soal'
+): ?string {
+
+    try {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Ambil source gambar dari PHPWord
+        |--------------------------------------------------------------------------
+        */
+        $source = $image->getSource();
+
+        if (! $source) {
+            return null;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | PHPWord sudah mengetahui extension gambar
+        |--------------------------------------------------------------------------
+        |
+        | Contoh:
+        | png
+        | jpg
+        | gif
+        | bmp
+        | tif
+        |
+        */
+        $extension = strtolower(
+            $image->getImageExtension()
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Fallback extension
+        |--------------------------------------------------------------------------
+        */
+        if (! in_array(
+            $extension,
+            [
+                'jpg',
+                'jpeg',
+                'png',
+                'gif',
+                'bmp',
+                'tif',
+                'tiff',
+            ],
+            true
+        )) {
+
+            $extension = 'png';
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Nama file unik
+        |--------------------------------------------------------------------------
+        */
+        $fileName =
+            'soal_'
+            . uniqid('', true)
+            . '.'
+            . $extension;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Folder penyimpanan
+        |--------------------------------------------------------------------------
+        */
+        $directory =
+            storage_path(
+                'app/public/'
+                . $folder
+            );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Buat folder jika belum ada
+        |--------------------------------------------------------------------------
+        */
+        if (! is_dir($directory)) {
+
+            if (! mkdir(
+                $directory,
+                0755,
+                true
+            ) && ! is_dir($directory)) {
+
+                return null;
+            }
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Path tujuan
+        |--------------------------------------------------------------------------
+        */
+        $destination =
+            $directory
+            . DIRECTORY_SEPARATOR
+            . $fileName;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Ambil binary gambar dari PHPWord
+        |--------------------------------------------------------------------------
+        |
+        | Ini lebih aman untuk gambar yang berasal
+        | dari dalam file DOCX.
+        |
+        */
+        $binary = null;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Source berupa file biasa
+        |--------------------------------------------------------------------------
+        */
+        if (
+            is_string($source)
+            && is_file($source)
+        ) {
+
+            $binary =
+                file_get_contents($source);
+
+        } else {
+
+            /*
+            |--------------------------------------------------------------------------
+            | Source bisa berupa:
+            |
+            | zip://...
+            | string binary
+            | archive image
+            |--------------------------------------------------------------------------
+            */
+            $binary =
+                @file_get_contents($source);
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Pastikan binary berhasil dibaca
+        |--------------------------------------------------------------------------
+        */
+        if (
+            $binary === false
+            || $binary === null
+            || $binary === ''
+        ) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | Coba menggunakan API PHPWord
+            |--------------------------------------------------------------------------
+            */
+            if (
+                method_exists(
+                    $image,
+                    'getImageString'
+                )
+            ) {
+
+                $binary =
+                    $image->getImageString();
+            }
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Jika tetap gagal
+        |--------------------------------------------------------------------------
+        */
+        if (
+            $binary === false
+            || $binary === null
+            || $binary === ''
+        ) {
+
+            return null;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Simpan binary gambar
+        |--------------------------------------------------------------------------
+        */
+        $saved =
+            file_put_contents(
+                $destination,
+                $binary
+            );
+
+
+        if ($saved === false) {
+
+            return null;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Pastikan file benar-benar ada
+        |--------------------------------------------------------------------------
+        */
+        if (! is_file($destination)) {
+
+            return null;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Return path relatif terhadap storage/app/public
+        |--------------------------------------------------------------------------
+        */
+        return $folder
+            . '/'
+            . $fileName;
+
+
+    } catch (\Throwable $exception) {
+
+        report($exception);
+
+        return null;
+    }
 }
 
 public function store(Request $request)
@@ -813,6 +1359,7 @@ public function store(Request $request)
                 'Data preview soal tidak ditemukan. Silakan upload ulang file soal.'
             );
     }
+
 
     /*
      * Validasi identitas Bank Soal.
@@ -843,6 +1390,7 @@ public function store(Request $request)
         ],
     ]);
 
+
     /*
      * Ambil data guru dari user login.
      */
@@ -850,13 +1398,20 @@ public function store(Request $request)
         ->user()
         ->guru;
 
+
     if (! $guru) {
+
         abort(
             403,
             'Akun ini tidak memiliki data guru.'
         );
     }
 
+
+    /*
+     * Simpan Bank Soal + seluruh soal
+     * dalam satu transaction.
+     */
     DB::transaction(
         function () use (
             $validated,
@@ -865,10 +1420,14 @@ public function store(Request $request)
         ) {
 
             /*
-             * Buat Bank Soal.
+             * ==========================================================
+             * BUAT BANK SOAL
+             * ==========================================================
              */
             $bankSoal = BankSoal::create([
-                'guru_id' => $guru->id,
+
+                'guru_id' =>
+                    $guru->id,
 
                 'judul' =>
                     $validated['judul'],
@@ -880,59 +1439,151 @@ public function store(Request $request)
                     $validated['tingkat'],
 
                 'deskripsi' =>
-                    $validated['deskripsi'] ?? null,
+                    $validated['deskripsi']
+                    ?? null,
 
-                'status' => 'siap',
+                'status' =>
+                    'siap',
 
                 'nama_file' =>
-                    session('cbt_preview_nama_file'),
+                    session(
+                        'cbt_preview_nama_file'
+                    ),
             ]);
 
+
             /*
-             * Simpan setiap soal dari preview.
+             * ==========================================================
+             * SIMPAN SETIAP SOAL
+             * ==========================================================
              */
             foreach (
                 $previewSoals as $index => $data
             ) {
 
                 Soal::create([
+
                     'bank_soal_id' =>
                         $bankSoal->id,
 
+
+                    /*
+                     * Nomor soal.
+                     */
                     'nomor' =>
                         $data['nomor']
                         ?? ($index + 1),
 
+
                     /*
-                     * Untuk sekarang template
-                     * menggunakan pilihan ganda.
+                     * Tipe soal.
                      */
                     'tipe' =>
                         'pilihan_ganda',
 
+
+                    /*
+                     * ==================================================
+                     * PERTANYAAN
+                     * ==================================================
+                     */
+
                     'pertanyaan' =>
-                        $data['pertanyaan'],
+                        $data['pertanyaan']
+                        ?? null,
+
+                    'gambar_pertanyaan' =>
+                        $data['gambar_pertanyaan']
+                        ?? null,
+
+
+                    /*
+                     * ==================================================
+                     * PILIHAN A
+                     * ==================================================
+                     */
 
                     'pilihan_a' =>
-                        $data['pilihan_a'],
+                        $data['pilihan_a']
+                        ?? null,
+
+                    'gambar_a' =>
+                        $data['gambar_a']
+                        ?? null,
+
+
+                    /*
+                     * ==================================================
+                     * PILIHAN B
+                     * ==================================================
+                     */
 
                     'pilihan_b' =>
-                        $data['pilihan_b'],
+                        $data['pilihan_b']
+                        ?? null,
+
+                    'gambar_b' =>
+                        $data['gambar_b']
+                        ?? null,
+
+
+                    /*
+                     * ==================================================
+                     * PILIHAN C
+                     * ==================================================
+                     */
 
                     'pilihan_c' =>
-                        $data['pilihan_c'],
+                        $data['pilihan_c']
+                        ?? null,
+
+                    'gambar_c' =>
+                        $data['gambar_c']
+                        ?? null,
+
+
+                    /*
+                     * ==================================================
+                     * PILIHAN D
+                     * ==================================================
+                     */
 
                     'pilihan_d' =>
-                        $data['pilihan_d'],
+                        $data['pilihan_d']
+                        ?? null,
+
+                    'gambar_d' =>
+                        $data['gambar_d']
+                        ?? null,
+
+
+                    /*
+                     * ==================================================
+                     * PILIHAN E
+                     * ==================================================
+                     */
 
                     'pilihan_e' =>
                         $data['pilihan_e']
                         ?? null,
 
+                    'gambar_e' =>
+                        $data['gambar_e']
+                        ?? null,
+
+
+                    /*
+                     * ==================================================
+                     * JAWABAN BENAR
+                     * ==================================================
+                     */
+
                     'jawaban_benar' =>
                         strtoupper(
                             $data['jawaban_benar']
+                            ?? ''
                         ),
+
 
                     /*
                      * Preview menggunakan "skor",
@@ -945,17 +1596,27 @@ public function store(Request $request)
         }
     );
 
+
     /*
-     * Hapus data preview setelah
-     * berhasil disimpan.
+     * ==============================================================
+     * HAPUS PREVIEW DARI SESSION
+     * ==============================================================
+     *
+     * Dilakukan setelah transaction berhasil.
      */
     session()->forget([
         'cbt_preview_soals',
         'cbt_preview_nama_file',
     ]);
 
+
+    /*
+     * Kembali ke halaman Bank Soal.
+     */
     return redirect()
-        ->route('cbt.bank-soal.index')
+        ->route(
+            'cbt.bank-soal.index'
+        )
         ->with(
             'success',
             'Bank soal berhasil disimpan.'

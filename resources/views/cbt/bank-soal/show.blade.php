@@ -183,102 +183,206 @@
                     </div>
 
 
-                    <div class="fw-medium mb-4">
-                        {{ $soal->pertanyaan }}
-                    </div>
+                    {{-- PERTANYAAN --}}
+
+<div class="mb-4">
+
+    @if(!empty($soal->pertanyaan))
+
+        <div class="fw-medium">
+            {{ $soal->pertanyaan }}
+        </div>
+
+    @endif
+
+
+    @if(!empty($soal->gambar_pertanyaan))
+
+        <div class="mt-3">
+
+            <img
+                src="{{ asset('storage/' . $soal->gambar_pertanyaan) }}"
+                alt="Gambar Pertanyaan"
+                class="img-fluid rounded border"
+                style="
+                    max-width: 700px;
+                    max-height: 450px;
+                    object-fit: contain;
+                "
+            >
+
+        </div>
+
+    @endif
+
+</div>
 
 
                     <div class="row g-2">
 
                         @foreach([
-                            'A' => $soal->pilihan_a,
-                            'B' => $soal->pilihan_b,
-                            'C' => $soal->pilihan_c,
-                            'D' => $soal->pilihan_d,
-                            'E' => $soal->pilihan_e,
-                        ] as $huruf => $jawaban)
+    'A' => [
+        'text' => $soal->pilihan_a,
+        'image' => $soal->gambar_a,
+    ],
 
-                            @if($jawaban)
+    'B' => [
+        'text' => $soal->pilihan_b,
+        'image' => $soal->gambar_b,
+    ],
 
-                                <div class="col-12 col-md-6">
+    'C' => [
+        'text' => $soal->pilihan_c,
+        'image' => $soal->gambar_c,
+    ],
 
-                                    <div
+    'D' => [
+        'text' => $soal->pilihan_d,
+        'image' => $soal->gambar_d,
+    ],
+
+    'E' => [
+        'text' => $soal->pilihan_e,
+        'image' => $soal->gambar_e,
+    ],
+] as $huruf => $jawaban)
+
+    @php
+
+        $text =
+            $jawaban['text']
+            ?? '';
+
+        $image =
+            $jawaban['image']
+            ?? null;
+
+    @endphp
+
+
+    {{-- Tampilkan jika ada teks ATAU gambar --}}
+
+    @if(
+        !empty($text)
+        || !empty($image)
+    )
+
+        <div class="col-12 col-md-6">
+
+            <div
+                class="
+                    border
+                    rounded
+                    p-3
+                    h-100
+                "
+            >
+
+                <div
+                    class="
+                        d-flex
+                        align-items-start
+                        gap-2
+                    "
+                >
+
+                    {{-- HURUF --}}
+
+                    <span
+                        class="
+                            avatar
+                            avatar-sm
+                            {{
+                                $soal->jawaban_benar === $huruf
+                                    ? 'bg-success text-white'
+                                    : 'bg-secondary-lt'
+                            }}
+                        "
+                    >
+                        {{ $huruf }}
+                    </span>
+
+
+                    {{-- ISI JAWABAN --}}
+
+                    <div class="flex-fill">
+
+
+                        {{-- TEKS JAWABAN --}}
+
+                        @if(!empty($text))
+
+                            <div>
+                                {{ $text }}
+                            </div>
+
+                        @endif
+
+
+                        {{-- GAMBAR JAWABAN --}}
+
+                        @if(!empty($image))
+
+                            <div class="mt-3">
+
+                                <img
+                                    src="{{ asset('storage/' . $image) }}"
+                                    alt="Gambar Pilihan {{ $huruf }}"
+                                    class="img-fluid rounded border"
+                                    style="
+                                        max-width: 500px;
+                                        max-height: 350px;
+                                        object-fit: contain;
+                                    "
+                                >
+
+                            </div>
+
+                        @endif
+
+
+                        {{-- JAWABAN BENAR --}}
+
+                        @if(
+                            $soal->jawaban_benar === $huruf
+                        )
+
+                            <div class="mt-2">
+
+                                <span
+                                    class="
+                                        badge
+                                        bg-success-lt
+                                    "
+                                >
+
+                                    <i
                                         class="
-                                            border
-                                            rounded
-                                            p-3
-                                            h-100
+                                            ti
+                                            ti-check
+                                            me-1
                                         "
-                                    >
+                                    ></i>
 
-                                        <div
-                                            class="
-                                                d-flex
-                                                align-items-start
-                                                gap-2
-                                            "
-                                        >
+                                    Jawaban Benar
 
-                                            <span
-                                                class="
-                                                    avatar
-                                                    avatar-sm
-                                                    {{
-                                                        $soal->jawaban_benar
-                                                        === $huruf
-                                                            ? 'bg-success text-white'
-                                                            : 'bg-secondary-lt'
-                                                    }}
-                                                "
-                                            >
-                                                {{ $huruf }}
-                                            </span>
+                                </span>
 
+                            </div>
 
-                                            <div class="flex-fill">
+                        @endif
 
-                                                {{ $jawaban }}
+                    </div>
 
+                </div>
 
-                                                @if(
-                                                    $soal->jawaban_benar
-                                                    === $huruf
-                                                )
+            </div>
 
-                                                    <div class="mt-2">
+        </div>
 
-                                                        <span
-                                                            class="
-                                                                badge
-                                                                bg-success-lt
-                                                            "
-                                                        >
-                                                            <i
-                                                                class="
-                                                                    ti
-                                                                    ti-check
-                                                                    me-1
-                                                                "
-                                                            ></i>
+    @endif
 
-                                                            Jawaban Benar
-                                                        </span>
-
-                                                    </div>
-
-                                                @endif
-
-                                            </div>
-
-                                        </div>
-
-                                    </div>
-
-                                </div>
-
-                            @endif
-
-                        @endforeach
+@endforeach
 
                     </div>
 
