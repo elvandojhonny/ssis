@@ -361,14 +361,19 @@
                         {!! nl2br(e($soal->pertanyaan)) !!}
 
                         @if($soal->gambar_pertanyaan)
-    <div class="soal-gambar mt-4 text-center">
-        <img
-            src="{{ asset('storage/' . $soal->gambar_pertanyaan) }}"
-            alt="Gambar soal"
-            class="img-fluid rounded"
-        >
-    </div>
-@endif
+                            <div class="soal-gambar mt-4 text-center">
+
+                                <img
+                                    src="{{ asset('storage/' . $soal->gambar_pertanyaan) }}"
+                                    alt="Gambar soal"
+                                    class="img-fluid rounded gambar-ujian-clickable"
+                                    data-gambar="{{ asset('storage/' . $soal->gambar_pertanyaan) }}"
+                                    data-judul="Gambar Soal {{ $index + 1 }}"
+                                    loading="lazy"
+                                >
+
+                            </div>
+                        @endif
 
                     </div>
 
@@ -491,31 +496,23 @@
         !empty($gambarPilihan)
     )
 
-        <div
-            class="
-                jawaban-gambar
-                mt-3
-            "
-        >
+        <div class="jawaban-gambar mt-3">
 
-            <img
-                src="{{ asset(
-                    'storage/' .
-                    $gambarPilihan
-                ) }}"
-                alt="
-                    Gambar pilihan
-                    {{ $pilihan['huruf_tampilan'] }}
-                "
-                class="
-                    img-fluid
-                    rounded
-                    border
-                "
-                loading="lazy"
-            >
+    <img
+        src="{{ asset('storage/' . $gambarPilihan) }}"
+        alt="Gambar pilihan {{ $pilihan['huruf_tampilan'] }}"
+        class="
+            img-fluid
+            rounded
+            border
+            gambar-ujian-clickable
+        "
+        data-gambar="{{ asset('storage/' . $gambarPilihan) }}"
+        data-judul="Gambar Pilihan {{ $pilihan['huruf_tampilan'] }}"
+        loading="lazy"
+    >
 
-        </div>
+</div>
 
     @endif
 
@@ -1417,6 +1414,183 @@
     </div>
 </div>
 
+{{-- ========================================================= --}}
+{{-- MODAL IMAGE VIEWER CBT --}}
+{{-- ========================================================= --}}
+
+<div
+    id="modalPreviewGambar"
+    class="modal modal-blur fade"
+    tabindex="-1"
+    aria-hidden="true"
+>
+
+    <div
+        class="
+            modal-dialog
+            modal-dialog-centered
+            modal-xl
+        "
+    >
+
+        <div class="modal-content image-viewer-modal">
+
+            {{-- HEADER --}}
+            <div class="modal-header">
+
+                <h3
+                    id="judulPreviewGambar"
+                    class="modal-title"
+                >
+                    Gambar Soal
+                </h3>
+
+                <button
+                    type="button"
+                    class="btn-close"
+                    id="btnTutupPreviewGambar"
+                    aria-label="Tutup"
+                ></button>
+
+            </div>
+
+
+            {{-- TOOLBAR --}}
+            <div class="image-viewer-toolbar">
+
+                <div class="d-flex align-items-center gap-2">
+
+                    {{-- ZOOM OUT --}}
+                    <button
+                        type="button"
+                        id="btnZoomOut"
+                        class="btn btn-outline-secondary"
+                        title="Perkecil"
+                    >
+
+                        <i class="ti ti-minus"></i>
+
+                    </button>
+
+
+                    {{-- ZOOM PERCENTAGE --}}
+                    <button
+                        type="button"
+                        id="btnZoomReset"
+                        class="btn btn-outline-secondary zoom-reset-btn"
+                        title="Reset zoom"
+                    >
+
+                        <i class="ti ti-refresh me-1"></i>
+
+                        <span id="zoomPersentase">
+                            100%
+                        </span>
+
+                    </button>
+
+
+                    {{-- ZOOM IN --}}
+                    <button
+                        type="button"
+                        id="btnZoomIn"
+                        class="btn btn-outline-secondary"
+                        title="Perbesar"
+                    >
+
+                        <i class="ti ti-plus"></i>
+
+                    </button>
+
+                </div>
+
+
+                <div class="image-viewer-help">
+
+                    <i class="ti ti-arrows-move me-1"></i>
+
+                    Geser gambar untuk melihat bagian lain
+
+                </div>
+
+            </div>
+
+
+            {{-- IMAGE VIEWPORT --}}
+            <div
+                id="previewGambarContainer"
+                class="image-viewer-viewport"
+            >
+
+                <div
+                    id="imageViewerStage"
+                    class="image-viewer-stage"
+                >
+
+                    <img
+                        id="gambarPreview"
+                        src=""
+                        alt="Preview gambar ujian"
+                        class="image-viewer-image"
+                        draggable="false"
+                    >
+
+                </div>
+
+            </div>
+
+
+            {{-- FOOTER --}}
+            <div class="modal-footer">
+
+                <div
+                    class="
+                        w-100
+                        d-flex
+                        justify-content-between
+                        align-items-center
+                        gap-3
+                    "
+                >
+
+                    <div
+                        class="
+                            text-secondary
+                            small
+                            d-none
+                            d-md-block
+                        "
+                    >
+
+                        <i class="ti ti-info-circle me-1"></i>
+
+                        Scroll untuk zoom • Drag untuk melihat gambar
+
+                    </div>
+
+
+                    <button
+                        type="button"
+                        id="btnTutupPreviewGambarFooter"
+                        class="btn btn-primary"
+                    >
+
+                        <i class="ti ti-x me-1"></i>
+
+                        Tutup
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
 @endsection
 
 
@@ -1886,6 +2060,205 @@
 
     .jawaban-gambar img {
         max-height: 190px;
+    }
+
+}
+
+/* =========================================================
+   IMAGE VIEWER CBT
+========================================================= */
+
+.image-viewer-modal {
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   TOOLBAR
+========================================================= */
+
+.image-viewer-toolbar {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 1rem;
+
+    padding: .65rem 1rem;
+
+    border-bottom:
+        1px solid
+        var(--tblr-border-color);
+
+    background:
+        var(--tblr-bg-surface);
+
+}
+
+
+.zoom-reset-btn {
+    min-width: 90px;
+}
+
+
+/* =========================================================
+   HELP
+========================================================= */
+
+.image-viewer-help {
+
+    color:
+        var(--tblr-secondary);
+
+    font-size:
+        .8rem;
+
+}
+
+
+/* =========================================================
+   VIEWPORT
+========================================================= */
+
+.image-viewer-viewport {
+
+    position: relative;
+
+    width: 100%;
+
+    height: 70vh;
+
+    min-height: 400px;
+
+    overflow: hidden;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background:
+        #f5f7fb;
+
+    cursor: grab;
+
+    /*
+     * Sangat penting untuk touch/pinch.
+     */
+    touch-action: none;
+
+    user-select: none;
+
+    -webkit-user-select: none;
+}
+
+
+.image-viewer-viewport.dragging {
+
+    cursor: grabbing;
+
+}
+
+
+/* =========================================================
+   STAGE
+========================================================= */
+
+.image-viewer-stage {
+
+    position: absolute;
+
+    left: 0;
+
+    top: 0;
+
+    width: 0;
+
+    height: 0;
+
+    transform:
+        translate3d(0, 0, 0);
+
+}
+
+
+/* =========================================================
+   IMAGE
+========================================================= */
+
+.image-viewer-image {
+
+    position: absolute;
+
+    left: 0;
+
+    top: 0;
+
+    display: block;
+
+    width: auto;
+
+    height: auto;
+
+    max-width: none;
+
+    max-height: none;
+
+    user-select: none;
+
+    -webkit-user-select: none;
+
+    -webkit-user-drag: none;
+
+    pointer-events: none;
+
+    transform-origin:
+        0 0;
+
+    will-change:
+        transform;
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 575.98px) {
+
+    .image-viewer-toolbar {
+
+        padding:
+            .5rem .65rem;
+
+    }
+
+
+    .image-viewer-help {
+
+        display: none;
+
+    }
+
+
+    .image-viewer-viewport {
+
+        height: 65vh;
+
+        min-height: 280px;
+
+    }
+
+
+    .zoom-reset-btn {
+
+        min-width: 75px;
+
     }
 
 }
@@ -3045,11 +3418,1531 @@ document.addEventListener('DOMContentLoaded', function () {
 
     let modalSedangTerbuka = false;
 
+    /*
+|--------------------------------------------------------------------------
+| BACK BUTTON GUARD
+|--------------------------------------------------------------------------
+|
+| Mencegah tombol Back browser / Android
+| meninggalkan halaman ujian.
+|
+*/
+
+let backGuardAktif = false;
+
+
+/*
+|--------------------------------------------------------------------------
+| PASANG HISTORY GUARD
+|--------------------------------------------------------------------------
+*/
+
+function pasangBackGuard()
+{
+    if (backGuardAktif) {
+        return;
+    }
+
+    /*
+     * Tambahkan history khusus untuk halaman ujian.
+     */
+    history.pushState(
+        {
+            cbtUjian: true
+        },
+        '',
+        window.location.href
+    );
+
+
+    backGuardAktif = true;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| CEGAH BACK
+|--------------------------------------------------------------------------
+*/
+
+window.addEventListener(
+    'popstate',
+    function () {
+
+        /*
+         * Jika siswa menekan Back ketika
+         * popup gambar sedang terbuka,
+         * cukup tutup popup.
+         */
+
+        if (
+            modalPreviewGambar &&
+            modalPreviewGambar.style.display === 'block'
+        ) {
+
+            tutupPreviewGambar();
+
+
+            /*
+             * Pasang kembali history guard.
+             */
+            history.pushState(
+                {
+                    cbtUjian: true
+                },
+                '',
+                window.location.href
+            );
+
+
+            return;
+        }
+
+
+        /*
+         * Jika siswa sedang dalam ujian,
+         * jangan biarkan halaman keluar.
+         */
+
+        if (ujianAktif) {
+
+            history.pushState(
+                {
+                    cbtUjian: true
+                },
+                '',
+                window.location.href
+            );
+
+
+            return;
+        }
+
+
+        /*
+         * Jika overlay mode ujian masih aktif,
+         * jangan keluar juga.
+         */
+
+        if (
+            overlayModeUjian &&
+            overlayModeUjian.style.display !== 'none'
+        ) {
+
+            history.pushState(
+                {
+                    cbtUjian: true
+                },
+                '',
+                window.location.href
+            );
+
+        }
+
+    }
+);
+
     let sedangMasukFullscreen = false;
 
     let waktuPelanggaranTerakhir = 0;
 
     let pelanggaranTertunda = null;
+
+    /*
+|--------------------------------------------------------------------------
+| IMAGE VIEWER CBT
+|--------------------------------------------------------------------------
+|
+| Fitur:
+|
+| - Zoom berdasarkan posisi kursor
+| - Zoom in / out
+| - Mouse wheel zoom
+| - Drag / pan
+| - Double click zoom
+| - Pinch zoom pada HP
+| - Reset zoom
+|
+*/
+
+
+const modalPreviewGambar =
+    document.getElementById(
+        'modalPreviewGambar'
+    );
+
+
+const previewGambarContainer =
+    document.getElementById(
+        'previewGambarContainer'
+    );
+
+
+const imageViewerStage =
+    document.getElementById(
+        'imageViewerStage'
+    );
+
+
+const gambarPreview =
+    document.getElementById(
+        'gambarPreview'
+    );
+
+
+const judulPreviewGambar =
+    document.getElementById(
+        'judulPreviewGambar'
+    );
+
+
+const btnTutupPreviewGambar =
+    document.getElementById(
+        'btnTutupPreviewGambar'
+    );
+
+
+const btnTutupPreviewGambarFooter =
+    document.getElementById(
+        'btnTutupPreviewGambarFooter'
+    );
+
+
+const btnZoomIn =
+    document.getElementById(
+        'btnZoomIn'
+    );
+
+
+const btnZoomOut =
+    document.getElementById(
+        'btnZoomOut'
+    );
+
+
+const btnZoomReset =
+    document.getElementById(
+        'btnZoomReset'
+    );
+
+
+const zoomPersentase =
+    document.getElementById(
+        'zoomPersentase'
+    );
+
+
+/*
+|--------------------------------------------------------------------------
+| KONFIGURASI
+|--------------------------------------------------------------------------
+*/
+
+const IMAGE_ZOOM_MIN =
+    0.25;
+
+
+const IMAGE_ZOOM_MAX =
+    5;
+
+
+const IMAGE_ZOOM_STEP =
+    0.25;
+
+
+let imageZoom =
+    1;
+
+
+let imageX =
+    0;
+
+
+let imageY =
+    0;
+
+
+let imageWidth =
+    0;
+
+
+let imageHeight =
+    0;
+
+
+/*
+|--------------------------------------------------------------------------
+| DRAG
+|--------------------------------------------------------------------------
+*/
+
+let imageDragging =
+    false;
+
+
+let imageDragStartX =
+    0;
+
+
+let imageDragStartY =
+    0;
+
+
+let imageStartX =
+    0;
+
+
+let imageStartY =
+    0;
+
+
+/*
+|--------------------------------------------------------------------------
+| TOUCH
+|--------------------------------------------------------------------------
+*/
+
+let touchStartDistance =
+    null;
+
+
+let touchStartZoom =
+    1;
+
+
+/*
+|--------------------------------------------------------------------------
+| UPDATE TRANSFORM
+|--------------------------------------------------------------------------
+*/
+
+function updateImageTransform()
+{
+
+    if (!gambarPreview) {
+        return;
+    }
+
+
+    gambarPreview.style.transform =
+        `
+        translate3d(
+            ${imageX}px,
+            ${imageY}px,
+            0
+        )
+        scale(
+            ${imageZoom}
+        )
+        `;
+
+
+    if (zoomPersentase) {
+
+        zoomPersentase.textContent =
+            Math.round(
+                imageZoom * 100
+            ) + '%';
+
+    }
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| GET VIEWPORT CENTER
+|--------------------------------------------------------------------------
+*/
+
+function getViewportCenter()
+{
+
+    if (!previewGambarContainer) {
+
+        return {
+            x: 0,
+            y: 0
+        };
+
+    }
+
+
+    return {
+
+        x:
+            previewGambarContainer
+                .clientWidth / 2,
+
+        y:
+            previewGambarContainer
+                .clientHeight / 2
+
+    };
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| FIT IMAGE
+|--------------------------------------------------------------------------
+|
+| Gambar pertama kali disesuaikan
+| agar seluruh gambar terlihat.
+|
+*/
+
+function fitImage()
+{
+
+    if (
+        !gambarPreview ||
+        !previewGambarContainer
+    ) {
+
+        return;
+
+    }
+
+
+    const viewportWidth =
+        previewGambarContainer
+            .clientWidth;
+
+
+    const viewportHeight =
+        previewGambarContainer
+            .clientHeight;
+
+
+    const naturalWidth =
+        gambarPreview.naturalWidth;
+
+
+    const naturalHeight =
+        gambarPreview.naturalHeight;
+
+
+    if (
+        !naturalWidth ||
+        !naturalHeight
+    ) {
+
+        return;
+
+    }
+
+
+    /*
+     * Ukuran maksimum yang diinginkan
+     * ketika pertama kali dibuka.
+     */
+
+    const maxWidth =
+        viewportWidth * 0.9;
+
+
+    const maxHeight =
+        viewportHeight * 0.9;
+
+
+    const scaleX =
+        maxWidth /
+        naturalWidth;
+
+
+    const scaleY =
+        maxHeight /
+        naturalHeight;
+
+
+    /*
+     * Gunakan ukuran yang paling kecil
+     * supaya gambar seluruhnya terlihat.
+     */
+
+    const fitScale =
+        Math.min(
+            scaleX,
+            scaleY,
+            1
+        );
+
+
+    imageZoom =
+        fitScale;
+
+
+    imageWidth =
+        naturalWidth;
+
+
+    imageHeight =
+        naturalHeight;
+
+
+    /*
+     * Posisikan gambar tepat di tengah.
+     */
+
+    imageX =
+        (
+            viewportWidth -
+            naturalWidth *
+            imageZoom
+        ) / 2;
+
+
+    imageY =
+        (
+            viewportHeight -
+            naturalHeight *
+            imageZoom
+        ) / 2;
+
+
+    updateImageTransform();
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| RESET
+|--------------------------------------------------------------------------
+*/
+
+function resetImageZoom()
+{
+
+    fitImage();
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| ZOOM KE TITIK TERTENTU
+|--------------------------------------------------------------------------
+|
+| Ini bagian penting.
+|
+| Zoom tidak lagi berpusat ke tengah.
+|
+| Titik yang berada di bawah cursor
+| akan tetap berada di bawah cursor
+| setelah zoom.
+|
+*/
+
+function zoomAtPoint(
+    newZoom,
+    pointX,
+    pointY
+)
+{
+
+    if (
+        !gambarPreview ||
+        !previewGambarContainer
+    ) {
+
+        return;
+
+    }
+
+
+    /*
+     * Batasi zoom.
+     */
+
+    newZoom =
+        Math.max(
+            IMAGE_ZOOM_MIN,
+            Math.min(
+                IMAGE_ZOOM_MAX,
+                newZoom
+            )
+        );
+
+
+    /*
+     * Jika tidak berubah,
+     * tidak perlu melakukan apa-apa.
+     */
+
+    if (
+        newZoom === imageZoom
+    ) {
+
+        return;
+
+    }
+
+
+    /*
+     * Titik gambar yang sedang
+     * berada di bawah cursor.
+     *
+     * Rumus:
+     *
+     * imagePoint =
+     * (screenPoint - imagePosition)
+     * / oldZoom
+     */
+
+    const imagePointX =
+        (
+            pointX -
+            imageX
+        ) /
+        imageZoom;
+
+
+    const imagePointY =
+        (
+            pointY -
+            imageY
+        ) /
+        imageZoom;
+
+
+    /*
+     * Ubah zoom.
+     */
+
+    imageZoom =
+        newZoom;
+
+
+    /*
+     * Hitung ulang posisi.
+     *
+     * imagePoint harus tetap berada
+     * di pointX / pointY.
+     */
+
+    imageX =
+        pointX -
+        imagePointX *
+        imageZoom;
+
+
+    imageY =
+        pointY -
+        imagePointY *
+        imageZoom;
+
+
+    updateImageTransform();
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| ZOOM IN
+|--------------------------------------------------------------------------
+*/
+
+function zoomIn()
+{
+
+    const center =
+        getViewportCenter();
+
+
+    zoomAtPoint(
+
+        imageZoom +
+        IMAGE_ZOOM_STEP,
+
+        center.x,
+
+        center.y
+
+    );
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| ZOOM OUT
+|--------------------------------------------------------------------------
+*/
+
+function zoomOut()
+{
+
+    const center =
+        getViewportCenter();
+
+
+    zoomAtPoint(
+
+        imageZoom -
+        IMAGE_ZOOM_STEP,
+
+        center.x,
+
+        center.y
+
+    );
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| MOUSE WHEEL ZOOM
+|--------------------------------------------------------------------------
+*/
+
+if (previewGambarContainer) {
+
+    previewGambarContainer.addEventListener(
+        'wheel',
+        function (event) {
+
+            event.preventDefault();
+
+
+            /*
+             * Posisi cursor relatif
+             * terhadap viewport.
+             */
+
+            const rect =
+                previewGambarContainer
+                    .getBoundingClientRect();
+
+
+            const cursorX =
+                event.clientX -
+                rect.left;
+
+
+            const cursorY =
+                event.clientY -
+                rect.top;
+
+
+            /*
+             * Scroll ke atas:
+             * zoom in
+             *
+             * Scroll ke bawah:
+             * zoom out
+             */
+
+            const arah =
+                event.deltaY < 0
+                    ? 1
+                    : -1;
+
+
+            const newZoom =
+                imageZoom +
+                (
+                    IMAGE_ZOOM_STEP *
+                    arah
+                );
+
+
+            zoomAtPoint(
+
+                newZoom,
+
+                cursorX,
+
+                cursorY
+
+            );
+
+        },
+        {
+            passive: false
+        }
+    );
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| MOUSE DOWN
+|--------------------------------------------------------------------------
+*/
+
+if (previewGambarContainer) {
+
+    previewGambarContainer.addEventListener(
+        'mousedown',
+        function (event) {
+
+            /*
+             * Hanya drag ketika
+             * gambar sudah diperbesar.
+             */
+
+            if (
+                imageZoom <=
+                1
+            ) {
+
+                return;
+
+            }
+
+
+            imageDragging =
+                true;
+
+
+            previewGambarContainer
+                .classList
+                .add(
+                    'dragging'
+                );
+
+
+            imageDragStartX =
+                event.clientX;
+
+
+            imageDragStartY =
+                event.clientY;
+
+
+            imageStartX =
+                imageX;
+
+
+            imageStartY =
+                imageY;
+
+
+            event.preventDefault();
+
+        }
+    );
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| MOUSE MOVE
+|--------------------------------------------------------------------------
+*/
+
+document.addEventListener(
+    'mousemove',
+    function (event) {
+
+        if (
+            !imageDragging
+        ) {
+
+            return;
+
+        }
+
+
+        imageX =
+            imageStartX +
+            (
+                event.clientX -
+                imageDragStartX
+            );
+
+
+        imageY =
+            imageStartY +
+            (
+                event.clientY -
+                imageDragStartY
+            );
+
+
+        updateImageTransform();
+
+    }
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| MOUSE UP
+|--------------------------------------------------------------------------
+*/
+
+document.addEventListener(
+    'mouseup',
+    function () {
+
+        if (
+            !imageDragging
+        ) {
+
+            return;
+
+        }
+
+
+        imageDragging =
+            false;
+
+
+        if (previewGambarContainer) {
+
+            previewGambarContainer
+                .classList
+                .remove(
+                    'dragging'
+                );
+
+        }
+
+    }
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| DOUBLE CLICK
+|--------------------------------------------------------------------------
+*/
+
+if (gambarPreview) {
+
+    gambarPreview.addEventListener(
+        'dblclick',
+        function (event) {
+
+            event.preventDefault();
+
+
+            const rect =
+                previewGambarContainer
+                    .getBoundingClientRect();
+
+
+            const clickX =
+                event.clientX -
+                rect.left;
+
+
+            const clickY =
+                event.clientY -
+                rect.top;
+
+
+            /*
+             * Jika masih kecil:
+             * zoom ke 200%.
+             */
+
+            if (
+                imageZoom < 2
+            ) {
+
+                zoomAtPoint(
+
+                    2,
+
+                    clickX,
+
+                    clickY
+
+                );
+
+            } else {
+
+                /*
+                 * Jika sudah zoom,
+                 * kembali ke ukuran fit.
+                 */
+
+                resetImageZoom();
+
+            }
+
+        }
+    );
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| TOUCH START
+|--------------------------------------------------------------------------
+*/
+
+if (previewGambarContainer) {
+
+    previewGambarContainer.addEventListener(
+        'touchstart',
+        function (event) {
+
+            /*
+             * Dua jari = pinch zoom.
+             */
+
+            if (
+                event.touches.length === 2
+            ) {
+
+                const touch1 =
+                    event.touches[0];
+
+
+                const touch2 =
+                    event.touches[1];
+
+
+                touchStartDistance =
+                    Math.hypot(
+
+                        touch2.clientX -
+                        touch1.clientX,
+
+                        touch2.clientY -
+                        touch1.clientY
+
+                    );
+
+
+                touchStartZoom =
+                    imageZoom;
+
+            }
+
+        },
+        {
+            passive: true
+        }
+    );
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| TOUCH MOVE
+|--------------------------------------------------------------------------
+*/
+
+if (previewGambarContainer) {
+
+    previewGambarContainer.addEventListener(
+        'touchmove',
+        function (event) {
+
+            if (
+                event.touches.length !== 2 ||
+                touchStartDistance === null
+            ) {
+
+                return;
+
+            }
+
+
+            const touch1 =
+                event.touches[0];
+
+
+            const touch2 =
+                event.touches[1];
+
+
+            const currentDistance =
+                Math.hypot(
+
+                    touch2.clientX -
+                    touch1.clientX,
+
+                    touch2.clientY -
+                    touch1.clientY
+
+                );
+
+
+            const ratio =
+                currentDistance /
+                touchStartDistance;
+
+
+            const newZoom =
+                touchStartZoom *
+                ratio;
+
+
+            /*
+             * Titik tengah dua jari.
+             */
+
+            const rect =
+                previewGambarContainer
+                    .getBoundingClientRect();
+
+
+            const midpointX =
+                (
+                    touch1.clientX +
+                    touch2.clientX
+                ) / 2 -
+                rect.left;
+
+
+            const midpointY =
+                (
+                    touch1.clientY +
+                    touch2.clientY
+                ) / 2 -
+                rect.top;
+
+
+            zoomAtPoint(
+
+                newZoom,
+
+                midpointX,
+
+                midpointY
+
+            );
+
+
+            event.preventDefault();
+
+        },
+        {
+            passive: false
+        }
+    );
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| TOUCH END
+|--------------------------------------------------------------------------
+*/
+
+if (previewGambarContainer) {
+
+    previewGambarContainer.addEventListener(
+        'touchend',
+        function (event) {
+
+            if (
+                event.touches.length < 2
+            ) {
+
+                touchStartDistance =
+                    null;
+
+            }
+
+        }
+    );
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| BUKA IMAGE VIEWER
+|--------------------------------------------------------------------------
+*/
+
+function bukaPreviewGambar(
+    sumberGambar,
+    judul
+)
+{
+
+    if (
+        !modalPreviewGambar ||
+        !gambarPreview
+    ) {
+
+        return;
+
+    }
+
+
+    /*
+     * Jangan dianggap pelanggaran.
+     */
+
+    modalSedangTerbuka =
+        true;
+
+
+    /*
+     * Judul.
+     */
+
+    if (judulPreviewGambar) {
+
+        judulPreviewGambar.textContent =
+            judul ||
+            'Gambar Ujian';
+
+    }
+
+
+    /*
+     * Reset posisi.
+     */
+
+    imageZoom =
+        1;
+
+    imageX =
+        0;
+
+    imageY =
+        0;
+
+
+    /*
+     * Tampilkan modal.
+     */
+
+    modalPreviewGambar
+        .classList
+        .add(
+            'show'
+        );
+
+
+    modalPreviewGambar.style.display =
+        'block';
+
+
+    modalPreviewGambar.removeAttribute(
+        'aria-hidden'
+    );
+
+
+    modalPreviewGambar.setAttribute(
+        'aria-modal',
+        'true'
+    );
+
+
+    document.body
+        .classList
+        .add(
+            'modal-open'
+        );
+
+
+    /*
+     * Set sumber gambar.
+     */
+
+    gambarPreview.onload =
+        function () {
+
+            /*
+             * Tunggu viewport selesai
+             * dirender.
+             */
+
+            requestAnimationFrame(
+                function () {
+
+                    fitImage();
+
+                }
+            );
+
+        };
+
+
+    gambarPreview.src =
+        sumberGambar;
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| TUTUP IMAGE VIEWER
+|--------------------------------------------------------------------------
+*/
+
+function tutupPreviewGambar()
+{
+
+    if (
+        !modalPreviewGambar
+    ) {
+
+        return;
+
+    }
+
+
+    modalPreviewGambar
+        .classList
+        .remove(
+            'show'
+        );
+
+
+    modalPreviewGambar.style.display =
+        'none';
+
+
+    modalPreviewGambar.setAttribute(
+        'aria-hidden',
+        'true'
+    );
+
+
+    modalPreviewGambar.removeAttribute(
+        'aria-modal'
+    );
+
+
+    document.body
+        .classList
+        .remove(
+            'modal-open'
+        );
+
+
+    if (gambarPreview) {
+
+        gambarPreview.src =
+            '';
+
+    }
+
+
+    /*
+     * Reset viewer.
+     */
+
+    imageZoom =
+        1;
+
+    imageX =
+        0;
+
+    imageY =
+        0;
+
+
+    /*
+     * Popup sudah tidak aktif.
+     */
+
+    modalSedangTerbuka =
+        false;
+
+
+    /*
+     * Pastikan history guard tetap ada.
+     */
+
+    if (backGuardAktif) {
+
+        history.pushState(
+            {
+                cbtUjian: true
+            },
+            '',
+            window.location.href
+        );
+
+    }
+
+
+    /*
+     * Pastikan pengawasan kembali aktif.
+     */
+
+    if (
+        !pengerjaanDiblokir &&
+        sedangFullscreen()
+    ) {
+
+        ujianAktif =
+            true;
+
+    }
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| TOMBOL ZOOM IN
+|--------------------------------------------------------------------------
+*/
+
+if (btnZoomIn) {
+
+    btnZoomIn.addEventListener(
+        'click',
+        function () {
+
+            zoomIn();
+
+        }
+    );
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| TOMBOL ZOOM OUT
+|--------------------------------------------------------------------------
+*/
+
+if (btnZoomOut) {
+
+    btnZoomOut.addEventListener(
+        'click',
+        function () {
+
+            zoomOut();
+
+        }
+    );
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| RESET ZOOM
+|--------------------------------------------------------------------------
+*/
+
+if (btnZoomReset) {
+
+    btnZoomReset.addEventListener(
+        'click',
+        function () {
+
+            resetImageZoom();
+
+        }
+    );
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| TOMBOL TUTUP
+|--------------------------------------------------------------------------
+*/
+
+if (btnTutupPreviewGambar) {
+
+    btnTutupPreviewGambar
+        .addEventListener(
+            'click',
+            tutupPreviewGambar
+        );
+
+}
+
+
+if (btnTutupPreviewGambarFooter) {
+
+    btnTutupPreviewGambarFooter
+        .addEventListener(
+            'click',
+            tutupPreviewGambar
+        );
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| KLIK GAMBAR SOAL
+|--------------------------------------------------------------------------
+*/
+
+document
+    .querySelectorAll(
+        '.gambar-ujian-clickable'
+    )
+    .forEach(
+        function (gambar) {
+
+            gambar.addEventListener(
+                'click',
+                function (event) {
+
+                    event.preventDefault();
+
+                    event.stopPropagation();
+
+
+                    const sumberGambar =
+                        this.dataset.gambar ||
+                        this.src;
+
+
+                    const judul =
+                        this.dataset.judul ||
+                        'Gambar Ujian';
+
+
+                    bukaPreviewGambar(
+
+                        sumberGambar,
+
+                        judul
+
+                    );
+
+                }
+            );
+
+        }
+    );
+
+
+/*
+|--------------------------------------------------------------------------
+| ESC
+|--------------------------------------------------------------------------
+*/
+
+document.addEventListener(
+    'keydown',
+    function (event) {
+
+        if (
+            event.key === 'Escape' &&
+            modalPreviewGambar &&
+            modalPreviewGambar.style.display === 'block'
+        ) {
+
+            tutupPreviewGambar();
+
+        }
+
+    }
+);
 
     /*
      * Digunakan untuk mencegah satu aktivitas
@@ -3443,6 +5336,9 @@ function tutupModalPelanggaran()
          */
         document.body.style.overflow =
             '';
+
+
+        pasangBackGuard();
 
 
         /*

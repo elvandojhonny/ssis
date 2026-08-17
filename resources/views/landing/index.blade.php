@@ -63,7 +63,6 @@
         content="index, follow"
     >
 
-    {{-- Favicon Sekolah --}}
     <link
         rel="icon"
         type="image/png"
@@ -94,275 +93,1712 @@
     >
 
     <script type="application/ld+json">
-{
-    "@@context": "https://schema.org",
-    "@@type": "WebSite",
-    "name": "SSIS SMA Negeri 6 Malinau",
-    "alternateName": "SSIS",
-    "url": "https://ssis-production.up.railway.app/"
-}
-</script>
+    {
+        "@@context": "https://schema.org",
+        "@@type": "WebSite",
+        "name": "SSIS SMA Negeri 6 Malinau",
+        "alternateName": "SSIS",
+        "url": "https://ssis-production.up.railway.app/"
+    }
+    </script>
 
     <style>
 
-        :root{
+        :root {
 
-            --primary:#206BC4;
-            --primary-dark:#174A87;
-            --success:#2FB344;
-            --warning:#F59F00;
-            --light:#F4F6FB;
-            --dark:#1F2937;
-            --muted:#6B7280;
-            --radius:22px;
+            --primary: #206BC4;
+            --primary-dark: #174A87;
+            --primary-light: #EAF3FF;
 
-        }
+            --success: #2FB344;
+            --warning: #F59F00;
+            --info: #0EA5E9;
 
-        *{
+            --light: #F5F8FC;
+            --dark: #172033;
+            --muted: #6B7280;
 
-            margin:0;
-            padding:0;
-            box-sizing:border-box;
+            --radius: 22px;
 
         }
 
-        html{
 
-            scroll-behavior:smooth;
+        /* ==========================================================
+           GLOBAL
+        ========================================================== */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 90px;
+        }
+
+
+        body {
+
+            font-family: 'Poppins', sans-serif;
+
+            background: var(--light);
+
+            color: var(--dark);
+
+            overflow-x: hidden;
 
         }
 
-        body{
 
-            font-family:'Poppins',sans-serif;
-            background:var(--light);
-            color:var(--dark);
-            overflow-x:hidden;
+        body::selection {
 
-        }
+            background: var(--primary);
 
-        a{
-
-            text-decoration:none;
+            color: #fff;
 
         }
 
-        section{
 
-            padding:90px 0;
+        a {
+            text-decoration: none;
+        }
+
+
+        section {
+            padding: 100px 0;
+        }
+
+
+        .section-badge {
+
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 6px;
+
+            background: var(--primary-light);
+
+            color: var(--primary);
+
+            padding: 8px 18px;
+
+            border-radius: 50px;
+
+            font-size: .85rem;
+
+            font-weight: 600;
+
+            margin-bottom: 18px;
 
         }
 
-        .section-badge{
 
-            display:inline-block;
-            background:#E7F1FF;
-            color:var(--primary);
-            padding:8px 18px;
-            border-radius:50px;
-            font-size:.9rem;
-            font-weight:600;
-            margin-bottom:18px;
+        .section-title {
 
-        }
+            font-size: 2.5rem;
 
-        .section-title{
+            font-weight: 700;
 
-            font-size:2.5rem;
-            font-weight:700;
-            margin-bottom:20px;
+            margin-bottom: 20px;
+
+            letter-spacing: -.5px;
 
         }
 
-        .section-subtitle{
 
-            color:var(--muted);
-            max-width:700px;
-            margin:auto;
-            line-height:1.9;
+        .section-subtitle {
 
-        }
+            color: var(--muted);
 
-        /* ===========================
-            NAVBAR
-        ============================ */
+            max-width: 700px;
 
-        .navbar{
+            margin: auto;
 
-            background:rgba(255,255,255,.92);
-            backdrop-filter:blur(12px);
-            transition:.35s;
-            padding:16px 0;
-            z-index:999;
+            line-height: 1.9;
 
         }
 
-        .navbar.scrolled{
 
-            box-shadow:0 12px 30px rgba(0,0,0,.08);
+        /* ==========================================================
+           SCROLLBAR
+        ========================================================== */
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+
+            background: var(--primary);
+
+            border-radius: 20px;
 
         }
 
-        .navbar-brand{
 
-            display:flex;
-            align-items:center;
-            gap:12px;
-            font-weight:700;
-            color:var(--dark);
+        /* ==========================================================
+           NAVBAR
+        ========================================================== */
 
-        }
+        .navbar {
 
-        .navbar-brand img{
+            background: rgba(255, 255, 255, .88);
 
-            width:52px;
+            backdrop-filter: blur(18px);
 
-        }
+            -webkit-backdrop-filter: blur(18px);
 
-        .navbar-brand small{
+            padding: 13px 0;
 
-            display:block;
-            color:var(--muted);
-            font-size:.78rem;
+            z-index: 9999;
+
+            transition: all .35s ease;
 
         }
 
-        .nav-link{
 
-            color:var(--dark);
-            font-weight:500;
-            margin-left:15px;
-            transition:.3s;
+        .navbar.scrolled {
 
-        }
+            background: rgba(255, 255, 255, .97);
 
-        .nav-link:hover{
+            box-shadow: 0 12px 35px rgba(31, 41, 55, .10);
 
-            color:var(--primary);
+            padding: 9px 0;
 
         }
 
-        .btn-login{
 
-            padding:11px 24px;
-            border-radius:12px;
-            font-weight:600;
+        .navbar-brand {
 
-        }
+            display: flex;
 
-        .btn-guide{
+            align-items: center;
 
-            border-radius:12px;
-            font-weight:600;
-            padding:11px 22px;
+            gap: 11px;
 
-        }
+            color: var(--dark);
 
-        /* ===========================
-            HERO
-        ============================ */
+            font-weight: 800;
 
-        .hero{
-    min-height:100vh;
-    display:flex;
-    align-items:center;
-    padding-top:calc(80px + 2rem);
-
-    background:
-        radial-gradient(circle at top right,#DCEBFF 0%,transparent 35%),
-        radial-gradient(circle at bottom left,#EDF5FF 0%,transparent 30%),
-        #F8FAFD;
-}
-
-        .hero h1{
-
-            font-size:3.4rem;
-            font-weight:800;
-            line-height:1.2;
+            font-size: 1.15rem;
 
         }
 
-        .hero h1 span{
 
-            color:var(--primary);
+        .navbar-brand:hover {
+            color: var(--primary);
+        }
+
+
+        .navbar-brand img {
+
+            width: 48px;
+
+            height: 48px;
+
+            object-fit: contain;
+
+            transition: .3s;
 
         }
 
-        .hero p{
 
-            color:var(--muted);
-            margin-top:22px;
-            line-height:2;
-            font-size:1.08rem;
+        .navbar.scrolled .navbar-brand img {
 
-        }
+            width: 42px;
 
-        .hero-buttons{
-
-            margin-top:40px;
-            display:flex;
-            gap:15px;
-            flex-wrap:wrap;
+            height: 42px;
 
         }
 
-        .btn-primary-custom{
 
-            background:var(--primary);
-            color:#fff;
-            border:none;
-            padding:15px 30px;
-            border-radius:15px;
-            transition:.3s;
-            font-weight:600;
+        .navbar-brand small {
 
-        }
+            display: block;
 
-        .btn-primary-custom:hover{
+            color: var(--muted);
 
-            background:var(--primary-dark);
-            color:#fff;
-            transform:translateY(-3px);
+            font-size: .68rem;
+
+            font-weight: 500;
+
+            margin-top: 1px;
 
         }
 
-        .btn-outline-custom{
 
-            background:#fff;
-            color:var(--primary);
-            border:2px solid var(--primary);
-            padding:15px 30px;
-            border-radius:15px;
-            transition:.3s;
-            font-weight:600;
+        .nav-link {
 
-        }
+            position: relative;
 
-        .btn-outline-custom:hover{
+            color: var(--dark);
 
-            background:var(--primary);
-            color:#fff;
+            font-weight: 500;
+
+            margin-left: 15px;
+
+            transition: .3s;
 
         }
 
-        @media(max-width:992px){
 
-            .hero{
+        .nav-link::after {
 
-                text-align:center;
-                padding-top:130px;
+            content: "";
+
+            position: absolute;
+
+            left: 0;
+
+            bottom: 2px;
+
+            width: 0;
+
+            height: 2px;
+
+            background: var(--primary);
+
+            border-radius: 10px;
+
+            transition: .3s;
+
+        }
+
+
+        .nav-link:hover {
+
+            color: var(--primary);
+
+        }
+
+
+        .nav-link:hover::after {
+
+            width: 100%;
+
+        }
+
+
+        .navbar-toggler {
+
+            border: 0;
+
+            padding: 7px;
+
+            box-shadow: none !important;
+
+        }
+
+
+        .navbar-toggler:focus {
+
+            box-shadow: none;
+
+        }
+
+
+        .btn-login {
+
+            padding: 10px 22px;
+
+            border-radius: 12px;
+
+            font-weight: 600;
+
+            transition: .3s;
+
+        }
+
+
+        .btn-login:hover {
+
+            transform: translateY(-2px);
+
+        }
+
+
+        .btn-guide {
+
+            border-radius: 12px;
+
+            font-weight: 600;
+
+            padding: 10px 20px;
+
+            transition: .3s;
+
+        }
+
+
+        .btn-guide:hover {
+
+            transform: translateY(-2px);
+
+        }
+
+
+        /* ==========================================================
+           HERO
+        ========================================================== */
+
+        .hero {
+
+            position: relative;
+
+            min-height: 100vh;
+
+            display: flex;
+
+            align-items: center;
+
+            overflow: hidden;
+
+            padding-top: 120px;
+
+            padding-bottom: 80px;
+
+            background:
+
+                radial-gradient(
+                    circle at 85% 10%,
+                    rgba(32, 107, 196, .16),
+                    transparent 30%
+                ),
+
+                radial-gradient(
+                    circle at 5% 90%,
+                    rgba(14, 165, 233, .10),
+                    transparent 30%
+                ),
+
+                linear-gradient(
+                    135deg,
+                    #F8FBFF,
+                    #EEF5FF
+                );
+
+        }
+
+
+        .hero::before {
+
+            content: "";
+
+            position: absolute;
+
+            width: 450px;
+
+            height: 450px;
+
+            border-radius: 50%;
+
+            background: rgba(32, 107, 196, .06);
+
+            top: -200px;
+
+            right: -150px;
+
+            animation: floatCircle 8s ease-in-out infinite;
+
+        }
+
+
+        .hero::after {
+
+            content: "";
+
+            position: absolute;
+
+            width: 300px;
+
+            height: 300px;
+
+            border-radius: 50%;
+
+            background: rgba(47, 179, 68, .05);
+
+            bottom: -160px;
+
+            left: -100px;
+
+            animation: floatCircle 10s ease-in-out infinite reverse;
+
+        }
+
+
+        .hero .container {
+
+            position: relative;
+
+            z-index: 2;
+
+        }
+
+
+        .hero-content {
+
+            animation: fadeUp .8s ease both;
+
+        }
+
+
+        .hero h1 {
+
+            font-size: clamp(2.3rem, 5vw, 3.8rem);
+
+            font-weight: 800;
+
+            line-height: 1.18;
+
+            letter-spacing: -1px;
+
+        }
+
+
+        .hero h1 span {
+
+            color: var(--primary);
+
+            position: relative;
+
+        }
+
+
+        .hero h1 span::after {
+
+            content: "";
+
+            position: absolute;
+
+            left: 0;
+
+            bottom: -7px;
+
+            width: 70%;
+
+            height: 5px;
+
+            border-radius: 20px;
+
+            background: linear-gradient(
+                90deg,
+                var(--primary),
+                transparent
+            );
+
+        }
+
+
+        .hero p {
+
+            color: var(--muted);
+
+            margin-top: 25px;
+
+            line-height: 1.95;
+
+            font-size: 1.03rem;
+
+            max-width: 650px;
+
+        }
+
+
+        .hero-buttons {
+
+            margin-top: 35px;
+
+            display: flex;
+
+            gap: 13px;
+
+            flex-wrap: wrap;
+
+        }
+
+
+        .btn-primary-custom {
+
+            background: var(--primary);
+
+            color: #fff;
+
+            border: none;
+
+            padding: 14px 27px;
+
+            border-radius: 15px;
+
+            transition: .3s;
+
+            font-weight: 600;
+
+            box-shadow: 0 10px 25px rgba(32, 107, 196, .22);
+
+        }
+
+
+        .btn-primary-custom:hover {
+
+            background: var(--primary-dark);
+
+            color: #fff;
+
+            transform: translateY(-4px);
+
+            box-shadow: 0 15px 30px rgba(32, 107, 196, .30);
+
+        }
+
+
+        .btn-outline-custom {
+
+            background: rgba(255,255,255,.8);
+
+            color: var(--primary);
+
+            border: 2px solid var(--primary);
+
+            padding: 12px 27px;
+
+            border-radius: 15px;
+
+            transition: .3s;
+
+            font-weight: 600;
+
+        }
+
+
+        .btn-outline-custom:hover {
+
+            background: var(--primary);
+
+            color: #fff;
+
+            transform: translateY(-3px);
+
+        }
+
+
+        /* ==========================================================
+           HERO FEATURE CARDS
+        ========================================================== */
+
+        .hero-feature {
+
+            border: 1px solid rgba(32,107,196,.07);
+
+            border-radius: 18px;
+
+            background: rgba(255,255,255,.90);
+
+            backdrop-filter: blur(10px);
+
+            transition: .35s;
+
+            overflow: hidden;
+
+        }
+
+
+        .hero-feature:hover {
+
+            transform: translateY(-7px);
+
+            box-shadow: 0 18px 35px rgba(31,41,55,.10) !important;
+
+            border-color: rgba(32,107,196,.15);
+
+        }
+
+
+        .hero-feature .card-body {
+
+            padding: 20px;
+
+        }
+
+
+        .hero-feature-icon {
+
+            width: 48px;
+
+            height: 48px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            border-radius: 14px;
+
+            background: var(--primary-light);
+
+        }
+
+
+        /* ==========================================================
+           HERO IMAGE
+        ========================================================== */
+
+        .hero-image-wrapper {
+
+            position: relative;
+
+            animation: fadeRight .9s ease both;
+
+        }
+
+
+        .hero-image {
+
+            width: 100%;
+
+            height: 500px;
+
+            object-fit: cover;
+
+            border-radius: 30px;
+
+            box-shadow: 0 30px 70px rgba(31,41,55,.18);
+
+            transition: transform .5s ease;
+
+        }
+
+
+        .hero-image-wrapper:hover .hero-image {
+
+            transform: scale(1.015);
+
+        }
+
+
+        .floating-card {
+
+            position: absolute;
+
+            background: rgba(255,255,255,.95);
+
+            backdrop-filter: blur(15px);
+
+            box-shadow: 0 18px 40px rgba(31,41,55,.15);
+
+            border-radius: 18px;
+
+            padding: 15px 18px;
+
+            z-index: 5;
+
+            animation: floating 4s ease-in-out infinite;
+
+        }
+
+
+        .floating-card.top-card {
+
+            top: 25px;
+
+            left: -35px;
+
+        }
+
+
+        .floating-card.bottom-card {
+
+            bottom: 25px;
+
+            right: -35px;
+
+            animation-delay: 1s;
+
+        }
+
+
+        .floating-icon {
+
+            width: 45px;
+
+            height: 45px;
+
+            border-radius: 13px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-size: 1.25rem;
+
+        }
+
+
+        /* ==========================================================
+           STATISTICS
+        ========================================================== */
+
+        .stat-card {
+
+            position: relative;
+
+            border: 0;
+
+            border-radius: 22px;
+
+            overflow: hidden;
+
+            transition: .35s;
+
+            background: #fff;
+
+        }
+
+
+        .stat-card::before {
+
+            content: "";
+
+            position: absolute;
+
+            width: 100%;
+
+            height: 4px;
+
+            left: 0;
+
+            top: 0;
+
+            background: linear-gradient(
+                90deg,
+                var(--primary),
+                #65A7FF
+            );
+
+        }
+
+
+        .stat-card:hover {
+
+            transform: translateY(-8px);
+
+            box-shadow: 0 20px 45px rgba(31,41,55,.12) !important;
+
+        }
+
+
+        .stat-icon {
+
+            width: 70px;
+
+            height: 70px;
+
+            margin: auto;
+
+            border-radius: 20px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-size: 2rem;
+
+        }
+
+
+        .stat-number {
+
+            font-size: 2.5rem;
+
+            font-weight: 800;
+
+            margin-top: 18px;
+
+        }
+
+
+        /* ==========================================================
+           ABOUT
+        ========================================================== */
+
+        .about-image-wrapper {
+
+            position: relative;
+
+        }
+
+
+        .about-image-wrapper img {
+
+            width: 100%;
+
+            max-height: 480px;
+
+            object-fit: cover;
+
+            border-radius: 28px;
+
+            transition: .4s;
+
+        }
+
+
+        .about-image-wrapper:hover img {
+
+            transform: translateY(-5px);
+
+        }
+
+
+        .about-badge {
+
+            position: absolute;
+
+            right: -20px;
+
+            bottom: 25px;
+
+            background: #fff;
+
+            padding: 18px;
+
+            border-radius: 18px;
+
+            box-shadow: 0 15px 35px rgba(31,41,55,.15);
+
+        }
+
+
+        .about-item {
+
+            padding: 14px;
+
+            border-radius: 15px;
+
+            transition: .3s;
+
+        }
+
+
+        .about-item:hover {
+
+            background: #fff;
+
+            box-shadow: 0 10px 25px rgba(31,41,55,.07);
+
+            transform: translateX(4px);
+
+        }
+
+
+        /* ==========================================================
+           CTA
+        ========================================================== */
+
+        .cta-box {
+
+            position: relative;
+
+            overflow: hidden;
+
+            border-radius: 28px;
+
+            padding: 70px 30px;
+
+            background:
+                radial-gradient(
+                    circle at top right,
+                    rgba(255,255,255,.22),
+                    transparent 30%
+                ),
+                linear-gradient(
+                    135deg,
+                    #206BC4,
+                    #4F8FEF
+                );
+
+            box-shadow: 0 25px 60px rgba(32,107,196,.20);
+
+        }
+
+
+        .cta-box::before {
+
+            content: "";
+
+            position: absolute;
+
+            width: 220px;
+
+            height: 220px;
+
+            border: 35px solid rgba(255,255,255,.07);
+
+            border-radius: 50%;
+
+            right: -60px;
+
+            top: -80px;
+
+        }
+
+
+        .cta-box::after {
+
+            content: "";
+
+            position: absolute;
+
+            width: 150px;
+
+            height: 150px;
+
+            border: 25px solid rgba(255,255,255,.07);
+
+            border-radius: 50%;
+
+            left: -50px;
+
+            bottom: -70px;
+
+        }
+
+
+        .cta-content {
+
+            position: relative;
+
+            z-index: 2;
+
+        }
+
+
+        /* ==========================================================
+           FOOTER
+        ========================================================== */
+
+        footer {
+
+            background: #fff;
+
+        }
+
+
+        /* ==========================================================
+           MODAL
+        ========================================================== */
+
+        .modal-content {
+
+            border-radius: 20px;
+
+            overflow: hidden;
+
+        }
+
+
+        .modal-header {
+
+            padding: 18px 22px;
+
+        }
+
+
+        .pdf-frame {
+
+            width: 100%;
+
+            height: 650px;
+
+            border: none;
+
+            display: block;
+
+        }
+
+
+        /* ==========================================================
+           SCROLL ANIMATION
+        ========================================================== */
+
+        .reveal {
+
+            opacity: 0;
+
+            transform: translateY(35px);
+
+            transition:
+                opacity .7s ease,
+                transform .7s ease;
+
+        }
+
+
+        .reveal.show {
+
+            opacity: 1;
+
+            transform: translateY(0);
+
+        }
+
+
+        .delay-1 {
+            transition-delay: .1s;
+        }
+
+        .delay-2 {
+            transition-delay: .2s;
+        }
+
+        .delay-3 {
+            transition-delay: .3s;
+        }
+
+
+        /* ==========================================================
+           ANIMATION
+        ========================================================== */
+
+        @keyframes fadeUp {
+
+            from {
+
+                opacity: 0;
+
+                transform: translateY(30px);
 
             }
 
-            .hero h1{
+            to {
 
-                font-size:2.3rem;
+                opacity: 1;
+
+                transform: translateY(0);
 
             }
 
-            .hero-buttons{
+        }
 
-                justify-content:center;
+
+        @keyframes fadeRight {
+
+            from {
+
+                opacity: 0;
+
+                transform: translateX(40px);
+
+            }
+
+            to {
+
+                opacity: 1;
+
+                transform: translateX(0);
+
+            }
+
+        }
+
+
+        @keyframes floating {
+
+            0%,
+            100% {
+
+                transform: translateY(0);
+
+            }
+
+            50% {
+
+                transform: translateY(-10px);
+
+            }
+
+        }
+
+
+        @keyframes floatCircle {
+
+            0%,
+            100% {
+
+                transform: translate(0,0);
+
+            }
+
+            50% {
+
+                transform: translate(-20px,20px);
+
+            }
+
+        }
+
+
+        /* ==========================================================
+           TABLET
+        ========================================================== */
+
+        @media (max-width: 991.98px) {
+
+            section {
+
+                padding: 80px 0;
+
+            }
+
+
+            .navbar-collapse {
+
+                margin-top: 12px;
+
+                padding: 15px;
+
+                border-radius: 18px;
+
+                background: rgba(255,255,255,.98);
+
+                box-shadow: 0 15px 35px rgba(31,41,55,.10);
+
+            }
+
+
+            .nav-link {
+
+                margin: 0;
+
+                padding: 11px 10px !important;
+
+            }
+
+
+            .nav-link::after {
+
+                display: none;
+
+            }
+
+
+            .hero {
+
+                padding-top: 130px;
+
+                padding-bottom: 70px;
+
+            }
+
+
+            .hero-content {
+
+                text-align: center;
+
+            }
+
+
+            .hero p {
+
+                margin-left: auto;
+
+                margin-right: auto;
+
+            }
+
+
+            .hero-buttons {
+
+                justify-content: center;
+
+            }
+
+
+            .hero-image-wrapper {
+
+                margin-top: 20px;
+
+            }
+
+
+            .hero-image {
+
+                height: 430px;
+
+            }
+
+
+            .floating-card.top-card {
+
+                left: 15px;
+
+            }
+
+
+            .floating-card.bottom-card {
+
+                right: 15px;
+
+            }
+
+
+            .about-badge {
+
+                right: 15px;
+
+            }
+
+        }
+
+
+        /* ==========================================================
+           MOBILE
+        ========================================================== */
+
+        @media (max-width: 767.98px) {
+
+            section {
+
+                padding: 65px 0;
+
+            }
+
+
+            .section-title {
+
+                font-size: 1.9rem;
+
+            }
+
+
+            .section-subtitle {
+
+                font-size: .9rem;
+
+                line-height: 1.8;
+
+            }
+
+
+            .navbar {
+
+                padding: 9px 0;
+
+            }
+
+
+            .navbar-brand img {
+
+                width: 42px;
+
+                height: 42px;
+
+            }
+
+
+            .navbar-brand {
+
+                font-size: 1rem;
+
+            }
+
+
+            .navbar-brand small {
+
+                font-size: .59rem;
+
+            }
+
+
+            .hero {
+
+                min-height: auto;
+
+                padding-top: 115px;
+
+                padding-bottom: 60px;
+
+            }
+
+
+            .hero h1 {
+
+                font-size: 2.15rem;
+
+                letter-spacing: -.5px;
+
+            }
+
+
+            .hero h1 span::after {
+
+                height: 3px;
+
+                bottom: -4px;
+
+            }
+
+
+            .hero p {
+
+                font-size: .9rem;
+
+                line-height: 1.8;
+
+                margin-top: 20px;
+
+            }
+
+
+            .hero-buttons {
+
+                flex-direction: column;
+
+                gap: 10px;
+
+                margin-top: 28px;
+
+            }
+
+
+            .hero-buttons a,
+            .hero-buttons button {
+
+                width: 100%;
+
+                justify-content: center;
+
+            }
+
+
+            .hero-feature .card-body {
+
+                padding: 16px;
+
+            }
+
+
+            .hero-feature h6 {
+
+                font-size: .88rem;
+
+            }
+
+
+            .hero-feature small {
+
+                font-size: .72rem;
+
+            }
+
+
+            .hero-feature-icon {
+
+                width: 42px;
+
+                height: 42px;
+
+                font-size: 1.15rem;
+
+            }
+
+
+            .hero-image {
+
+                height: 300px;
+
+                border-radius: 22px;
+
+            }
+
+
+            .floating-card {
+
+                padding: 10px 12px;
+
+                border-radius: 14px;
+
+                max-width: 190px;
+
+            }
+
+
+            .floating-card.top-card {
+
+                top: 12px;
+
+                left: 10px;
+
+            }
+
+
+            .floating-card.bottom-card {
+
+                bottom: 12px;
+
+                right: 10px;
+
+            }
+
+
+            .floating-icon {
+
+                width: 35px;
+
+                height: 35px;
+
+                font-size: .95rem;
+
+            }
+
+
+            .floating-card strong {
+
+                font-size: .78rem;
+
+            }
+
+
+            .floating-card small {
+
+                font-size: .62rem;
+
+            }
+
+
+            .stat-card .card-body {
+
+                padding: 35px 20px !important;
+
+            }
+
+
+            .stat-icon {
+
+                width: 58px;
+
+                height: 58px;
+
+                border-radius: 16px;
+
+                font-size: 1.6rem;
+
+            }
+
+
+            .stat-number {
+
+                font-size: 2rem;
+
+            }
+
+
+            .about-image-wrapper img {
+
+                max-height: 320px;
+
+                border-radius: 20px;
+
+            }
+
+
+            .about-badge {
+
+                padding: 12px;
+
+                bottom: 15px;
+
+                right: 10px;
+
+            }
+
+
+            .about-item {
+
+                padding: 10px;
+
+            }
+
+
+            .about-item strong {
+
+                font-size: .85rem;
+
+            }
+
+
+            .about-item small {
+
+                font-size: .7rem;
+
+            }
+
+
+            .cta-box {
+
+                padding: 50px 20px;
+
+                border-radius: 22px;
+
+            }
+
+
+            .cta-box h2 {
+
+                font-size: 1.65rem;
+
+            }
+
+
+            .cta-box p {
+
+                font-size: .85rem;
+
+                line-height: 1.8;
+
+            }
+
+
+            .pdf-frame {
+
+                height: 70vh;
+
+                min-height: 420px;
+
+            }
+
+
+            .modal-dialog {
+
+                margin: 10px;
+
+            }
+
+
+            .modal-footer {
+
+                flex-direction: column;
+
+            }
+
+
+            .modal-footer a,
+            .modal-footer button {
+
+                width: 100%;
+
+            }
+
+
+            footer {
+
+                text-align: center;
+
+            }
+
+        }
+
+
+        /* ==========================================================
+           SMALL MOBILE
+        ========================================================== */
+
+        @media (max-width: 400px) {
+
+            .hero h1 {
+
+                font-size: 1.9rem;
+
+            }
+
+
+            .hero-image {
+
+                height: 250px;
+
+            }
+
+
+            .floating-card {
+
+                transform: scale(.88);
+
+            }
+
+
+            .floating-card.top-card {
+
+                transform-origin: top left;
+
+            }
+
+
+            .floating-card.bottom-card {
+
+                transform-origin: bottom right;
+
+            }
+
+
+            .hero-feature .card-body {
+
+                padding: 14px 10px;
+
+            }
+
+
+            .hero-feature-icon {
+
+                width: 38px;
+
+                height: 38px;
+
+            }
+
+
+            .hero-feature h6 {
+
+                font-size: .78rem;
+
+            }
+
+
+            .hero-feature small {
+
+                font-size: .65rem;
+
+            }
+
+        }
+
+
+        /* ==========================================================
+           REDUCED MOTION
+        ========================================================== */
+
+        @media (prefers-reduced-motion: reduce) {
+
+            * {
+
+                animation-duration: .01ms !important;
+
+                animation-iteration-count: 1 !important;
+
+                scroll-behavior: auto !important;
+
+                transition-duration: .01ms !important;
 
             }
 
@@ -372,42 +1808,52 @@
 
 </head>
 
+
 <body>
+
+
+{{-- ==========================================================
+| NAVBAR
+========================================================== --}}
 
 <nav class="navbar navbar-expand-lg fixed-top">
 
     <div class="container">
 
         <a
-            href="#"
+            href="#beranda"
             class="navbar-brand">
 
             <img
                 src="{{ asset('images/logo SMAN 6.png') }}"
-                alt="Logo SSIS">
+                alt="Logo SMA Negeri 6 Malinau">
 
             <div>
 
                 SSIS
 
                 <small>
-
                     SMA Negeri 6 Malinau
-
                 </small>
 
             </div>
 
         </a>
 
+
         <button
             class="navbar-toggler"
+            type="button"
             data-bs-toggle="collapse"
-            data-bs-target="#navbarMenu">
+            data-bs-target="#navbarMenu"
+            aria-controls="navbarMenu"
+            aria-expanded="false"
+            aria-label="Buka menu">
 
             <span class="navbar-toggler-icon"></span>
 
         </button>
+
 
         <div
             class="collapse navbar-collapse"
@@ -427,6 +1873,7 @@
 
                 </li>
 
+
                 <li class="nav-item">
 
                     <a
@@ -438,6 +1885,7 @@
                     </a>
 
                 </li>
+
 
                 <li class="nav-item">
 
@@ -451,10 +1899,12 @@
 
                 </li>
 
-                <li class="nav-item ms-lg-3 mt-3 mt-lg-0">
+
+                <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
 
                     <button
-                        class="btn btn-outline-primary btn-guide"
+                        type="button"
+                        class="btn btn-outline-primary btn-guide w-100"
                         data-bs-toggle="modal"
                         data-bs-target="#panduanModal">
 
@@ -466,11 +1916,12 @@
 
                 </li>
 
-                <li class="nav-item ms-lg-2 mt-3 mt-lg-0">
+
+                <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
 
                     <a
                         href="{{ route('login') }}"
-                        class="btn btn-primary btn-login">
+                        class="btn btn-primary btn-login w-100">
 
                         <i class="bi bi-box-arrow-in-right me-2"></i>
 
@@ -488,6 +1939,8 @@
 
 </nav>
 
+
+
 {{-- ==========================================================
 | HERO
 ========================================================== --}}
@@ -502,165 +1955,200 @@
 
             <div class="col-lg-6">
 
-                <span class="section-badge">
+                <div class="hero-content">
 
-                    <i class="bi bi-mortarboard-fill me-2"></i>
+                    <span class="section-badge">
 
-                    Smart School Information System
+                        <i class="bi bi-mortarboard-fill"></i>
 
-                </span>
-
-                <h1>
-
-                    Digitalisasi
-
-                    <span>
-
-                        SMA Negeri 6 Malinau
+                        Smart School Information System
 
                     </span>
 
-                </h1>
 
-                <p>
+                    <h1>
 
-                    SSIS merupakan sistem informasi sekolah terpadu
-                    yang mengintegrasikan
-                    <strong>Absensi Digital</strong>,
-                    <strong>Computer Based Test (CBT)</strong>,
-                    dan
-                    <strong>Perpustakaan Digital</strong>
-                    dalam satu platform modern untuk mendukung
-                    proses belajar mengajar yang lebih efektif,
-                    efisien, dan transparan.
+                        Digitalisasi
 
-                </p>
+                        <span>
+                            SMA Negeri 6 Malinau
+                        </span>
 
-                <div class="hero-buttons">
+                    </h1>
 
-                    <a
-                        href="{{ route('login') }}"
-                        class="btn btn-primary-custom">
 
-                        <i class="bi bi-box-arrow-in-right me-2"></i>
+                    <p>
 
-                        Masuk ke Sistem
+                        SSIS merupakan sistem informasi sekolah terpadu
+                        yang mengintegrasikan
+                        <strong>Absensi Digital</strong>,
+                        <strong>Computer Based Test (CBT)</strong>,
+                        dan
+                        <strong>Perpustakaan Digital</strong>
+                        dalam satu platform modern.
 
-                    </a>
+                        Semua layanan sekolah menjadi lebih
+                        <strong>mudah, cepat, dan terintegrasi.</strong>
 
-                    <button
-                        type="button"
-                        class="btn btn-outline-custom"
-                        data-bs-toggle="modal"
-                        data-bs-target="#panduanModal">
+                    </p>
 
-                        <i class="bi bi-book me-2"></i>
 
-                        Buku Panduan
+                    <div class="hero-buttons">
 
-                    </button>
+                        <a
+                            href="{{ route('login') }}"
+                            class="btn btn-primary-custom">
 
-                </div>
+                            <i class="bi bi-box-arrow-in-right me-2"></i>
 
-                <div class="row mt-5 g-3">
+                            Masuk ke Sistem
 
-                    <div class="col-6">
+                        </a>
 
-                        <div class="card border-0 shadow-sm h-100">
 
-                            <div class="card-body">
+                        <button
+                            type="button"
+                            class="btn btn-outline-custom"
+                            data-bs-toggle="modal"
+                            data-bs-target="#panduanModal">
 
-                                <i class="bi bi-qr-code-scan fs-2 text-primary"></i>
+                            <i class="bi bi-book me-2"></i>
 
-                                <h6 class="fw-bold mt-3 mb-1">
+                            Buku Panduan
 
-                                    QR Attendance
+                        </button>
 
-                                </h6>
+                    </div>
 
-                                <small class="text-muted">
 
-                                    Presensi cepat dan realtime.
+                    {{-- FEATURE CARDS --}}
 
-                                </small>
+                    <div class="row mt-4 g-3">
+
+                        <div class="col-6">
+
+                            <div class="card hero-feature border-0 shadow-sm h-100">
+
+                                <div class="card-body">
+
+                                    <div class="hero-feature-icon">
+
+                                        <i class="bi bi-qr-code-scan text-primary fs-5"></i>
+
+                                    </div>
+
+                                    <h6 class="fw-bold mt-3 mb-1">
+
+                                        QR Attendance
+
+                                    </h6>
+
+                                    <small class="text-muted">
+
+                                        Presensi cepat & realtime.
+
+                                    </small>
+
+                                </div>
 
                             </div>
 
                         </div>
 
-                    </div>
 
-                    <div class="col-6">
+                        <div class="col-6">
 
-                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card hero-feature border-0 shadow-sm h-100">
 
-                            <div class="card-body">
+                                <div class="card-body">
 
-                                <i class="bi bi-laptop fs-2 text-success"></i>
+                                    <div
+                                        class="hero-feature-icon"
+                                        style="background:#EAF8EE;">
 
-                                <h6 class="fw-bold mt-3 mb-1">
+                                        <i class="bi bi-laptop text-success fs-5"></i>
 
-                                    CBT Online
+                                    </div>
 
-                                </h6>
+                                    <h6 class="fw-bold mt-3 mb-1">
 
-                                <small class="text-muted">
+                                        CBT Online
 
-                                    Ujian berbasis komputer.
+                                    </h6>
 
-                                </small>
+                                    <small class="text-muted">
 
-                            </div>
+                                        Ujian berbasis komputer.
 
-                        </div>
+                                    </small>
 
-                    </div>
-
-                    <div class="col-6">
-
-                        <div class="card border-0 shadow-sm h-100">
-
-                            <div class="card-body">
-
-                                <i class="bi bi-book-half fs-2 text-warning"></i>
-
-                                <h6 class="fw-bold mt-3 mb-1">
-
-                                    Digital Library
-
-                                </h6>
-
-                                <small class="text-muted">
-
-                                    Kelola koleksi buku sekolah.
-
-                                </small>
+                                </div>
 
                             </div>
 
                         </div>
 
-                    </div>
 
-                    <div class="col-6">
+                        <div class="col-6">
 
-                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card hero-feature border-0 shadow-sm h-100">
 
-                            <div class="card-body">
+                                <div class="card-body">
 
-                                <i class="bi bi-shield-check fs-2 text-info"></i>
+                                    <div
+                                        class="hero-feature-icon"
+                                        style="background:#FFF4DE;">
 
-                                <h6 class="fw-bold mt-3 mb-1">
+                                        <i class="bi bi-book-half text-warning fs-5"></i>
 
-                                    Aman
+                                    </div>
 
-                                </h6>
+                                    <h6 class="fw-bold mt-3 mb-1">
 
-                                <small class="text-muted">
+                                        Digital Library
 
-                                    Data tersimpan dengan aman.
+                                    </h6>
 
-                                </small>
+                                    <small class="text-muted">
+
+                                        Koleksi buku sekolah.
+
+                                    </small>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-6">
+
+                            <div class="card hero-feature border-0 shadow-sm h-100">
+
+                                <div class="card-body">
+
+                                    <div
+                                        class="hero-feature-icon"
+                                        style="background:#E7F7FC;">
+
+                                        <i class="bi bi-shield-check text-info fs-5"></i>
+
+                                    </div>
+
+                                    <h6 class="fw-bold mt-3 mb-1">
+
+                                        Aman
+
+                                    </h6>
+
+                                    <small class="text-muted">
+
+                                        Hak akses terkontrol.
+
+                                    </small>
+
+                                </div>
 
                             </div>
 
@@ -672,37 +2160,43 @@
 
             </div>
 
+
+            {{-- HERO IMAGE --}}
+
             <div class="col-lg-6">
 
-                <div class="position-relative">
+                <div class="hero-image-wrapper">
 
                     <img
                         src="{{ asset('images/sekolahsma.jpeg') }}"
-                        class="img-fluid rounded-4 shadow-lg"
-                        alt="SMA Negeri 6 Malinau">
+                        class="hero-image"
+                        alt="SMA Negeri 6 Malinau"
+                        loading="eager">
 
-                    <div
-                        class="position-absolute bg-white shadow rounded-4 p-3"
-                        style="top:20px;left:-20px;">
+
+                    {{-- Floating Card Atas --}}
+
+                    <div class="floating-card top-card">
 
                         <div class="d-flex align-items-center">
 
-                            <i class="bi bi-people-fill fs-2 text-primary me-3"></i>
+                            <div
+                                class="floating-icon bg-primary-subtle text-primary me-3">
+
+                                <i class="bi bi-grid-1x2-fill"></i>
+
+                            </div>
 
                             <div>
 
                                 <strong>
-
                                     Multi Modul
-
                                 </strong>
 
                                 <br>
 
                                 <small class="text-muted">
-
                                     Absensi • CBT • Perpustakaan
-
                                 </small>
 
                             </div>
@@ -711,28 +2205,30 @@
 
                     </div>
 
-                    <div
-                        class="position-absolute bg-white shadow rounded-4 p-3"
-                        style="bottom:20px;right:-20px;">
+
+                    {{-- Floating Card Bawah --}}
+
+                    <div class="floating-card bottom-card">
 
                         <div class="d-flex align-items-center">
 
-                            <i class="bi bi-check-circle-fill fs-2 text-success me-3"></i>
+                            <div
+                                class="floating-icon bg-success-subtle text-success me-3">
+
+                                <i class="bi bi-check-circle-fill"></i>
+
+                            </div>
 
                             <div>
 
                                 <strong>
-
                                     Sistem Aktif
-
                                 </strong>
 
                                 <br>
 
                                 <small class="text-muted">
-
-                                    Siap digunakan siswa sekolah
-
+                                    Siap digunakan
                                 </small>
 
                             </div>
@@ -751,6 +2247,8 @@
 
 </section>
 
+
+
 {{-- ==========================================================
 | STATISTIK
 ========================================================== --}}
@@ -761,13 +2259,16 @@
 
     <div class="container">
 
-        <div class="text-center mb-5">
+        <div class="text-center mb-5 reveal">
 
             <span class="section-badge">
+
+                <i class="bi bi-bar-chart-fill"></i>
 
                 Dashboard SSIS
 
             </span>
+
 
             <h2 class="section-title">
 
@@ -775,30 +2276,45 @@
 
             </h2>
 
+
             <p class="section-subtitle">
 
-                Informasi berikut ditampilkan secara otomatis
-                berdasarkan data yang tersimpan pada database SSIS.
+                Data berikut ditampilkan secara otomatis
+                berdasarkan informasi yang tersimpan
+                pada database SSIS.
 
             </p>
 
         </div>
 
+
         <div class="row g-4">
 
-            <div class="col-lg-4">
 
-                <div class="card border-0 shadow-sm text-center h-100">
+            {{-- UJIAN --}}
 
-                    <div class="card-body py-5">
+            <div class="col-md-4">
 
-                        <i class="bi bi-laptop display-4 text-primary"></i>
+                <div class="card stat-card shadow-sm h-100 reveal delay-1">
 
-                        <h2 class="fw-bold mt-3">
+                    <div class="card-body text-center py-5">
 
-                            {{ number_format($ujianAktif) }}
+                        <div
+                            class="stat-icon bg-primary-subtle text-primary">
+
+                            <i class="bi bi-laptop"></i>
+
+                        </div>
+
+
+                        <h2
+                            class="stat-number counter"
+                            data-target="{{ $ujianAktif }}">
+
+                            0
 
                         </h2>
+
 
                         <p class="text-muted mb-0">
 
@@ -812,19 +2328,35 @@
 
             </div>
 
-            <div class="col-lg-4">
 
-                <div class="card border-0 shadow-sm text-center h-100">
+            {{-- BUKU --}}
 
-                    <div class="card-body py-5">
+            <div class="col-md-4">
 
-                        <i class="bi bi-book display-4 text-success"></i>
+                <div class="card stat-card shadow-sm h-100 reveal delay-2">
 
-                        <h2 class="fw-bold mt-3">
+                    <div class="card-body text-center py-5">
 
-                            {{ number_format($stokBuku) }}
+                        <div
+                            class="stat-icon"
+                            style="
+                                background:#EAF8EE;
+                                color:#2FB344;
+                            ">
+
+                            <i class="bi bi-book"></i>
+
+                        </div>
+
+
+                        <h2
+                            class="stat-number counter"
+                            data-target="{{ $stokBuku }}">
+
+                            0
 
                         </h2>
+
 
                         <p class="text-muted mb-0">
 
@@ -838,19 +2370,35 @@
 
             </div>
 
-            <div class="col-lg-4">
 
-                <div class="card border-0 shadow-sm text-center h-100">
+            {{-- ABSENSI --}}
 
-                    <div class="card-body py-5">
+            <div class="col-md-4">
 
-                        <i class="bi bi-calendar-check display-4 text-warning"></i>
+                <div class="card stat-card shadow-sm h-100 reveal delay-3">
 
-                        <h2 class="fw-bold mt-3">
+                    <div class="card-body text-center py-5">
 
-                            {{ number_format($absensiAktif) }}
+                        <div
+                            class="stat-icon"
+                            style="
+                                background:#FFF4DE;
+                                color:#F59F00;
+                            ">
+
+                            <i class="bi bi-calendar-check"></i>
+
+                        </div>
+
+
+                        <h2
+                            class="stat-number counter"
+                            data-target="{{ $absensiAktif }}">
+
+                            0
 
                         </h2>
+
 
                         <p class="text-muted mb-0">
 
@@ -864,172 +2412,230 @@
 
             </div>
 
+
         </div>
 
     </div>
 
 </section>
 
+
+
 {{-- ==========================================================
-| TENTANG SSIS
+| TENTANG
 ========================================================== --}}
 
-<section
-    id="tentang"
-    class="py-5">
+<section id="tentang">
 
     <div class="container">
 
         <div class="row align-items-center g-5">
 
+
             <div class="col-lg-6">
 
-                <img
-                    src="{{ asset('images/sekolah.jpeg') }}"
-                    class="img-fluid rounded-4 shadow-lg"
-                    alt="Tentang SSIS">
+                <div class="about-image-wrapper reveal">
+
+                    <img
+                        src="{{ asset('images/sekolah.jpeg') }}"
+                        class="img-fluid shadow-lg"
+                        alt="Tentang SSIS"
+                        loading="lazy">
+
+
+                    <div class="about-badge">
+
+                        <div class="d-flex align-items-center">
+
+                            <div
+                                class="floating-icon bg-primary-subtle text-primary me-3">
+
+                                <i class="bi bi-mortarboard-fill"></i>
+
+                            </div>
+
+                            <div>
+
+                                <strong>
+                                    SMA Negeri 6
+                                </strong>
+
+                                <br>
+
+                                <small class="text-muted">
+                                    Malinau
+                                </small>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
 
             </div>
 
+
             <div class="col-lg-6">
 
-                <span class="section-badge">
+                <div class="reveal">
 
-                    Tentang SSIS
+                    <span class="section-badge">
 
-                </span>
+                        <i class="bi bi-info-circle-fill"></i>
 
-                <h2 class="section-title">
+                        Tentang SSIS
 
-                    Smart School Information System
+                    </span>
 
-                </h2>
 
-                <p class="section-subtitle text-start m-0">
+                    <h2 class="section-title">
 
-                    SSIS merupakan sistem informasi sekolah yang
-                    dikembangkan untuk mendukung digitalisasi
-                    administrasi dan proses pembelajaran di
-                    <strong>SMA Negeri 6 Malinau</strong>.
+                        Smart School
+                        <span class="text-primary">
+                            Information System
+                        </span>
 
-                    Seluruh layanan sekolah diintegrasikan ke
-                    dalam satu aplikasi sehingga lebih mudah,
-                    cepat, aman, dan efisien digunakan oleh
-                    guru, siswa, maupun petugas sekolah.
+                    </h2>
 
-                </p>
 
-                <div class="row mt-4">
+                    <p
+                        class="text-muted"
+                        style="line-height:1.9;">
 
-                    <div class="col-6 mb-3">
+                        SSIS merupakan sistem informasi sekolah
+                        yang dikembangkan untuk mendukung
+                        digitalisasi administrasi dan proses
+                        pembelajaran di
+                        <strong>SMA Negeri 6 Malinau</strong>.
 
-                        <div class="d-flex">
+                        Seluruh layanan sekolah diintegrasikan
+                        ke dalam satu aplikasi sehingga lebih
+                        mudah, cepat, aman, dan efisien digunakan
+                        oleh guru, siswa, maupun petugas sekolah.
 
-                            <i class="bi bi-check-circle-fill text-success fs-4 me-2"></i>
+                    </p>
 
-                            <div>
 
-                                <strong>
+                    <div class="row mt-4 g-2">
 
-                                    Mudah Digunakan
 
-                                </strong>
+                        <div class="col-sm-6">
 
-                                <br>
+                            <div class="about-item">
 
-                                <small class="text-muted">
+                                <div class="d-flex">
 
-                                    Antarmuka sederhana.
+                                    <i class="bi bi-check-circle-fill text-success fs-4 me-3"></i>
 
-                                </small>
+                                    <div>
 
-                            </div>
+                                        <strong>
+                                            Mudah Digunakan
+                                        </strong>
 
-                        </div>
+                                        <br>
 
-                    </div>
+                                        <small class="text-muted">
+                                            Antarmuka sederhana.
+                                        </small>
 
-                    <div class="col-6 mb-3">
+                                    </div>
 
-                        <div class="d-flex">
-
-                            <i class="bi bi-shield-lock-fill text-primary fs-4 me-2"></i>
-
-                            <div>
-
-                                <strong>
-
-                                    Aman
-
-                                </strong>
-
-                                <br>
-
-                                <small class="text-muted">
-
-                                    Hak akses sesuai pengguna.
-
-                                </small>
+                                </div>
 
                             </div>
 
                         </div>
 
-                    </div>
 
-                    <div class="col-6">
+                        <div class="col-sm-6">
 
-                        <div class="d-flex">
+                            <div class="about-item">
 
-                            <i class="bi bi-lightning-charge-fill text-warning fs-4 me-2"></i>
+                                <div class="d-flex">
 
-                            <div>
+                                    <i class="bi bi-shield-lock-fill text-primary fs-4 me-3"></i>
 
-                                <strong>
+                                    <div>
 
-                                    Cepat
+                                        <strong>
+                                            Aman
+                                        </strong>
 
-                                </strong>
+                                        <br>
 
-                                <br>
+                                        <small class="text-muted">
+                                            Hak akses pengguna.
+                                        </small>
 
-                                <small class="text-muted">
+                                    </div>
 
-                                    Data diproses realtime.
+                                </div>
 
-                                </small>
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-sm-6">
+
+                            <div class="about-item">
+
+                                <div class="d-flex">
+
+                                    <i class="bi bi-lightning-charge-fill text-warning fs-4 me-3"></i>
+
+                                    <div>
+
+                                        <strong>
+                                            Cepat
+                                        </strong>
+
+                                        <br>
+
+                                        <small class="text-muted">
+                                            Proses data efisien.
+                                        </small>
+
+                                    </div>
+
+                                </div>
 
                             </div>
 
                         </div>
 
-                    </div>
 
-                    <div class="col-6">
+                        <div class="col-sm-6">
 
-                        <div class="d-flex">
+                            <div class="about-item">
 
-                            <i class="bi bi-cloud-check-fill text-info fs-4 me-2"></i>
+                                <div class="d-flex">
 
-                            <div>
+                                    <i class="bi bi-cloud-check-fill text-info fs-4 me-3"></i>
 
-                                <strong>
+                                    <div>
 
-                                    Terintegrasi
+                                        <strong>
+                                            Terintegrasi
+                                        </strong>
 
-                                </strong>
+                                        <br>
 
-                                <br>
+                                        <small class="text-muted">
+                                            Semua modul satu sistem.
+                                        </small>
 
-                                <small class="text-muted">
+                                    </div>
 
-                                    Semua modul dalam satu sistem.
-
-                                </small>
+                                </div>
 
                             </div>
 
                         </div>
+
 
                     </div>
 
@@ -1043,48 +2649,56 @@
 
 </section>
 
+
+
 {{-- ==========================================================
-| CALL TO ACTION
+| CTA
 ========================================================== --}}
 
 <section class="py-5">
 
     <div class="container">
 
-        <div
-            class="rounded-4 p-5 text-center text-white"
-            style="
-                background:
-                linear-gradient(
-                    135deg,
-                    #206BC4,
-                    #4F8FEF
-                );
-            ">
+        <div class="cta-box text-center text-white reveal">
 
-            <h2 class="fw-bold mb-3">
+            <div class="cta-content">
 
-                Siap Menggunakan SSIS?
+                <span
+                    class="badge bg-white text-primary rounded-pill px-3 py-2 mb-3">
 
-            </h2>
+                    <i class="bi bi-stars me-1"></i>
 
-            <p class="mb-4 opacity-75">
+                    SSIS SMA Negeri 6 Malinau
 
-                Masuk ke sistem dan mulai
-                menggunakan seluruh layanan
-                Smart School Information System.
+                </span>
 
-            </p>
 
-            <a
-                href="{{ route('login') }}"
-                class="btn btn-light btn-lg px-5">
+                <h2 class="fw-bold mb-3">
 
-                <i class="bi bi-box-arrow-in-right me-2"></i>
+                    Siap Menggunakan SSIS?
 
-                Login Sekarang
+                </h2>
 
-            </a>
+
+                <p class="mb-4 opacity-75">
+
+                    Masuk ke sistem dan mulai menggunakan
+                    seluruh layanan Smart School Information System.
+
+                </p>
+
+
+                <a
+                    href="{{ route('login') }}"
+                    class="btn btn-light btn-lg px-5 rounded-3 fw-semibold">
+
+                    <i class="bi bi-box-arrow-in-right me-2"></i>
+
+                    Login Sekarang
+
+                </a>
+
+            </div>
 
         </div>
 
@@ -1092,20 +2706,23 @@
 
 </section>
 
+
+
 {{-- ==========================================================
 | FOOTER
 ========================================================== --}}
 
-<footer
-    class="py-4 border-top bg-white">
+<footer class="py-4 border-top">
 
     <div class="container">
 
-        <div class="row align-items-center">
+        <div class="row align-items-center gy-3">
 
             <div class="col-md-6">
 
                 <div class="fw-bold">
+
+                    <i class="bi bi-mortarboard-fill text-primary me-1"></i>
 
                     SSIS
 
@@ -1123,7 +2740,8 @@
 
             </div>
 
-            <div class="col-md-6 text-md-end mt-3 mt-md-0">
+
+            <div class="col-md-6 text-md-end">
 
                 <small class="text-muted">
 
@@ -1145,6 +2763,8 @@
 
 </footer>
 
+
+
 {{-- ==========================================================
 | MODAL PANDUAN
 ========================================================== --}}
@@ -1152,7 +2772,9 @@
 <div
     class="modal fade"
     id="panduanModal"
-    tabindex="-1">
+    tabindex="-1"
+    aria-labelledby="panduanModalLabel"
+    aria-hidden="true">
 
     <div class="modal-dialog modal-xl modal-dialog-centered">
 
@@ -1160,31 +2782,37 @@
 
             <div class="modal-header">
 
-                <h5 class="modal-title">
+                <h5
+                    class="modal-title"
+                    id="panduanModalLabel">
 
-                    <i class="bi bi-book me-2"></i>
+                    <i class="bi bi-book text-primary me-2"></i>
 
                     Buku Panduan SSIS
 
                 </h5>
 
+
                 <button
+                    type="button"
                     class="btn-close"
-                    data-bs-dismiss="modal">
+                    data-bs-dismiss="modal"
+                    aria-label="Tutup">
                 </button>
 
             </div>
+
 
             <div class="modal-body p-0">
 
                 <iframe
                     src="{{ asset('panduan/buku-panduan-v2.pdf') }}"
-                    width="100%"
-                    height="650"
-                    style="border:none">
+                    class="pdf-frame"
+                    title="Buku Panduan SSIS">
                 </iframe>
 
             </div>
+
 
             <div class="modal-footer">
 
@@ -1199,7 +2827,9 @@
 
                 </a>
 
+
                 <button
+                    type="button"
                     class="btn btn-secondary"
                     data-bs-dismiss="modal">
 
@@ -1215,45 +2845,278 @@
 
 </div>
 
-{{-- Bootstrap JS --}}
+
+
+{{-- ==========================================================
+| BOOTSTRAP JS
+========================================================== --}}
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
+
 <script>
+
+document.addEventListener('DOMContentLoaded', function () {
+
+
+    /* ==========================================================
+       NAVBAR SCROLL
+    ========================================================== */
 
     const navbar = document.querySelector('.navbar');
 
-window.addEventListener('scroll', function () {
-    if (window.scrollY > 40) {
-        navbar.classList.add('scrolled');
-    } else {
-        navbar.classList.remove('scrolled');
+    function updateNavbar() {
+
+        if (window.scrollY > 40) {
+
+            navbar.classList.add('scrolled');
+
+        } else {
+
+            navbar.classList.remove('scrolled');
+
+        }
+
     }
-});
 
-document.querySelectorAll('.nav-link[href^="#"]').forEach(link => {
-    link.addEventListener('click', function (e) {
-        e.preventDefault();
+    updateNavbar();
 
-        const target = document.querySelector(this.getAttribute('href'));
+    window.addEventListener(
+        'scroll',
+        updateNavbar,
+        { passive: true }
+    );
 
-        if (target) {
-            target.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
+
+    /* ==========================================================
+       SMOOTH NAVIGATION
+    ========================================================== */
+
+    document
+        .querySelectorAll('.nav-link[href^="#"]')
+        .forEach(function (link) {
+
+            link.addEventListener('click', function (e) {
+
+                const target =
+                    document.querySelector(
+                        this.getAttribute('href')
+                    );
+
+                if (!target) {
+                    return;
+                }
+
+                e.preventDefault();
+
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+
+
+                const menu =
+                    document.querySelector('#navbarMenu');
+
+                const bsCollapse =
+                    bootstrap.Collapse.getInstance(menu);
+
+                if (
+                    bsCollapse &&
+                    window.innerWidth < 992
+                ) {
+
+                    bsCollapse.hide();
+
+                }
+
             });
-        }
 
-        const menu = document.querySelector('#navbarMenu');
-        const bsCollapse = bootstrap.Collapse.getInstance(menu);
+        });
 
-        if (bsCollapse) {
-            bsCollapse.hide();
-        }
+
+    /* ==========================================================
+       REVEAL ANIMATION
+    ========================================================== */
+
+    const revealElements =
+        document.querySelectorAll('.reveal');
+
+
+    const revealObserver =
+        new IntersectionObserver(
+            function (entries, observer) {
+
+                entries.forEach(function (entry) {
+
+                    if (entry.isIntersecting) {
+
+                        entry.target.classList.add('show');
+
+                        observer.unobserve(
+                            entry.target
+                        );
+
+                    }
+
+                });
+
+            },
+            {
+                threshold: 0.12
+            }
+        );
+
+
+    revealElements.forEach(function (element) {
+
+        revealObserver.observe(element);
+
     });
+
+
+    /* ==========================================================
+       COUNTER STATISTIK
+    ========================================================== */
+
+    const counters =
+        document.querySelectorAll('.counter');
+
+
+    let counterStarted = false;
+
+
+    function startCounters() {
+
+        if (counterStarted) {
+            return;
+        }
+
+        counterStarted = true;
+
+
+        counters.forEach(function (counter) {
+
+            const target =
+                Number(counter.dataset.target) || 0;
+
+            const duration = 1200;
+
+            const startTime =
+                performance.now();
+
+
+            function updateCounter(currentTime) {
+
+                const progress =
+                    Math.min(
+                        (currentTime - startTime) / duration,
+                        1
+                    );
+
+
+                const eased =
+                    1 - Math.pow(
+                        1 - progress,
+                        3
+                    );
+
+
+                const current =
+                    Math.floor(
+                        eased * target
+                    );
+
+
+                counter.textContent =
+                    current.toLocaleString('id-ID');
+
+
+                if (progress < 1) {
+
+                    requestAnimationFrame(
+                        updateCounter
+                    );
+
+                } else {
+
+                    counter.textContent =
+                        target.toLocaleString('id-ID');
+
+                }
+
+            }
+
+
+            requestAnimationFrame(
+                updateCounter
+            );
+
+        });
+
+    }
+
+
+    const statistik =
+        document.querySelector('#statistik');
+
+
+    if (statistik) {
+
+        const statisticObserver =
+            new IntersectionObserver(
+                function (entries, observer) {
+
+                    if (
+                        entries[0].isIntersecting
+                    ) {
+
+                        startCounters();
+
+                        observer.disconnect();
+
+                    }
+
+                },
+                {
+                    threshold: .25
+                }
+            );
+
+
+        statisticObserver.observe(statistik);
+
+    }
+
+
+    /* ==========================================================
+       CLOSE MOBILE NAVBAR AFTER MODAL
+    ========================================================== */
+
+    const modal =
+        document.querySelector('#panduanModal');
+
+
+    if (modal) {
+
+        modal.addEventListener(
+            'shown.bs.modal',
+            function () {
+
+                document.body.classList.add(
+                    'modal-open'
+                );
+
+            }
+        );
+
+    }
+
+
 });
 
 </script>
+
 
 </body>
 
