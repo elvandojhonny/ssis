@@ -45,7 +45,7 @@
 
     <meta
         property="og:url"
-        content="https://ssis-production.up.railway.app/"
+        content="https://ssis-sma6.up.railway.app/"
     >
 
     <meta
@@ -98,7 +98,7 @@
         "@@type": "WebSite",
         "name": "SSIS SMA Negeri 6 Malinau",
         "alternateName": "SSIS",
-        "url": "https://ssis-production.up.railway.app/"
+        "url": "https://ssis-sma6.up.railway.app/"
     }
     </script>
 
