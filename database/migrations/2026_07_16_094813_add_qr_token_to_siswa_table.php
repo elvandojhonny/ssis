@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('siswas', function (Blueprint $table) {
+        Schema::table('siswa', function (Blueprint $table) {
 
             $table
                 ->string('qr_token', 64)
@@ -20,7 +20,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('siswas', function (Blueprint $table) {
+        Schema::table('siswa', function (Blueprint $table) {
 
             $table->dropUnique([
                 'qr_token'
