@@ -542,43 +542,6 @@
             </div>
 
 
-            {{-- ACAK PILIHAN JAWABAN --}}
-
-            <div class="col-md-6">
-
-                <div class="text-secondary small">
-                    Acak Pilihan Jawaban
-                </div>
-
-                <div class="mt-1">
-
-                    @if($ujian->acak_jawaban)
-
-                        <span class="badge bg-success-lt">
-
-                            <i class="ti ti-check me-1"></i>
-
-                            Aktif
-
-                        </span>
-
-                    @else
-
-                        <span class="badge bg-secondary-lt">
-
-                            <i class="ti ti-x me-1"></i>
-
-                            Tidak Aktif
-
-                        </span>
-
-                    @endif
-
-                </div>
-
-            </div>
-
-
                 {{-- DESKRIPSI --}}
 
                 @if($ujian->deskripsi)

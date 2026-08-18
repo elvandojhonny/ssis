@@ -25,500 +25,438 @@ public function __construct(
     | Mulai Ujian
     |--------------------------------------------------------------------------
     */
-    public function mulai(Ujian $ujian)
-    {
-        $user = auth()->user();
-
-        $siswa = $user->siswa;
-
-        if (! $siswa) {
-            abort(
-                403,
-                'Data siswa tidak ditemukan.'
-            );
-        }
-
-
-        /*
-         * Pastikan ujian ditujukan
-         * untuk kelas siswa.
-         */
-        if (
-            (int) $ujian->kelas_id !==
-            (int) $siswa->kelas_id
-        ) {
-            abort(
-                403,
-                'Ujian ini bukan untuk kelas Anda.'
-            );
-        }
-
-
-        /*
-         * Cari pengerjaan siswa.
-         */
-        $pengerjaan = PengerjaanUjian::query()
-            ->where(
-                'ujian_id',
-                $ujian->id
-            )
-            ->where(
-                'siswa_id',
-                $siswa->id
-            )
-            ->first();
-
-
-        /*
-         * Jika sudah selesai,
-         * tidak dapat mengerjakan ulang.
-         */
-        if (
-            $pengerjaan &&
-            $pengerjaan->status === 'selesai'
-        ) {
-            session()->forget(
-                'cbt_access_' . $ujian->id
-            );
-
-            return redirect()
-                ->route(
-                    'cbt.siswa.index'
-                )
-                ->with(
-                    'error',
-                    'Anda sudah menyelesaikan ujian ini dan tidak dapat mengerjakannya kembali.'
-                );
-        }
-
-
-        /*
-         * Jika pengerjaan sedang diblokir,
-         * siswa tidak dapat melanjutkan.
-         */
-        if (
-            $pengerjaan &&
-            $pengerjaan->status === 'diblokir'
-        ) {
-            return redirect()
-                ->route(
-                    'cbt.siswa.index'
-                )
-                ->with(
-                    'error',
-                    'Pengerjaan ujian Anda sedang diblokir karena mencapai batas pelanggaran. Hubungi operator untuk membuka blokir.'
-                );
-        }
-
-
-        /*
-         * Jika pengerjaan sudah tersedia.
-         */
-        if ($pengerjaan) {
-
-            /*
-             * Periksa batas waktu.
-             */
-            if (
-                now()->gte(
-                    $pengerjaan->batas_waktu
-                )
-            ) {
-                $this->selesaikanOtomatis(
-                    $pengerjaan
-                );
-
-                return redirect()
-                    ->route(
-                        'cbt.siswa.pengerjaan.hasil',
-                        $pengerjaan
-                    )
-                    ->with(
-                        'info',
-                        'Waktu pengerjaan Anda telah berakhir. Ujian telah diselesaikan secara otomatis.'
-                    );
-            }
-
-
-            /*
-             * Jika masih aktif,
-             * lanjutkan pengerjaan.
-             */
-            if (
-                $pengerjaan->status ===
-                'mengerjakan'
-            ) {
-                return redirect()
-                    ->route(
-                        'cbt.siswa.pengerjaan.show',
-                        $pengerjaan
-                    );
-            }
-
-
-            return redirect()
-                ->route(
-                    'cbt.siswa.index'
-                )
-                ->with(
-                    'error',
-                    'Status pengerjaan ujian tidak valid.'
-                );
-        }
-
-
-        /*
-         * Ujian harus dipublikasi.
-         */
-        if (
-            $ujian->status !==
-            'dipublikasi'
-        ) {
-            return redirect()
-                ->route(
-                    'cbt.siswa.index'
-                )
-                ->with(
-                    'error',
-                    'Ujian tidak tersedia.'
-                );
-        }
-
-
-        /*
-         * Siswa harus melewati
-         * validasi token.
-         */
-        abort_unless(
-            session()->has(
-                'cbt_access_' . $ujian->id
-            ),
-            403,
-            'Silakan verifikasi token ujian terlebih dahulu.'
-        );
-
-
-        $sekarang = now();
-
-
-        /*
-         * Jadwal belum dimulai.
-         */
-        if (
-            $sekarang->lt(
-                $ujian->waktu_mulai
-            )
-        ) {
-            return redirect()
-                ->route(
-                    'cbt.siswa.index'
-                )
-                ->with(
-                    'error',
-                    'Ujian belum dimulai.'
-                );
-        }
-
-
-        /*
-         * Jadwal sudah berakhir.
-         */
-        if (
-            $sekarang->gte(
-                $ujian->waktu_selesai
-            )
-        ) {
-            session()->forget(
-                'cbt_access_' . $ujian->id
-            );
-
-            return redirect()
-                ->route(
-                    'cbt.siswa.index'
-                )
-                ->with(
-                    'error',
-                    'Waktu ujian telah berakhir.'
-                );
-        }
-
-
-        /*
-         * Hitung batas waktu individual.
-         */
-        $batasDurasi = $sekarang
-            ->copy()
-            ->addMinutes(
-                $ujian->durasi_menit
-            );
-
-
-        /*
-         * Batas waktu tidak boleh
-         * melewati akhir jadwal ujian.
-         */
-        $batasWaktu = $batasDurasi->lt(
-            $ujian->waktu_selesai
-        )
-            ? $batasDurasi
-            : $ujian->waktu_selesai;
-
-
-        /*
+    /*
 |--------------------------------------------------------------------------
-| Buat Pengerjaan dan Urutan Acak
+| Mulai Ujian
 |--------------------------------------------------------------------------
 */
+public function mulai(Ujian $ujian)
+{
+    $user = auth()->user();
 
-$pengerjaan = DB::transaction(
-    function () use (
-        $ujian,
-        $siswa,
-        $sekarang,
-        $batasWaktu
-    ) {
+    $siswa = $user->siswa;
 
-        /*
-         * Cek apakah pengerjaan sudah ada.
-         */
-        $existing =
-            PengerjaanUjian::query()
-                ->where(
-                    'ujian_id',
-                    $ujian->id
-                )
-                ->where(
-                    'siswa_id',
-                    $siswa->id
-                )
-                ->first();
-
-
-        if ($existing) {
-            return $existing;
-        }
-
-
-        /*
-         * Ambil semua soal dari bank soal.
-         */
-        $soals =
-            Soal::query()
-                ->where(
-                    'bank_soal_id',
-                    $ujian->bank_soal_id
-                )
-                ->orderBy('nomor')
-                ->get();
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Urutan Soal
-        |--------------------------------------------------------------------------
-        |
-        | Yang disimpan adalah ID soal.
-        |
-        | Contoh:
-        |
-        | Siswa A:
-        | [1, 5, 3, 2, 4]
-        |
-        | Siswa B:
-        | [4, 2, 1, 5, 3]
-        |
-        */
-
-        $urutanSoal =
-            $soals
-                ->pluck('id');
-
-
-        if ($ujian->acak_soal) {
-
-            $urutanSoal =
-                $urutanSoal
-                    ->shuffle();
-
-        }
-
-
-        $urutanSoal =
-            $urutanSoal
-                ->values()
-                ->all();
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Urutan Pilihan Jawaban
-        |--------------------------------------------------------------------------
-        |
-        | Kita menyimpan urutan huruf jawaban asli.
-        |
-        | Contoh soal ID 10:
-        |
-        | ["C", "A", "D", "B"]
-        |
-        | Artinya:
-        |
-        | Tampilan A = pilihan_c asli
-        | Tampilan B = pilihan_a asli
-        | Tampilan C = pilihan_d asli
-        | Tampilan D = pilihan_b asli
-        |
-        */
-
-        $urutanJawaban = [];
-
-
-        foreach ($soals as $soal) {
-
-            /*
-             * Hanya masukkan pilihan
-             * yang benar-benar tersedia.
-             */
-            $pilihan = [];
-
-
-            foreach (
-                [
-                    'A',
-                    'B',
-                    'C',
-                    'D',
-                    'E',
-                ]
-                as $huruf
-            ) {
-
-                $kolom =
-                    'pilihan_' .
-                    strtolower($huruf);
-
-
-                if (
-                    ! is_null(
-                        $soal->{$kolom}
-                    ) &&
-                    trim(
-                        (string)
-                        $soal->{$kolom}
-                    ) !== ''
-                ) {
-
-                    $pilihan[] =
-                        $huruf;
-
-                }
-
-            }
-
-
-            /*
-             * Acak jika pengaturan
-             * ujian mengaktifkannya.
-             */
-            if ($ujian->acak_jawaban) {
-
-                shuffle($pilihan);
-
-            }
-
-
-            /*
-             * Simpan berdasarkan ID soal.
-             */
-            $urutanJawaban[
-                (string) $soal->id
-            ] = $pilihan;
-
-        }
-
-
-        /*
-         * Buat pengerjaan.
-         */
-        return PengerjaanUjian::create([
-
-            'ujian_id' =>
-                $ujian->id,
-
-            'siswa_id' =>
-                $siswa->id,
-
-            'waktu_mulai' =>
-                $sekarang,
-
-            'batas_waktu' =>
-                $batasWaktu,
-
-            'urutan_soal' =>
-                $urutanSoal,
-
-            'urutan_jawaban' =>
-                $urutanJawaban,
-
-            'status' =>
-                'mengerjakan',
-
-            'jumlah_pelanggaran' =>
-                0,
-
-        ]);
-
+    if (! $siswa) {
+        abort(
+            403,
+            'Data siswa tidak ditemukan.'
+        );
     }
-);
 
 
-        /*
-         * Token hanya digunakan
-         * untuk memulai ujian.
-         */
+    /*
+     * Pastikan ujian ditujukan
+     * untuk kelas siswa.
+     */
+    if (
+        (int) $ujian->kelas_id !==
+        (int) $siswa->kelas_id
+    ) {
+        abort(
+            403,
+            'Ujian ini bukan untuk kelas Anda.'
+        );
+    }
+
+
+    /*
+     * Cari pengerjaan siswa.
+     */
+    $pengerjaan = PengerjaanUjian::query()
+        ->where(
+            'ujian_id',
+            $ujian->id
+        )
+        ->where(
+            'siswa_id',
+            $siswa->id
+        )
+        ->first();
+
+
+    /*
+     * Jika sudah selesai,
+     * tidak dapat mengerjakan ulang.
+     */
+    if (
+        $pengerjaan &&
+        $pengerjaan->status === 'selesai'
+    ) {
         session()->forget(
             'cbt_access_' . $ujian->id
         );
 
+        return redirect()
+            ->route(
+                'cbt.siswa.index'
+            )
+            ->with(
+                'error',
+                'Anda sudah menyelesaikan ujian ini dan tidak dapat mengerjakannya kembali.'
+            );
+    }
+
+
+    /*
+     * Jika pengerjaan sedang diblokir,
+     * siswa tidak dapat melanjutkan.
+     */
+    if (
+        $pengerjaan &&
+        $pengerjaan->status === 'diblokir'
+    ) {
+        return redirect()
+            ->route(
+                'cbt.siswa.index'
+            )
+            ->with(
+                'error',
+                'Pengerjaan ujian Anda sedang diblokir karena mencapai batas pelanggaran. Hubungi operator untuk membuka blokir.'
+            );
+    }
+
+
+    /*
+     * Jika pengerjaan sudah tersedia.
+     */
+    if ($pengerjaan) {
 
         /*
-         * Periksa status hasil transaction.
+         * Periksa batas waktu.
          */
         if (
-            $pengerjaan->status ===
-            'selesai'
+            now()->gte(
+                $pengerjaan->batas_waktu
+            )
         ) {
+            $this->selesaikanOtomatis(
+                $pengerjaan
+            );
+
             return redirect()
                 ->route(
-                    'cbt.siswa.index'
+                    'cbt.siswa.pengerjaan.hasil',
+                    $pengerjaan
                 )
                 ->with(
-                    'error',
-                    'Anda sudah menyelesaikan ujian ini.'
+                    'info',
+                    'Waktu pengerjaan Anda telah berakhir. Ujian telah diselesaikan secara otomatis.'
                 );
         }
 
 
+        /*
+         * Jika masih aktif,
+         * lanjutkan pengerjaan.
+         */
         if (
             $pengerjaan->status ===
-            'diblokir'
+            'mengerjakan'
         ) {
             return redirect()
                 ->route(
-                    'cbt.siswa.index'
-                )
-                ->with(
-                    'error',
-                    'Pengerjaan ujian Anda sedang diblokir.'
+                    'cbt.siswa.pengerjaan.show',
+                    $pengerjaan
                 );
         }
 
 
         return redirect()
             ->route(
-                'cbt.siswa.pengerjaan.show',
-                $pengerjaan
+                'cbt.siswa.index'
+            )
+            ->with(
+                'error',
+                'Status pengerjaan ujian tidak valid.'
             );
     }
+
+
+    /*
+     * Ujian harus dipublikasi.
+     */
+    if (
+        $ujian->status !==
+        'dipublikasi'
+    ) {
+        return redirect()
+            ->route(
+                'cbt.siswa.index'
+            )
+            ->with(
+                'error',
+                'Ujian tidak tersedia.'
+            );
+    }
+
+
+    /*
+     * Siswa harus melewati
+     * validasi token.
+     */
+    abort_unless(
+        session()->has(
+            'cbt_access_' . $ujian->id
+        ),
+        403,
+        'Silakan verifikasi token ujian terlebih dahulu.'
+    );
+
+
+    $sekarang = now();
+
+
+    /*
+     * Jadwal belum dimulai.
+     */
+    if (
+        $sekarang->lt(
+            $ujian->waktu_mulai
+        )
+    ) {
+        return redirect()
+            ->route(
+                'cbt.siswa.index'
+            )
+            ->with(
+                'error',
+                'Ujian belum dimulai.'
+            );
+    }
+
+
+    /*
+     * Jadwal sudah berakhir.
+     */
+    if (
+        $sekarang->gte(
+            $ujian->waktu_selesai
+        )
+    ) {
+        session()->forget(
+            'cbt_access_' . $ujian->id
+        );
+
+        return redirect()
+            ->route(
+                'cbt.siswa.index'
+            )
+            ->with(
+                'error',
+                'Waktu ujian telah berakhir.'
+            );
+    }
+
+
+    /*
+     * Hitung batas waktu individual.
+     */
+    $batasDurasi = $sekarang
+        ->copy()
+        ->addMinutes(
+            $ujian->durasi_menit
+        );
+
+
+    /*
+     * Batas waktu tidak boleh
+     * melewati akhir jadwal ujian.
+     */
+    $batasWaktu = $batasDurasi->lt(
+        $ujian->waktu_selesai
+    )
+        ? $batasDurasi
+        : $ujian->waktu_selesai;
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Buat Pengerjaan dan Urutan Soal
+    |--------------------------------------------------------------------------
+    |
+    | Pada bagian ini HANYA nomor soal yang diacak.
+    |
+    | Pilihan jawaban A, B, C, D, E
+    | tidak lagi diacak.
+    |
+    */
+    $pengerjaan = DB::transaction(
+        function () use (
+            $ujian,
+            $siswa,
+            $sekarang,
+            $batasWaktu
+        ) {
+
+            /*
+             * Cek apakah pengerjaan sudah ada.
+             */
+            $existing =
+                PengerjaanUjian::query()
+                    ->where(
+                        'ujian_id',
+                        $ujian->id
+                    )
+                    ->where(
+                        'siswa_id',
+                        $siswa->id
+                    )
+                    ->first();
+
+
+            if ($existing) {
+                return $existing;
+            }
+
+
+            /*
+             * Ambil semua soal dari bank soal
+             * berdasarkan nomor soal asli.
+             */
+            $soals =
+                Soal::query()
+                    ->where(
+                        'bank_soal_id',
+                        $ujian->bank_soal_id
+                    )
+                    ->orderBy('nomor')
+                    ->get();
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Urutan Soal
+            |--------------------------------------------------------------------------
+            |
+            | Simpan ID soal berdasarkan urutan
+            | yang akan diberikan kepada siswa.
+            |
+            | Jika acak_soal aktif:
+            |
+            | Contoh:
+            | [5, 2, 8, 1, 4]
+            |
+            | Jika tidak aktif:
+            |
+            | [1, 2, 3, 4, 5]
+            |
+            */
+
+            $urutanSoal =
+                $soals
+                    ->pluck('id');
+
+
+            if ($ujian->acak_soal) {
+
+                $urutanSoal =
+                    $urutanSoal
+                        ->shuffle();
+
+            }
+
+
+            /*
+             * Pastikan index menjadi
+             * array biasa mulai dari 0.
+             */
+            $urutanSoal =
+                $urutanSoal
+                    ->values()
+                    ->all();
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Buat Pengerjaan
+            |--------------------------------------------------------------------------
+            |
+            | Tidak ada lagi:
+            |
+            | 'urutan_jawaban'
+            |
+            | karena pilihan A-E selalu mengikuti
+            | urutan asli dari bank soal.
+            |
+            */
+
+            return PengerjaanUjian::create([
+
+                'ujian_id' =>
+                    $ujian->id,
+
+                'siswa_id' =>
+                    $siswa->id,
+
+                'waktu_mulai' =>
+                    $sekarang,
+
+                'batas_waktu' =>
+                    $batasWaktu,
+
+                'urutan_soal' =>
+                    $urutanSoal,
+
+                'status' =>
+                    'mengerjakan',
+
+                'jumlah_pelanggaran' =>
+                    0,
+
+            ]);
+
+        }
+    );
+
+
+    /*
+     * Token hanya digunakan
+     * untuk memulai ujian.
+     */
+    session()->forget(
+        'cbt_access_' . $ujian->id
+    );
+
+
+    /*
+     * Periksa status hasil transaction.
+     */
+    if (
+        $pengerjaan->status ===
+        'selesai'
+    ) {
+        return redirect()
+            ->route(
+                'cbt.siswa.index'
+            )
+            ->with(
+                'error',
+                'Anda sudah menyelesaikan ujian ini.'
+            );
+    }
+
+
+    if (
+        $pengerjaan->status ===
+        'diblokir'
+    ) {
+        return redirect()
+            ->route(
+                'cbt.siswa.index'
+            )
+            ->with(
+                'error',
+                'Pengerjaan ujian Anda sedang diblokir.'
+            );
+    }
+
+
+    return redirect()
+        ->route(
+            'cbt.siswa.pengerjaan.show',
+            $pengerjaan
+        );
+}
 
 
     /*
@@ -526,7 +464,12 @@ $pengerjaan = DB::transaction(
     | Halaman Pengerjaan Ujian
     |--------------------------------------------------------------------------
     */
-    public function show(
+    /*
+|--------------------------------------------------------------------------
+| Halaman Pengerjaan Ujian
+|--------------------------------------------------------------------------
+*/
+public function show(
     PengerjaanUjian $pengerjaan
 ) {
     /*
@@ -612,10 +555,10 @@ $pengerjaan = DB::transaction(
          * Selesaikan ujian otomatis.
          */
         $this
-        ->penilaianService
-        ->proses(
-            $pengerjaan
-        );
+            ->penilaianService
+            ->proses(
+                $pengerjaan
+            );
 
 
         return redirect()
@@ -632,7 +575,7 @@ $pengerjaan = DB::transaction(
     | Ambil Semua Soal
     |--------------------------------------------------------------------------
     |
-    | Soal dari bank soal kita ubah menjadi collection
+    | Soal dari bank soal diubah menjadi collection
     | dengan ID soal sebagai key.
     |
     */
@@ -649,6 +592,21 @@ $pengerjaan = DB::transaction(
     |--------------------------------------------------------------------------
     | Ambil Urutan Soal Milik Siswa
     |--------------------------------------------------------------------------
+    |
+    | Urutan ini dibuat ketika siswa mulai ujian.
+    |
+    | Contoh:
+    |
+    | [7, 3, 10, 1, 5]
+    |
+    | Artinya:
+    |
+    | Nomor tampilan 1 = soal ID 7
+    | Nomor tampilan 2 = soal ID 3
+    | Nomor tampilan 3 = soal ID 10
+    | Nomor tampilan 4 = soal ID 1
+    | Nomor tampilan 5 = soal ID 5
+    |
     */
 
     $urutanSoal =
@@ -659,21 +617,8 @@ $pengerjaan = DB::transaction(
 
     /*
     |--------------------------------------------------------------------------
-    | Susun Soal Berdasarkan Urutan Acak
+    | Susun Soal Berdasarkan Urutan Siswa
     |--------------------------------------------------------------------------
-    |
-    | Contoh:
-    |
-    | urutan_soal:
-    |
-    | [4, 3, 5]
-    |
-    | Maka:
-    |
-    | Nomor tampilan 1 = Soal ID 4
-    | Nomor tampilan 2 = Soal ID 3
-    | Nomor tampilan 3 = Soal ID 5
-    |
     */
 
     if (

@@ -56,128 +56,312 @@ class BankSoalController extends Controller
         );
     }
 
-    /**
-     * Download template upload soal CBT.
-     */
-    public function downloadTemplate(): BinaryFileResponse
-    {
-        $phpWord = new PhpWord();
+   /**
+ * Download template upload soal CBT.
+ */
+public function downloadTemplate(): BinaryFileResponse
+{
+    $phpWord = new PhpWord();
 
-        /*
-         * Halaman landscape agar tabel lebih lebar.
-         */
-        $section = $phpWord->addSection([
-            'orientation' => Section::ORIENTATION_LANDSCAPE,
-            'marginTop' => 700,
-            'marginBottom' => 700,
-            'marginLeft' => 500,
-            'marginRight' => 500,
-        ]);
+    /*
+    |--------------------------------------------------------------------------
+    | DEFAULT FONT
+    |--------------------------------------------------------------------------
+    */
+    $phpWord->setDefaultFontName('Arial');
+    $phpWord->setDefaultFontSize(9);
 
-        /*
-         * Judul.
-         */
-        $section->addText(
-            'TEMPLATE SOAL CBT - SSIS',
+    /*
+    |--------------------------------------------------------------------------
+    | LANDSCAPE
+    |--------------------------------------------------------------------------
+    */
+    $section = $phpWord->addSection([
+        'orientation' => Section::ORIENTATION_LANDSCAPE,
+
+        'pageSizeW' => 15840,
+        'pageSizeH' => 12240,
+
+        'marginTop' => 600,
+        'marginBottom' => 600,
+        'marginLeft' => 500,
+        'marginRight' => 500,
+
+        'headerHeight' => 300,
+        'footerHeight' => 300,
+    ]);
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | JUDUL
+    |--------------------------------------------------------------------------
+    */
+    $section->addText(
+        'TEMPLATE SOAL CBT - SSIS',
+        [
+            'bold' => true,
+            'size' => 16,
+            'name' => 'Arial',
+        ],
+        [
+            'alignment' => Jc::CENTER,
+            'spaceAfter' => 100,
+        ]
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | SUBJUDUL
+    |--------------------------------------------------------------------------
+    */
+    $section->addText(
+        'Template Import Bank Soal Ujian Online',
+        [
+            'size' => 9,
+            'italic' => true,
+            'color' => '666666',
+            'name' => 'Arial',
+        ],
+        [
+            'alignment' => Jc::CENTER,
+            'spaceAfter' => 180,
+        ]
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | PETUNJUK
+    |--------------------------------------------------------------------------
+    */
+    $section->addText(
+        'Petunjuk Pengisian',
+        [
+            'bold' => true,
+            'size' => 11,
+            'name' => 'Arial',
+        ],
+        [
+            'spaceAfter' => 80,
+        ]
+    );
+
+
+    $petunjuk = [
+        'Isi satu soal pada setiap baris.',
+        'Jangan mengubah nama dan urutan kolom.',
+        'Pilihan jawaban A sampai D wajib diisi, E opsiional.',
+        'Pilihan E boleh dikosongkan.',
+        'Kunci jawaban hanya boleh A, B, C, D, atau E.',
+        'Skor harus berupa angka lebih dari 0.',
+        'Gambar dapat ditempel langsung ke dalam kolom PERTANYAAN atau A-E.',
+        'Jika menggunakan gambar, cukup tempel gambar ke dalam sel tanpa menambah kolom baru.',
+        'Gambar dapat digunakan untuk soal matematika, diagram, tabel, ilustrasi, denah, dan sebagainya.',
+    ];
+
+
+    foreach ($petunjuk as $item) {
+
+        $section->addListItem(
+            $item,
+            0,
+            [
+                'size' => 9,
+                'name' => 'Arial',
+            ],
+            [
+                'spaceAfter' => 20,
+            ]
+        );
+    }
+
+
+    $section->addTextBreak(1);
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | STYLE TABEL
+    |--------------------------------------------------------------------------
+    */
+    $phpWord->addTableStyle(
+        'TabelSoal',
+        [
+            'borderSize' => 6,
+            'borderColor' => 'B7B7B7',
+
+            'cellMarginTop' => 80,
+            'cellMarginBottom' => 80,
+            'cellMarginLeft' => 70,
+            'cellMarginRight' => 70,
+
+            'alignment' => Jc::CENTER,
+        ]
+    );
+
+
+    $table = $section->addTable('TabelSoal');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | HEADER
+    |--------------------------------------------------------------------------
+    */
+    $headers = [
+        'NO',
+        'PERTANYAAN',
+        'A',
+        'B',
+        'C',
+        'D',
+        'E',
+        'KUNCI',
+        'SKOR',
+    ];
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | LEBAR KOLOM
+    |--------------------------------------------------------------------------
+    |
+    | Total dibuat lebih aman untuk halaman landscape.
+    |
+    */
+    $widths = [
+        550,   // NO
+        3900,  // PERTANYAAN
+        1400,  // A
+        1400,  // B
+        1400,  // C
+        1400,  // D
+        1400,  // E
+        750,   // KUNCI
+        750,   // SKOR
+    ];
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | HEADER ROW
+    |--------------------------------------------------------------------------
+    */
+    $table->addRow(600);
+
+
+    foreach ($headers as $index => $header) {
+
+        $cell = $table->addCell(
+            $widths[$index],
+            [
+                'valign' => 'center',
+                'bgColor' => 'E9ECEF',
+            ]
+        );
+
+
+        $cell->addText(
+            $header,
             [
                 'bold' => true,
-                'size' => 16,
+                'size' => 9,
+                'name' => 'Arial',
             ],
             [
                 'alignment' => Jc::CENTER,
             ]
         );
+    }
 
-        $section->addText(
-            'Petunjuk Pengisian',
+
+    /*
+    |--------------------------------------------------------------------------
+    | CONTOH SOAL
+    |--------------------------------------------------------------------------
+    */
+    $table->addRow(1100);
+
+
+    $contoh = [
+        '1',
+        'Berapakah hasil dari 2 + 2?',
+        '2',
+        '3',
+        '4',
+        '5',
+        '',
+        'C',
+        '5',
+    ];
+
+
+    foreach ($contoh as $index => $value) {
+
+        $cell = $table->addCell(
+            $widths[$index],
             [
-                'bold' => true,
-                'size' => 11,
+                'valign' => 'center',
             ]
         );
 
-        $section->addListItem(
-            'Isi satu soal pada setiap baris.'
+
+        $cell->addText(
+            $value,
+            [
+                'size' => 9,
+                'name' => 'Arial',
+            ],
+            [
+                'alignment' =>
+                    $index === 1
+                        ? Jc::LEFT
+                        : Jc::CENTER,
+            ]
         );
-
-        $section->addListItem(
-            'Jangan mengubah nama dan urutan kolom.'
-        );
-
-        $section->addListItem(
-            'Pilihan jawaban A sampai D wajib diisi.'
-        );
-
-        $section->addListItem(
-            'Pilihan E boleh dikosongkan.'
-        );
-
-        $section->addListItem(
-            'Kunci jawaban hanya boleh A, B, C, D, atau E.'
-        );
-
-        $section->addListItem(
-            'Skor harus berupa angka lebih dari 0.'
-        );
-
-        $section->addListItem(
-            'Tambahkan atau hapus baris sesuai jumlah soal.'
-        );
-
-        $section->addTextBreak();
+    }
 
 
-        /*
-         * Style tabel.
-         */
-        $tableStyle = [
-            'borderSize' => 6,
-            'borderColor' => '999999',
-            'cellMargin' => 60,
-        ];
+    /*
+    |--------------------------------------------------------------------------
+    | BARIS SOAL KOSONG
+    |--------------------------------------------------------------------------
+    |
+    | Dibuat lebih tinggi agar guru dapat:
+    |
+    | - mengetik teks
+    | - menempel gambar
+    | - memasukkan diagram
+    | - memasukkan rumus
+    |
+    */
+    for (
+        $nomor = 2;
+        $nomor <= 10;
+        $nomor++
+    ) {
 
-        $phpWord->addTableStyle(
-            'TabelSoal',
-            $tableStyle
-        );
-
-        $table = $section->addTable('TabelSoal');
+        $table->addRow(1200);
 
 
-        /*
-         * Header wajib.
-         */
-        $headers = [
-            'NO',
-            'PERTANYAAN',
-            'A',
-            'B',
-            'C',
-            'D',
-            'E',
-            'KUNCI',
-            'SKOR',
-        ];
-
-        /*
-         * Lebar masing-masing kolom.
-         */
-        $widths = [
-            600,
-            4200,
-            1800,
-            1800,
-            1800,
-            1800,
-            1800,
-            900,
-            900,
+        $values = [
+            (string) $nomor,
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
         ];
 
 
-        $table->addRow();
-
-        foreach ($headers as $index => $header) {
+        foreach (
+            $values as $index => $value
+        ) {
 
             $cell = $table->addCell(
                 $widths[$index],
@@ -186,127 +370,167 @@ class BankSoalController extends Controller
                 ]
             );
 
-            $cell->addText(
-                $header,
-                [
-                    'bold' => true,
-                    'size' => 9,
-                ],
-                [
-                    'alignment' => Jc::CENTER,
-                ]
-            );
-        }
 
+            /*
+            |--------------------------------------------------------------------------
+            | NOMOR
+            |--------------------------------------------------------------------------
+            */
+            if ($index === 0) {
 
-        /*
-         * Contoh soal.
-         */
-        $contoh = [
-            '1',
-            'Berapakah hasil dari 2 + 2?',
-            '2',
-            '3',
-            '4',
-            '5',
-            '',
-            'C',
-            '5',
-        ];
-
-        $table->addRow();
-
-        foreach ($contoh as $index => $value) {
-
-            $table
-                ->addCell($widths[$index])
-                ->addText(
+                $cell->addText(
                     $value,
                     [
                         'size' => 9,
+                        'bold' => true,
+                        'name' => 'Arial',
+                    ],
+                    [
+                        'alignment' => Jc::CENTER,
                     ]
                 );
-        }
 
-
-        /*
-         * Sediakan beberapa baris kosong.
-         *
-         * Guru boleh menambah atau menghapus baris
-         * sesuai jumlah soal.
-         */
-        for ($nomor = 2; $nomor <= 10; $nomor++) {
-
-            $table->addRow();
-
-            $values = [
-                (string) $nomor,
-                '',
-                '',
-                '',
-                '',
-                '',
-                '',
-                '',
-                '',
-            ];
-
-            foreach ($values as $index => $value) {
-
-                $table
-                    ->addCell($widths[$index])
-                    ->addText(
-                        $value,
-                        [
-                            'size' => 9,
-                        ]
-                    );
+                continue;
             }
-        }
 
 
-        /*
-         * Simpan file sementara.
-         */
-        $fileName = 'template-soal-cbt-ssis.docx';
+            /*
+            |--------------------------------------------------------------------------
+            | KOLOM KUNCI & SKOR
+            |--------------------------------------------------------------------------
+            */
+            if (
+                $index === 7
+                || $index === 8
+            ) {
 
-        $directory = storage_path(
-            'app/temp'
-        );
+                $cell->addText(
+                    $value,
+                    [
+                        'size' => 9,
+                        'name' => 'Arial',
+                    ],
+                    [
+                        'alignment' => Jc::CENTER,
+                    ]
+                );
 
-        if (! is_dir($directory)) {
-            mkdir(
-                $directory,
-                0755,
-                true
+                continue;
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | KOLOM PERTANYAAN / PILIHAN
+            |--------------------------------------------------------------------------
+            |
+            | Diberikan ruang kosong yang cukup besar
+            | untuk menempel gambar.
+            |
+            */
+            $cell->addText(
+                $value,
+                [
+                    'size' => 9,
+                    'name' => 'Arial',
+                    'color' => '999999',
+                ],
+                [
+                    'alignment' => Jc::LEFT,
+                ]
             );
         }
-
-        $path = $directory
-            . DIRECTORY_SEPARATOR
-            . uniqid('template_', true)
-            . '.docx';
-
-
-        $writer = IOFactory::createWriter(
-            $phpWord,
-            'Word2007'
-        );
-
-        $writer->save($path);
-
-
-        /*
-         * Download dan hapus file sementara
-         * setelah selesai dikirim.
-         */
-        return response()
-            ->download(
-                $path,
-                $fileName
-            )
-            ->deleteFileAfterSend(true);
     }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | CATATAN DI BAWAH TABEL
+    |--------------------------------------------------------------------------
+    */
+    $section->addTextBreak(1);
+
+
+    $section->addText(
+        'Catatan:',
+        [
+            'bold' => true,
+            'size' => 9,
+            'name' => 'Arial',
+        ]
+    );
+
+
+    $section->addText(
+        'Untuk soal bergambar, tempel gambar langsung ke dalam sel PERTANYAAN atau pilihan A-E. Jangan membuat kolom tambahan. Sistem akan membaca teks dan gambar secara otomatis saat file di-upload.',
+        [
+            'size' => 8,
+            'italic' => true,
+            'color' => '666666',
+            'name' => 'Arial',
+        ],
+        [
+            'spaceBefore' => 30,
+        ]
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | SIMPAN FILE TEMPORARY
+    |--------------------------------------------------------------------------
+    */
+    $fileName =
+        'template-soal-cbt-ssis.docx';
+
+
+    $directory =
+        storage_path('app/temp');
+
+
+    if (! is_dir($directory)) {
+
+        mkdir(
+            $directory,
+            0755,
+            true
+        );
+    }
+
+
+    $path =
+        $directory
+        . DIRECTORY_SEPARATOR
+        . uniqid('template_', true)
+        . '.docx';
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | WRITE DOCX
+    |--------------------------------------------------------------------------
+    */
+    $writer = IOFactory::createWriter(
+        $phpWord,
+        'Word2007'
+    );
+
+
+    $writer->save($path);
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | DOWNLOAD
+    |--------------------------------------------------------------------------
+    */
+    return response()
+        ->download(
+            $path,
+            $fileName
+        )
+        ->deleteFileAfterSend(true);
+}
 
 public function upload(Request $request)
 {

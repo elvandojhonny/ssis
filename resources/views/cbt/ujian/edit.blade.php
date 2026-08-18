@@ -505,7 +505,7 @@
 
                         <div class="text-secondary small">
 
-                            Atur pengacakan soal dan pilihan
+                            Atur pengacakan soal
                             jawaban untuk setiap peserta ujian.
 
                         </div>
@@ -590,83 +590,6 @@
 
 
 
-                    {{-- ================================================= --}}
-                    {{-- ACAK JAWABAN --}}
-                    {{-- ================================================= --}}
-
-                    <div class="border rounded p-3">
-
-                        <div
-                            class="
-                                d-flex
-                                justify-content-between
-                                align-items-center
-                                gap-3
-                            "
-                        >
-
-                            <div>
-
-                                <div class="fw-bold">
-                                    Acak Pilihan Jawaban
-                                </div>
-
-                                <div
-                                    class="
-                                        text-secondary
-                                        small
-                                        mt-1
-                                    "
-                                >
-
-                                    Posisi pilihan A, B, C, D,
-                                    dan E dapat berbeda pada
-                                    setiap siswa.
-
-                                </div>
-
-                            </div>
-
-
-                            <label
-                                class="
-                                    form-check
-                                    form-switch
-                                    m-0
-                                "
-                            >
-
-                                {{-- Nilai jika switch mati --}}
-                                <input
-                                    type="hidden"
-                                    name="acak_jawaban"
-                                    value="0"
-                                >
-
-
-                                <input
-                                    type="checkbox"
-                                    name="acak_jawaban"
-                                    value="1"
-                                    class="form-check-input"
-
-                                    @checked(
-                                        (bool)
-                                        old(
-                                            'acak_jawaban',
-                                            $ujian->acak_jawaban
-                                        )
-                                    )
-                                >
-
-                            </label>
-
-                        </div>
-
-                    </div>
-
-
-
                     {{-- INFORMASI PENGACAKAN --}}
 
                     <div class="alert alert-info mt-3 mb-0">
@@ -681,11 +604,10 @@
 
                             <div>
 
-                                Pengacakan dilakukan secara berbeda
-                                untuk setiap peserta.
-
-                                Urutan yang diterima peserta akan
-                                tetap sama selama pengerjaan ujian.
+                               Urutan soal dapat berbeda untuk setiap
+                                peserta. Setelah ujian dimulai, urutan
+                                soal setiap peserta akan tetap sama
+                                selama pengerjaan berlangsung.
 
                             </div>
 

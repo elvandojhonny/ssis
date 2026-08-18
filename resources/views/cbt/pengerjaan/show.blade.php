@@ -34,15 +34,6 @@
             ->keyBy('soal_id');
 
 
-    /*
-     * Urutan pilihan jawaban permanen
-     * milik siswa ini.
-     */
-    $urutanJawaban =
-        $pengerjaan
-            ->urutan_jawaban
-        ?? [];
-
 @endphp
 
 
@@ -150,144 +141,6 @@
                         ?->jawaban;
 
 
-                /*
-                |--------------------------------------------------------------------------
-                | AMBIL URUTAN JAWABAN SISWA
-                |--------------------------------------------------------------------------
-                */
-
-                $urutanPilihan =
-                    $urutanJawaban[
-                        (string) $soal->id
-                    ]
-                    ?? [
-                        'A',
-                        'B',
-                        'C',
-                        'D',
-                        'E',
-                    ];
-
-
-                /*
-                 * Huruf yang ditampilkan kepada siswa.
-                 */
-                $hurufTampilan = [
-                    'A',
-                    'B',
-                    'C',
-                    'D',
-                    'E',
-                ];
-
-
-                /*
-                |--------------------------------------------------------------------------
-                | SUSUN PILIHAN JAWABAN
-                |--------------------------------------------------------------------------
-                |
-                | Contoh urutan:
-                |
-                | ['C', 'A', 'D', 'B']
-                |
-                | Maka:
-                |
-                | Tampilan A = pilihan C asli
-                | Tampilan B = pilihan A asli
-                | Tampilan C = pilihan D asli
-                | Tampilan D = pilihan B asli
-                |
-                */
-
-                $pilihanJawaban = [];
-
-
-                foreach (
-                    $urutanPilihan
-                    as $indexPilihan => $hurufAsli
-                ) {
-
-                    /*
-                     * Pastikan index huruf tampilan tersedia.
-                     */
-                    if (
-                        ! isset(
-                            $hurufTampilan[
-                                $indexPilihan
-                            ]
-                        )
-                    ) {
-                        continue;
-                    }
-
-
-                    $hurufDisplay =
-                        $hurufTampilan[
-                            $indexPilihan
-                        ];
-
-
-                    /*
-                     * Contoh:
-                     *
-                     * hurufAsli = C
-                     *
-                     * menjadi:
-                     *
-                     * pilihan_c
-                     */
-                    $kolom =
-                        'pilihan_' .
-                        strtolower(
-                            $hurufAsli
-                        );
-
-
-                    /*
-                     * Lewati pilihan kosong.
-                     */
-                    if (
-                        is_null(
-                            $soal->{$kolom}
-                        )
-                        ||
-                        trim(
-                            (string)
-                            $soal->{$kolom}
-                        ) === ''
-                    ) {
-                        continue;
-                    }
-
-
-                    $pilihanJawaban[] = [
-
-                        /*
-                         * Huruf yang terlihat siswa.
-                         */
-                        'huruf_tampilan' =>
-                            $hurufDisplay,
-
-
-                        /*
-                         * Huruf asli dari database.
-                         *
-                         * Ini yang dikirim ke server.
-                         */
-                        'huruf_asli' =>
-                            $hurufAsli,
-
-
-                        /*
-                         * Isi jawaban.
-                         */
-                        'teks' =>
-                            $soal->{$kolom},
-
-                    ];
-
-                }
-
             @endphp
 
 
@@ -379,152 +232,485 @@
 
 
                     {{-- ================================================= --}}
-                    {{-- PILIHAN JAWABAN YANG SUDAH DIACAK --}}
-                    {{-- ================================================= --}}
+{{-- PILIHAN JAWABAN --}}
+{{-- ================================================= --}}
 
-                @if($soal->tipe === 'pilihan_ganda')
-                    
-                    <div class="jawaban-list">
+@if($soal->tipe === 'pilihan_ganda')
 
-                        @foreach(
-                            $pilihanJawaban
-                            as $pilihan
-                        )
+    <div class="jawaban-list">
 
-                            <label
-                                class="
-                                    jawaban-option
-                                    d-flex
-                                    align-items-start
-                                    gap-3
-                                    border
-                                    rounded
-                                    p-3
-                                    mb-3
-                                "
-                            >
+        {{-- ================================================= --}}
+        {{-- PILIHAN A --}}
+        {{-- ================================================= --}}
 
-                                <input
-                                    type="radio"
-                                    class="
-                                        form-check-input
-                                        mt-1
-                                        jawaban-radio
-                                    "
+        @if(
+            !is_null($soal->pilihan_a) &&
+            trim((string) $soal->pilihan_a) !== ''
+        )
 
-                                    name="jawaban_{{ $soal->id }}"
+            <label
+                class="
+                    jawaban-option
+                    d-flex
+                    align-items-start
+                    gap-3
+                    border
+                    rounded
+                    p-3
+                    mb-3
+                "
+            >
 
-                                    value="{{
-                                        $pilihan[
-                                            'huruf_asli'
-                                        ]
-                                    }}"
+                <input
+                    type="radio"
+                    class="
+                        form-check-input
+                        mt-1
+                        jawaban-radio
+                    "
+                    name="jawaban_{{ $soal->id }}"
+                    value="A"
+                    data-soal-id="{{ $soal->id }}"
 
-                                    data-soal-id="{{
-                                        $soal->id
-                                    }}"
+                    @checked(
+                        strtoupper(
+                            trim(
+                                (string) $jawabanAsli
+                            )
+                        ) === 'A'
+                    )
+                >
 
-                                    @checked(
-                                        $jawabanAsli ===
-                                        $pilihan[
-                                            'huruf_asli'
-                                        ]
-                                    )
-                                >
-
-
-                                {{-- Huruf yang terlihat siswa --}}
-                                <span
-                                    class="
-                                        jawaban-huruf
-                                        fw-bold
-                                    "
-                                >
-
-                                    {{
-                                        $pilihan[
-                                            'huruf_tampilan'
-                                        ]
-                                    }}.
-
-                                </span>
+                <span
+                    class="
+                        jawaban-huruf
+                        fw-bold
+                    "
+                >
+                    A.
+                </span>
 
 
-                                {{-- =========================================================
-     ISI PILIHAN + GAMBAR
-========================================================= --}}
+                <span class="flex-fill">
 
-<span class="flex-fill">
+                    <div class="jawaban-teks">
 
-    {{-- TEKS PILIHAN --}}
-    @if(
-        isset($pilihan['teks']) &&
-        trim((string) $pilihan['teks']) !== ''
-    )
-
-        <div class="jawaban-teks">
-
-            {!! nl2br(
-                e($pilihan['teks'])
-            ) !!}
-
-        </div>
-
-    @endif
-
-
-    {{-- =====================================================
-         GAMBAR PILIHAN
-    ====================================================== --}}
-
-    @php
-
-        $kolomGambar =
-            'gambar_' .
-            strtolower(
-                $pilihan['huruf_asli']
-            );
-
-        $gambarPilihan =
-            $soal->{$kolomGambar}
-            ?? null;
-
-    @endphp
-
-
-    @if(
-        !empty($gambarPilihan)
-    )
-
-        <div class="jawaban-gambar mt-3">
-
-    <img
-        src="{{ asset('storage/' . $gambarPilihan) }}"
-        alt="Gambar pilihan {{ $pilihan['huruf_tampilan'] }}"
-        class="
-            img-fluid
-            rounded
-            border
-            gambar-ujian-clickable
-        "
-        data-gambar="{{ asset('storage/' . $gambarPilihan) }}"
-        data-judul="Gambar Pilihan {{ $pilihan['huruf_tampilan'] }}"
-        loading="lazy"
-    >
-
-</div>
-
-    @endif
-
-</span>
-
-                            </label>
-
-                        @endforeach
+                        {!! nl2br(
+                            e($soal->pilihan_a)
+                        ) !!}
 
                     </div>
 
-                    @else
+
+                    {{-- GAMBAR PILIHAN A --}}
+
+                    @if(!empty($soal->gambar_a))
+
+                        <div class="jawaban-gambar mt-3">
+
+                            <img
+                                src="{{ asset('storage/' . $soal->gambar_a) }}"
+                                alt="Gambar pilihan A"
+                                class="
+                                    img-fluid
+                                    rounded
+                                    border
+                                    gambar-ujian-clickable
+                                "
+                                data-gambar="{{ asset('storage/' . $soal->gambar_a) }}"
+                                data-judul="Gambar Pilihan A"
+                                loading="lazy"
+                            >
+
+                        </div>
+
+                    @endif
+
+                </span>
+
+            </label>
+
+        @endif
+
+
+        {{-- ================================================= --}}
+        {{-- PILIHAN B --}}
+        {{-- ================================================= --}}
+
+        @if(
+            !is_null($soal->pilihan_b) &&
+            trim((string) $soal->pilihan_b) !== ''
+        )
+
+            <label
+                class="
+                    jawaban-option
+                    d-flex
+                    align-items-start
+                    gap-3
+                    border
+                    rounded
+                    p-3
+                    mb-3
+                "
+            >
+
+                <input
+                    type="radio"
+                    class="
+                        form-check-input
+                        mt-1
+                        jawaban-radio
+                    "
+                    name="jawaban_{{ $soal->id }}"
+                    value="B"
+                    data-soal-id="{{ $soal->id }}"
+
+                    @checked(
+                        strtoupper(
+                            trim(
+                                (string) $jawabanAsli
+                            )
+                        ) === 'B'
+                    )
+                >
+
+                <span
+                    class="
+                        jawaban-huruf
+                        fw-bold
+                    "
+                >
+                    B.
+                </span>
+
+
+                <span class="flex-fill">
+
+                    <div class="jawaban-teks">
+
+                        {!! nl2br(
+                            e($soal->pilihan_b)
+                        ) !!}
+
+                    </div>
+
+
+                    {{-- GAMBAR PILIHAN B --}}
+
+                    @if(!empty($soal->gambar_b))
+
+                        <div class="jawaban-gambar mt-3">
+
+                            <img
+                                src="{{ asset('storage/' . $soal->gambar_b) }}"
+                                alt="Gambar pilihan B"
+                                class="
+                                    img-fluid
+                                    rounded
+                                    border
+                                    gambar-ujian-clickable
+                                "
+                                data-gambar="{{ asset('storage/' . $soal->gambar_b) }}"
+                                data-judul="Gambar Pilihan B"
+                                loading="lazy"
+                            >
+
+                        </div>
+
+                    @endif
+
+                </span>
+
+            </label>
+
+        @endif
+
+
+        {{-- ================================================= --}}
+        {{-- PILIHAN C --}}
+        {{-- ================================================= --}}
+
+        @if(
+            !is_null($soal->pilihan_c) &&
+            trim((string) $soal->pilihan_c) !== ''
+        )
+
+            <label
+                class="
+                    jawaban-option
+                    d-flex
+                    align-items-start
+                    gap-3
+                    border
+                    rounded
+                    p-3
+                    mb-3
+                "
+            >
+
+                <input
+                    type="radio"
+                    class="
+                        form-check-input
+                        mt-1
+                        jawaban-radio
+                    "
+                    name="jawaban_{{ $soal->id }}"
+                    value="C"
+                    data-soal-id="{{ $soal->id }}"
+
+                    @checked(
+                        strtoupper(
+                            trim(
+                                (string) $jawabanAsli
+                            )
+                        ) === 'C'
+                    )
+                >
+
+                <span
+                    class="
+                        jawaban-huruf
+                        fw-bold
+                    "
+                >
+                    C.
+                </span>
+
+
+                <span class="flex-fill">
+
+                    <div class="jawaban-teks">
+
+                        {!! nl2br(
+                            e($soal->pilihan_c)
+                        ) !!}
+
+                    </div>
+
+
+                    {{-- GAMBAR PILIHAN C --}}
+
+                    @if(!empty($soal->gambar_c))
+
+                        <div class="jawaban-gambar mt-3">
+
+                            <img
+                                src="{{ asset('storage/' . $soal->gambar_c) }}"
+                                alt="Gambar pilihan C"
+                                class="
+                                    img-fluid
+                                    rounded
+                                    border
+                                    gambar-ujian-clickable
+                                "
+                                data-gambar="{{ asset('storage/' . $soal->gambar_c) }}"
+                                data-judul="Gambar Pilihan C"
+                                loading="lazy"
+                            >
+
+                        </div>
+
+                    @endif
+
+                </span>
+
+            </label>
+
+        @endif
+
+
+        {{-- ================================================= --}}
+        {{-- PILIHAN D --}}
+        {{-- ================================================= --}}
+
+        @if(
+            !is_null($soal->pilihan_d) &&
+            trim((string) $soal->pilihan_d) !== ''
+        )
+
+            <label
+                class="
+                    jawaban-option
+                    d-flex
+                    align-items-start
+                    gap-3
+                    border
+                    rounded
+                    p-3
+                    mb-3
+                "
+            >
+
+                <input
+                    type="radio"
+                    class="
+                        form-check-input
+                        mt-1
+                        jawaban-radio
+                    "
+                    name="jawaban_{{ $soal->id }}"
+                    value="D"
+                    data-soal-id="{{ $soal->id }}"
+
+                    @checked(
+                        strtoupper(
+                            trim(
+                                (string) $jawabanAsli
+                            )
+                        ) === 'D'
+                    )
+                >
+
+                <span
+                    class="
+                        jawaban-huruf
+                        fw-bold
+                    "
+                >
+                    D.
+                </span>
+
+
+                <span class="flex-fill">
+
+                    <div class="jawaban-teks">
+
+                        {!! nl2br(
+                            e($soal->pilihan_d)
+                        ) !!}
+
+                    </div>
+
+
+                    {{-- GAMBAR PILIHAN D --}}
+
+                    @if(!empty($soal->gambar_d))
+
+                        <div class="jawaban-gambar mt-3">
+
+                            <img
+                                src="{{ asset('storage/' . $soal->gambar_d) }}"
+                                alt="Gambar pilihan D"
+                                class="
+                                    img-fluid
+                                    rounded
+                                    border
+                                    gambar-ujian-clickable
+                                "
+                                data-gambar="{{ asset('storage/' . $soal->gambar_d) }}"
+                                data-judul="Gambar Pilihan D"
+                                loading="lazy"
+                            >
+
+                        </div>
+
+                    @endif
+
+                </span>
+
+            </label>
+
+        @endif
+
+
+        {{-- ================================================= --}}
+        {{-- PILIHAN E --}}
+        {{-- ================================================= --}}
+
+        @if(
+            !is_null($soal->pilihan_e) &&
+            trim((string) $soal->pilihan_e) !== ''
+        )
+
+            <label
+                class="
+                    jawaban-option
+                    d-flex
+                    align-items-start
+                    gap-3
+                    border
+                    rounded
+                    p-3
+                    mb-3
+                "
+            >
+
+                <input
+                    type="radio"
+                    class="
+                        form-check-input
+                        mt-1
+                        jawaban-radio
+                    "
+                    name="jawaban_{{ $soal->id }}"
+                    value="E"
+                    data-soal-id="{{ $soal->id }}"
+
+                    @checked(
+                        strtoupper(
+                            trim(
+                                (string) $jawabanAsli
+                            )
+                        ) === 'E'
+                    )
+                >
+
+                <span
+                    class="
+                        jawaban-huruf
+                        fw-bold
+                    "
+                >
+                    E.
+                </span>
+
+
+                <span class="flex-fill">
+
+                    <div class="jawaban-teks">
+
+                        {!! nl2br(
+                            e($soal->pilihan_e)
+                        ) !!}
+
+                    </div>
+
+
+                    {{-- GAMBAR PILIHAN E --}}
+
+                    @if(!empty($soal->gambar_e))
+
+                        <div class="jawaban-gambar mt-3">
+
+                            <img
+                                src="{{ asset('storage/' . $soal->gambar_e) }}"
+                                alt="Gambar pilihan E"
+                                class="
+                                    img-fluid
+                                    rounded
+                                    border
+                                    gambar-ujian-clickable
+                                "
+                                data-gambar="{{ asset('storage/' . $soal->gambar_e) }}"
+                                data-judul="Gambar Pilihan E"
+                                loading="lazy"
+                            >
+
+                        </div>
+
+                    @endif
+
+                </span>
+
+            </label>
+
+        @endif
+
+    </div>
+
+@else
 
                     <div class="mt-3">
 

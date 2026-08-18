@@ -369,7 +369,7 @@
 
                         <div class="text-secondary small">
 
-                            Atur pengacakan soal dan pilihan jawaban
+                            Atur pengacakan soal
                             untuk setiap peserta ujian.
 
                         </div>
@@ -434,63 +434,6 @@
                     </div>
 
 
-                    {{-- ACAK JAWABAN --}}
-
-                    <div class="border rounded p-3">
-
-                        <div
-                            class="
-                                d-flex
-                                justify-content-between
-                                align-items-center
-                                gap-3
-                            "
-                        >
-
-                            <div>
-
-                                <div class="fw-bold">
-                                    Acak Pilihan Jawaban
-                                </div>
-
-                                <div class="text-secondary small mt-1">
-
-                                    Posisi pilihan A, B, C, D, dan E
-                                    dapat berbeda pada setiap siswa.
-
-                                </div>
-
-                            </div>
-
-
-                            <label class="form-check form-switch m-0">
-
-                                <input
-                                    type="hidden"
-                                    name="acak_jawaban"
-                                    value="0"
-                                >
-
-                                <input
-                                    type="checkbox"
-                                    name="acak_jawaban"
-                                    value="1"
-                                    class="form-check-input"
-                                    @checked(
-                                        old(
-                                            'acak_jawaban',
-                                            1
-                                        )
-                                    )
-                                >
-
-                            </label>
-
-                        </div>
-
-                    </div>
-
-
                     <div class="alert alert-info mt-3 mb-0">
 
                         <div class="d-flex">
@@ -503,10 +446,10 @@
 
                             <div>
 
-                                Pengacakan dilakukan secara berbeda
-                                untuk setiap peserta, tetapi urutan
-                                yang diterima satu peserta akan tetap
-                                sama selama pengerjaan berlangsung.
+                                Urutan soal dapat berbeda untuk setiap
+                                peserta. Setelah ujian dimulai, urutan
+                                soal setiap peserta akan tetap sama
+                                selama pengerjaan berlangsung.
 
                             </div>
 

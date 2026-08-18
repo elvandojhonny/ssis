@@ -190,10 +190,6 @@ public function index(Request $request)
                 'boolean',
             ],
 
-            'acak_jawaban' => [
-                'required',
-                'boolean',
-            ],
         ]);
 
         /*
@@ -249,9 +245,6 @@ public function index(Request $request)
 
             'acak_soal' =>
                 (bool) $validated['acak_soal'],
-
-            'acak_jawaban' =>
-                (bool) $validated['acak_jawaban'],
 
             /*
              * Belum langsung tampil ke siswa.
@@ -436,11 +429,6 @@ public function update(
             'boolean',
         ],
 
-        'acak_jawaban' => [
-            'required',
-            'boolean',
-        ],
-
     ]);
 
 
@@ -499,9 +487,6 @@ public function update(
 
         'acak_soal' =>
             (bool) $validated['acak_soal'],
-
-        'acak_jawaban' =>
-            (bool) $validated['acak_jawaban'],
 
     ]);
 
