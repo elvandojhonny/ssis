@@ -157,12 +157,41 @@
 
                             </div>
 
-
                             <div class="text-secondary small">
 
                                 {{ $bankSoal->mata_pelajaran }}
 
                             </div>
+
+
+                            @if($bankSoal->kode)
+
+    <div class="mt-1">
+
+        <span class="badge bg-blue-lt">
+
+            <i class="ti ti-key me-1"></i>
+
+            {{ $bankSoal->kode }}
+
+        </span>
+
+    </div>
+
+@endif
+
+
+@if($bankSoal->tahunAjaran)
+
+    <div class="text-secondary small mt-1">
+
+        <i class="ti ti-calendar me-1"></i>
+
+        {{ $bankSoal->tahunAjaran->nama }}
+
+    </div>
+
+@endif
 
                         </td>
 
@@ -189,15 +218,33 @@
 
                         <td>
 
-                            <span class="badge bg-secondary-lt">
+    @if(
+        $bankSoal->tahunAjaran
+        && $bankSoal->tahunAjaran->is_active
+        && $bankSoal->is_archived
+    )
 
-                                <i class="ti ti-archive me-1"></i>
+        <span class="badge bg-secondary-lt">
 
-                                Diarsipkan
+            <i class="ti ti-archive me-1"></i>
 
-                            </span>
+            Arsip Manual
 
-                        </td>
+        </span>
+
+    @else
+
+        <span class="badge bg-blue-lt">
+
+            <i class="ti ti-calendar-off me-1"></i>
+
+            Tahun Ajaran Lama
+
+        </span>
+
+    @endif
+
+</td>
 
 
                         <td>
@@ -225,42 +272,43 @@
                                 </a>
 
 
-                                <form
-                                    action="{{
-                                        route(
-                                            'cbt.bank-soal.restore',
-                                            $bankSoal
-                                        )
-                                    }}"
-                                    method="POST"
-                                >
+                                @if(
+    $bankSoal->tahunAjaran
+    && $bankSoal->tahunAjaran->is_active
+    && $bankSoal->is_archived
+)
 
-                                    @csrf
-                                    @method('PATCH')
+    <form
+        action="{{
+            route(
+                'cbt.bank-soal.restore',
+                $bankSoal
+            )
+        }}"
+        method="POST"
+    >
 
+        @csrf
+        @method('PATCH')
 
-                                    <button
-                                        type="submit"
-                                        class="
-                                            btn
-                                            btn-sm
-                                            btn-outline-success
-                                        "
-                                    >
+        <button
+            type="submit"
+            class="
+                btn
+                btn-sm
+                btn-outline-success
+            "
+        >
 
-                                        <i
-                                            class="
-                                                ti
-                                                ti-restore
-                                                me-1
-                                            "
-                                        ></i>
+            <i class="ti ti-restore me-1"></i>
 
-                                        Pulihkan
+            Pulihkan
 
-                                    </button>
+        </button>
 
-                                </form>
+    </form>
+
+@endif
 
                             </div>
 
@@ -345,14 +393,63 @@
 
                         </div>
 
+                        @if($bankSoal->kode)
+
+    <div class="mt-2">
+
+        <span class="badge bg-blue-lt">
+
+            <i class="ti ti-key me-1"></i>
+
+            {{ $bankSoal->kode }}
+
+        </span>
+
+    </div>
+
+@endif
+
+
+@if($bankSoal->tahunAjaran)
+
+    <div class="text-secondary small mt-1">
+
+        <i class="ti ti-calendar me-1"></i>
+
+        {{ $bankSoal->tahunAjaran->nama }}
+
+    </div>
+
+@endif
+
                     </div>
 
 
-                    <span class="badge bg-secondary-lt">
+                    @if(
+    $bankSoal->tahunAjaran
+    && $bankSoal->tahunAjaran->is_active
+    && $bankSoal->is_archived
+)
 
-                        Arsip
+    <span class="badge bg-secondary-lt">
 
-                    </span>
+        <i class="ti ti-archive me-1"></i>
+
+        Arsip Manual
+
+    </span>
+
+@else
+
+    <span class="badge bg-blue-lt">
+
+        <i class="ti ti-calendar-off me-1"></i>
+
+        Tahun Lama
+
+    </span>
+
+@endif
 
                 </div>
 
@@ -415,37 +512,44 @@
                 </a>
 
 
-                <form
-                    action="{{
-                        route(
-                            'cbt.bank-soal.restore',
-                            $bankSoal
-                        )
-                    }}"
-                    method="POST"
-                    class="mt-2"
-                >
+                @if(
+    $bankSoal->tahunAjaran
+    && $bankSoal->tahunAjaran->is_active
+    && $bankSoal->is_archived
+)
 
-                    @csrf
-                    @method('PATCH')
+    <form
+        action="{{
+            route(
+                'cbt.bank-soal.restore',
+                $bankSoal
+            )
+        }}"
+        method="POST"
+        class="mt-2"
+    >
 
+        @csrf
+        @method('PATCH')
 
-                    <button
-                        type="submit"
-                        class="
-                            btn
-                            btn-outline-success
-                            w-100
-                        "
-                    >
+        <button
+            type="submit"
+            class="
+                btn
+                btn-outline-success
+                w-100
+            "
+        >
 
-                        <i class="ti ti-restore me-1"></i>
+            <i class="ti ti-restore me-1"></i>
 
-                        Pulihkan Bank Soal
+            Pulihkan Bank Soal
 
-                    </button>
+        </button>
 
-                </form>
+    </form>
+
+@endif
 
             </div>
 

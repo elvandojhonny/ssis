@@ -7,6 +7,7 @@ use App\Models\BankSoal;
 use App\Models\Kelas;
 use App\Models\Ujian;
 use App\Models\PengerjaanUjian;
+use App\Models\TahunAjaran;
 use Illuminate\Http\Request;
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -91,30 +92,52 @@ public function index(Request $request)
     );
 }
 
-
-    /*
-     * Form membuat ujian.
-     */
-    public function create()
+/*
+|--------------------------------------------------------------------------
+| Form Membuat Ujian
+|--------------------------------------------------------------------------
+*/
+public function create()
 {
     /*
-     * Hanya bank soal yang sudah siap.
-     */
-    $bankSoals = BankSoal::with('guru')
-        ->withCount('soals')
-        ->where('status', 'siap')
-        ->latest()
-        ->get();
+    |--------------------------------------------------------------------------
+    | Tahun Ajaran Aktif
+    |--------------------------------------------------------------------------
+    */
+
+    $tahunAjaran = TahunAjaran::query()
+        ->where('is_active', true)
+        ->first();
+
 
     /*
-     * Hanya kelas aktif dari
-     * tahun ajaran yang sedang aktif.
-     */
-    $kelas = Kelas::with('tahunAjaran')
-        ->where('is_active', true)
-        ->whereHas('tahunAjaran', function ($query) {
-            $query->where('is_active', true);
-        })
+    |--------------------------------------------------------------------------
+    | Kelas Aktif
+    |--------------------------------------------------------------------------
+    |
+    | Hanya kelas dari tahun ajaran aktif
+    | yang boleh dipilih untuk ujian.
+    |
+    */
+
+    $kelas = Kelas::with(
+        'tahunAjaran'
+    )
+        ->where(
+            'is_active',
+            true
+        )
+        ->whereHas(
+            'tahunAjaran',
+            function ($query) {
+
+                $query->where(
+                    'is_active',
+                    true
+                );
+
+            }
+        )
         ->orderByRaw("
             CASE tingkat
                 WHEN 'X' THEN 1
@@ -123,19 +146,186 @@ public function index(Request $request)
                 ELSE 4
             END
         ")
-        ->orderBy('nama')
+        ->orderBy(
+            'nama'
+        )
         ->get();
 
+
     /*
-     * Tampilkan halaman buat ujian.
-     */
+    |--------------------------------------------------------------------------
+    | Tampilkan halaman
+    |--------------------------------------------------------------------------
+    |
+    | Bank Soal TIDAK lagi dikirim ke halaman.
+    |
+    | Operator akan mencari Bank Soal
+    | berdasarkan kode melalui endpoint
+    | cariBankSoal().
+    |
+    */
+
     return view(
         'cbt.ujian.create',
         compact(
-            'bankSoals',
-            'kelas'
+            'kelas',
+            'tahunAjaran'
         )
     );
+}
+
+/**
+ * Cari Bank Soal berdasarkan kode.
+ */
+public function cariBankSoal(Request $request)
+{
+    $validated = $request->validate([
+        'kode' => [
+            'required',
+            'string',
+            'max:20',
+        ],
+    ]);
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Tahun Ajaran Aktif
+    |--------------------------------------------------------------------------
+    */
+
+    $tahunAjaran = TahunAjaran::query()
+        ->where('is_active', true)
+        ->first();
+
+
+    if (! $tahunAjaran) {
+
+        return response()->json([
+            'success' => false,
+            'message' =>
+                'Belum ada tahun ajaran yang aktif.',
+        ], 422);
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Normalisasi Kode
+    |--------------------------------------------------------------------------
+    |
+    | Contoh:
+    |
+    | mtk-48291
+    |
+    | akan dicari sebagai:
+    |
+    | MTK-48291
+    |
+    */
+
+    $kode = strtoupper(
+        trim(
+            $validated['kode']
+        )
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Cari Bank Soal
+    |--------------------------------------------------------------------------
+    */
+
+    $bankSoal = BankSoal::query()
+
+        ->where(
+            'kode',
+            $kode
+        )
+
+        ->where(
+            'tahun_ajaran_id',
+            $tahunAjaran->id
+        )
+
+        ->where(
+            'status',
+            'siap'
+        )
+
+        ->where(
+            'is_archived',
+            false
+        )
+
+        ->with([
+            'guru',
+            'tahunAjaran',
+        ])
+
+        ->withCount(
+            'soals'
+        )
+
+        ->first();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Tidak ditemukan
+    |--------------------------------------------------------------------------
+    */
+
+    if (! $bankSoal) {
+
+        return response()->json([
+            'success' => false,
+            'message' =>
+                'Bank soal dengan kode tersebut tidak ditemukan atau tidak tersedia pada tahun ajaran aktif.',
+        ], 404);
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Berhasil
+    |--------------------------------------------------------------------------
+    */
+
+    return response()->json([
+        'success' => true,
+
+        'data' => [
+
+            'id' =>
+                $bankSoal->id,
+
+            'kode' =>
+                $bankSoal->kode,
+
+            'judul' =>
+                $bankSoal->judul,
+
+            'mata_pelajaran' =>
+                $bankSoal->mata_pelajaran,
+
+            'tingkat' =>
+                $bankSoal->tingkat,
+
+            'jumlah_soal' =>
+                $bankSoal->soals_count,
+
+            'guru' =>
+                $bankSoal->guru?->nama,
+
+            'tahun_ajaran' =>
+                $bankSoal->tahunAjaran?->nama,
+
+        ],
+    ]);
 }
 
 
@@ -196,15 +386,62 @@ public function index(Request $request)
          * Jangan hanya percaya exists.
          * Pastikan Bank Soal memang siap.
          */
-        $bankSoal = BankSoal::query()
-            ->whereKey(
-                $validated['bank_soal_id']
-            )
-            ->where(
-                'status',
-                'siap'
-            )
-            ->firstOrFail();
+        /*
+|--------------------------------------------------------------------------
+| Tahun Ajaran Aktif
+|--------------------------------------------------------------------------
+*/
+
+$tahunAjaran = TahunAjaran::query()
+    ->where('is_active', true)
+    ->first();
+
+
+if (! $tahunAjaran) {
+
+    return back()
+        ->withInput()
+        ->with(
+            'error',
+            'Belum ada tahun ajaran yang aktif.'
+        );
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Pastikan Bank Soal sesuai Tahun Ajaran Aktif
+|--------------------------------------------------------------------------
+*/
+
+$bankSoal = BankSoal::query()
+    ->whereKey(
+        $validated['bank_soal_id']
+    )
+    ->where(
+        'tahun_ajaran_id',
+        $tahunAjaran->id
+    )
+    ->where(
+        'status',
+        'siap'
+    )
+    ->where(
+        'is_archived',
+        false
+    )
+    ->first();
+
+
+if (! $bankSoal) {
+
+    return back()
+        ->withInput()
+        ->with(
+            'error',
+            'Bank soal tidak tersedia untuk tahun ajaran aktif.'
+        );
+}
 
         /*
          * Pastikan kelas masih aktif.
@@ -282,7 +519,7 @@ public function index(Request $request)
         );
     }
 
-    /*
+/*
 |--------------------------------------------------------------------------
 | Form Edit Ujian
 |--------------------------------------------------------------------------
@@ -290,85 +527,116 @@ public function index(Request $request)
 public function edit(Ujian $ujian)
 {
     /*
-     * Hanya ujian draft yang dapat diedit.
-     */
-    if ($ujian->status !== 'draft') {
+    |--------------------------------------------------------------------------
+    | Pastikan Ujian Memiliki Bank Soal
+    |--------------------------------------------------------------------------
+    */
 
-        return redirect()
-            ->route(
-                'cbt.ujian.show',
-                $ujian
-            )
-            ->with(
-                'error',
-                'Ujian yang sudah dipublikasikan tidak dapat diedit.'
-            );
-    }
+    $ujian->load([
+        'bankSoal',
+        'kelas',
+    ]);
 
 
     /*
-     * Ambil bank soal yang siap digunakan.
-     */
-    $bankSoals = BankSoal::with([
-            'guru',
-        ])
-        ->withCount('soals')
+    |--------------------------------------------------------------------------
+    | Tahun Ajaran Aktif
+    |--------------------------------------------------------------------------
+    */
+
+    $tahunAjaran = TahunAjaran::query()
         ->where(
-            'status',
-            'siap'
+            'is_active',
+            true
         )
-        ->latest()
+        ->first();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Kelas Aktif
+    |--------------------------------------------------------------------------
+    */
+
+    $kelas = Kelas::with(
+        'tahunAjaran'
+    )
+        ->where(
+            'is_active',
+            true
+        )
+        ->whereHas(
+            'tahunAjaran',
+            function ($query) {
+
+                $query->where(
+                    'is_active',
+                    true
+                );
+
+            }
+        )
+        ->orderByRaw("
+            CASE tingkat
+                WHEN 'X' THEN 1
+                WHEN 'XI' THEN 2
+                WHEN 'XII' THEN 3
+                ELSE 4
+            END
+        ")
+        ->orderBy(
+            'nama'
+        )
         ->get();
 
 
     /*
-     * Ambil kelas yang masih aktif.
-     */
-    $kelas = Kelas::with('tahunAjaran')
-    ->where('is_active', true)
-    ->whereHas('tahunAjaran', function ($query) {
-        $query->where('is_active', true);
-    })
-    ->orderByRaw("
-        CASE tingkat
-            WHEN 'X' THEN 1
-            WHEN 'XI' THEN 2
-            WHEN 'XII' THEN 3
-            ELSE 4
-        END
-    ")
-    ->orderBy('nama')
-    ->get();
-
+    |--------------------------------------------------------------------------
+    | Tampilkan halaman Edit
+    |--------------------------------------------------------------------------
+    |
+    | Tidak lagi mengirim semua Bank Soal.
+    |
+    | Bank Soal yang sedang digunakan oleh ujian
+    | sudah tersedia melalui $ujian->bankSoal.
+    |
+    | Jika ingin mengganti Bank Soal, operator
+    | dapat mencari berdasarkan kode melalui
+    | endpoint cariBankSoal().
+    |
+    */
 
     return view(
         'cbt.ujian.edit',
         compact(
             'ujian',
-            'bankSoals',
-            'kelas'
+            'kelas',
+            'tahunAjaran'
         )
     );
 }
-
 
 /*
 |--------------------------------------------------------------------------
 | Update Ujian
 |--------------------------------------------------------------------------
 */
+/**
+ * Update ujian.
+ */
 public function update(
     Request $request,
     Ujian $ujian
 ) {
     /*
-     * Keamanan backend.
-     *
-     * Walaupun URL update dipanggil manual,
-     * ujian yang sudah dipublikasikan
-     * tetap tidak boleh diubah.
-     */
-    if ($ujian->status !== 'draft') {
+    |--------------------------------------------------------------------------
+    | Hanya Draft yang boleh diedit
+    |--------------------------------------------------------------------------
+    */
+
+    if (
+        $ujian->status !== 'draft'
+    ) {
 
         return redirect()
             ->route(
@@ -379,8 +647,15 @@ public function update(
                 'error',
                 'Ujian yang sudah dipublikasikan tidak dapat diedit.'
             );
+
     }
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Validasi Input
+    |--------------------------------------------------------------------------
+    */
 
     $validated = $request->validate([
 
@@ -425,7 +700,7 @@ public function update(
         ],
 
         'acak_soal' => [
-            'required',
+            'nullable',
             'boolean',
         ],
 
@@ -433,34 +708,129 @@ public function update(
 
 
     /*
-     * Pastikan bank soal masih siap.
-     */
+    |--------------------------------------------------------------------------
+    | Tahun Ajaran Aktif
+    |--------------------------------------------------------------------------
+    */
+
+    $tahunAjaran = TahunAjaran::query()
+        ->where(
+            'is_active',
+            true
+        )
+        ->first();
+
+
+    if (! $tahunAjaran) {
+
+        return back()
+            ->withInput()
+            ->with(
+                'error',
+                'Belum ada tahun ajaran yang aktif.'
+            );
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Validasi Bank Soal
+    |--------------------------------------------------------------------------
+    |
+    | Bank Soal harus:
+    | - berasal dari tahun ajaran aktif
+    | - status siap
+    | - tidak diarsipkan
+    |
+    */
+
     $bankSoal = BankSoal::query()
+
         ->whereKey(
             $validated['bank_soal_id']
         )
+
+        ->where(
+            'tahun_ajaran_id',
+            $tahunAjaran->id
+        )
+
         ->where(
             'status',
             'siap'
         )
-        ->firstOrFail();
+
+        ->where(
+            'is_archived',
+            false
+        )
+
+        ->first();
+
+
+    if (! $bankSoal) {
+
+        return back()
+            ->withInput()
+            ->with(
+                'error',
+                'Bank soal tidak tersedia untuk tahun ajaran aktif.'
+            );
+
+    }
 
 
     /*
-     * Pastikan kelas masih aktif.
-     */
+    |--------------------------------------------------------------------------
+    | Validasi Kelas
+    |--------------------------------------------------------------------------
+    */
+
     $kelas = Kelas::query()
-        ->whereKey($validated['kelas_id'])
-        ->where('is_active', true)
-        ->whereHas('tahunAjaran', function ($query) {
-            $query->where('is_active', true);
-        })
-        ->firstOrFail();
+
+        ->whereKey(
+            $validated['kelas_id']
+        )
+
+        ->where(
+            'is_active',
+            true
+        )
+
+        ->whereHas(
+            'tahunAjaran',
+            function ($query) {
+
+                $query->where(
+                    'is_active',
+                    true
+                );
+
+            }
+        )
+
+        ->first();
+
+
+    if (! $kelas) {
+
+        return back()
+            ->withInput()
+            ->with(
+                'error',
+                'Kelas tidak tersedia untuk tahun ajaran aktif.'
+            );
+
+    }
 
 
     /*
-     * Update data ujian.
-     */
+    |--------------------------------------------------------------------------
+    | Update Ujian
+    |--------------------------------------------------------------------------
+    */
+
     $ujian->update([
 
         'bank_soal_id' =>
@@ -486,10 +856,19 @@ public function update(
             $validated['durasi_menit'],
 
         'acak_soal' =>
-            (bool) $validated['acak_soal'],
+            (bool) (
+                $validated['acak_soal']
+                ?? false
+            ),
 
     ]);
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Selesai
+    |--------------------------------------------------------------------------
+    */
 
     return redirect()
         ->route(

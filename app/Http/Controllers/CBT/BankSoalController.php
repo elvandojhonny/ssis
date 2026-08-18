@@ -17,44 +17,109 @@ use PhpOffice\PhpWord\Element\TextRun;
 
 use App\Models\BankSoal;
 use App\Models\Soal;
+use App\Models\TahunAjaran;
 use Illuminate\Support\Facades\DB;
 
 use PhpOffice\PhpWord\Element\Image;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class BankSoalController extends Controller
 {
 
     public function index()
-    {
-        $guru = auth()->user()->guru;
+{
+    $guru = auth()->user()->guru;
 
-        abort_unless(
-            $guru,
-            403,
-            'Akun ini tidak memiliki data guru.'
-        );
+    abort_unless(
+        $guru,
+        403,
+        'Akun ini tidak memiliki data guru.'
+    );
 
-        $bankSoals = BankSoal::query()
-            ->where('guru_id', $guru->id)
-            ->withCount('soals')
-            ->latest()
-            ->paginate(10);
 
-        $bankSoals = BankSoal::where(
-                'guru_id',
-                auth()->user()->guru->id
-            )
-            ->where('is_archived', false)
-            ->withCount('soals')
-            ->latest()
-            ->paginate(10);
+    /*
+    |--------------------------------------------------------------------------
+    | Tahun Ajaran Aktif
+    |--------------------------------------------------------------------------
+    */
+
+    $tahunAjaran = TahunAjaran::query()
+    ->where('is_active', true)
+    ->first();
+
+    /*
+    |--------------------------------------------------------------------------
+    | Jika belum ada Tahun Ajaran aktif
+    |--------------------------------------------------------------------------
+    */
+
+    if (! $tahunAjaran) {
 
         return view(
             'cbt.bank-soal.index',
-            compact('bankSoals')
+            [
+                'bankSoals' => collect(),
+                'tahunAjaran' => null,
+            ]
+        )->with(
+            'error',
+            'Belum ada tahun ajaran yang aktif.'
         );
     }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Ambil Bank Soal Tahun Ajaran Aktif
+    |--------------------------------------------------------------------------
+    |
+    | Hanya menampilkan:
+    |
+    | 1. Milik guru yang sedang login
+    | 2. Tahun ajaran yang sedang aktif
+    | 3. Tidak sedang diarsipkan
+    |
+    */
+
+    $bankSoals = BankSoal::query()
+
+        ->where(
+            'guru_id',
+            $guru->id
+        )
+
+        ->where(
+            'tahun_ajaran_id',
+            $tahunAjaran->id
+        )
+
+        ->where(
+            'is_archived',
+            false
+        )
+
+        ->with([
+            'tahunAjaran',
+        ])
+
+        ->withCount(
+            'soals'
+        )
+
+        ->latest()
+
+        ->paginate(10);
+
+
+    return view(
+        'cbt.bank-soal.index',
+        compact(
+            'bankSoals',
+            'tahunAjaran'
+        )
+    );
+}
 
    /**
  * Download template upload soal CBT.
@@ -1633,6 +1698,185 @@ public function store(Request $request)
 
 
     /*
+    |--------------------------------------------------------------------------
+    | Ambil Tahun Ajaran Aktif
+    |--------------------------------------------------------------------------
+    */
+
+    $tahunAjaran = TahunAjaran::query()
+        ->where(
+            'is_active',
+            true
+        )
+        ->first();
+
+
+    if (! $tahunAjaran) {
+
+        return back()
+            ->withInput()
+            ->with(
+                'error',
+                'Belum ada tahun ajaran yang aktif. Silakan aktifkan tahun ajaran terlebih dahulu.'
+            );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Generate Kode Bank Soal
+    |--------------------------------------------------------------------------
+    |
+    | Contoh:
+    |
+    | BS-A7K9P2
+    |
+    | Kode dibuat unik dan tidak bergantung
+    | pada judul bank soal.
+    |
+    */
+
+    /*
+|--------------------------------------------------------------------------
+| Generate Prefix Kode dari Mata Pelajaran
+|--------------------------------------------------------------------------
+*/
+
+$mataPelajaran = trim(
+    $validated['mata_pelajaran']
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| Normalisasi nama mata pelajaran
+|--------------------------------------------------------------------------
+*/
+
+$namaNormal =
+    strtoupper(
+        preg_replace(
+            '/[^A-Z0-9\s]/',
+            '',
+            $mataPelajaran
+        )
+    );
+
+
+/*
+|--------------------------------------------------------------------------
+| Tentukan Prefix
+|--------------------------------------------------------------------------
+|
+| Beberapa mata pelajaran umum dibuat lebih
+| mudah dibaca.
+|
+*/
+
+$prefixMap = [
+
+    'MATEMATIKA' =>
+        'MTK',
+
+    'BAHASA INDONESIA' =>
+        'BI',
+
+    'BAHASA INGGRIS' =>
+        'BING',
+
+    'FISIKA' =>
+        'FIS',
+
+    'KIMIA' =>
+        'KIM',
+
+    'BIOLOGI' =>
+        'BIO',
+
+    'SEJARAH' =>
+        'SEJ',
+
+    'GEOGRAFI' =>
+        'GEO',
+
+    'EKONOMI' =>
+        'EKO',
+
+    'SOSIOLOGI' =>
+        'SOS',
+
+    'INFORMATIKA' =>
+        'INF',
+
+    'PJOK' =>
+        'PJOK',
+
+    'PENDIDIKAN AGAMA ISLAM' =>
+        'PAI',
+];
+
+
+$prefix =
+    $prefixMap[$namaNormal]
+    ?? strtoupper(
+        substr(
+            preg_replace(
+                '/[^A-Z0-9]/',
+                '',
+                $namaNormal
+            ),
+            0,
+            4
+        )
+    );
+
+
+/*
+|--------------------------------------------------------------------------
+| Fallback
+|--------------------------------------------------------------------------
+*/
+
+if ($prefix === '') {
+
+    $prefix = 'SOAL';
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Generate kode unik
+|--------------------------------------------------------------------------
+|
+| Contoh:
+| MTK-48291
+| BI-73924
+| FIS-29471
+|
+*/
+
+do {
+
+    $kode =
+        $prefix
+        . '-'
+        . random_int(
+            10000,
+            99999
+        );
+
+} while (
+    BankSoal::query()
+        ->where(
+            'kode',
+            $kode
+        )
+        ->exists()
+);
+
+
+    /*
      * Simpan Bank Soal + seluruh soal
      * dalam satu transaction.
      */
@@ -1640,7 +1884,9 @@ public function store(Request $request)
         function () use (
             $validated,
             $previewSoals,
-            $guru
+            $guru,
+            $tahunAjaran,
+            $kode
         ) {
 
             /*
@@ -1652,6 +1898,12 @@ public function store(Request $request)
 
                 'guru_id' =>
                     $guru->id,
+
+                'tahun_ajaran_id' =>
+                    $tahunAjaran->id,
+
+                'kode' =>
+                    $kode,
 
                 'judul' =>
                     $validated['judul'],
@@ -1825,8 +2077,6 @@ public function store(Request $request)
      * ==============================================================
      * HAPUS PREVIEW DARI SESSION
      * ==============================================================
-     *
-     * Dilakukan setelah transaction berhasil.
      */
     session()->forget([
         'cbt_preview_soals',
@@ -1843,7 +2093,8 @@ public function store(Request $request)
         )
         ->with(
             'success',
-            'Bank soal berhasil disimpan.'
+            'Bank soal berhasil disimpan. Kode bank soal: '
+            . $kode
         );
 }
 
@@ -1877,8 +2128,42 @@ public function arsip()
         ->user()
         ->guru;
 
-    abort_unless($guru, 403);
 
+    abort_unless(
+        $guru,
+        403,
+        'Akun ini tidak memiliki data guru.'
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Tahun Ajaran Aktif
+    |--------------------------------------------------------------------------
+    */
+
+    $tahunAjaranAktif = TahunAjaran::query()
+        ->where(
+            'is_active',
+            true
+        )
+        ->first();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Ambil Bank Soal Arsip
+    |--------------------------------------------------------------------------
+    |
+    | Bank Soal dianggap arsip apabila:
+    |
+    | 1. is_archived = true
+    |
+    | ATAU
+    |
+    | 2. Tahun ajarannya sudah tidak aktif
+    |
+    */
 
     $bankSoals = BankSoal::query()
 
@@ -1887,21 +2172,74 @@ public function arsip()
             $guru->id
         )
 
-        ->where(
-            'is_archived',
-            true
+        ->where(function ($query) use (
+            $tahunAjaranAktif
+        ) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | Arsip manual
+            |--------------------------------------------------------------------------
+            */
+
+            $query->where(
+                'is_archived',
+                true
+            );
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Tahun ajaran lama
+            |--------------------------------------------------------------------------
+            */
+
+            if ($tahunAjaranAktif) {
+
+                $query->orWhere(
+                    'tahun_ajaran_id',
+                    '!=',
+                    $tahunAjaranAktif->id
+                );
+
+            } else {
+
+                /*
+                |--------------------------------------------------------------------------
+                | Jika tidak ada tahun ajaran aktif,
+                | semua Bank Soal dianggap arsip.
+                |--------------------------------------------------------------------------
+                */
+
+                $query->orWhereNotNull(
+                    'tahun_ajaran_id'
+                );
+
+            }
+
+        })
+
+        ->with([
+            'tahunAjaran',
+        ])
+
+        ->withCount(
+            'soals'
         )
 
-        ->withCount('soals')
-
-        ->latest('updated_at')
+        ->latest(
+            'updated_at'
+        )
 
         ->paginate(10);
 
 
     return view(
         'cbt.bank-soal.arsip',
-        compact('bankSoals')
+        compact(
+            'bankSoals',
+            'tahunAjaranAktif'
+        )
     );
 }
 

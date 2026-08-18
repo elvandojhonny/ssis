@@ -15,12 +15,29 @@
             </div>
 
             <h2 class="page-title">
-                Bank Soal
-            </h2>
+    Bank Soal
+</h2>
 
-            <div class="text-secondary mt-1">
-                Kelola dan upload soal ujian melalui template Word.
-            </div>
+<div class="text-secondary mt-1">
+    Kelola dan upload soal ujian melalui template Word.
+</div>
+
+@if($tahunAjaran)
+
+    <div class="mt-2">
+
+        <span class="badge bg-blue-lt">
+
+            <i class="ti ti-calendar me-1"></i>
+
+            Tahun Ajaran:
+            {{ $tahunAjaran->nama }}
+
+        </span>
+
+    </div>
+
+@endif
 
         </div>
 
@@ -1010,13 +1027,24 @@
         <div>
 
             <h3 class="card-title">
-                <i class="ti ti-folder me-2"></i>
-                Bank Soal Saya
-            </h3>
+    <i class="ti ti-folder me-2"></i>
+    Bank Soal Saya
+</h3>
 
-            <div class="text-secondary small mt-1">
-                Daftar bank soal yang telah Anda simpan.
-            </div>
+<div class="text-secondary small mt-1">
+
+    @if($tahunAjaran)
+
+        Bank soal untuk tahun ajaran
+        <strong>{{ $tahunAjaran->nama }}</strong>.
+
+    @else
+
+        Belum ada tahun ajaran aktif.
+
+    @endif
+
+</div>
 
         </div>
 
@@ -1052,12 +1080,28 @@
                         <td>
 
                             <div class="fw-bold">
-                                {{ $bankSoal->judul }}
-                            </div>
+    {{ $bankSoal->judul }}
+</div>
 
-                            <div class="text-secondary small">
-                                {{ $bankSoal->mata_pelajaran }}
-                            </div>
+<div class="text-secondary small">
+    {{ $bankSoal->mata_pelajaran }}
+</div>
+
+@if($bankSoal->kode)
+
+    <div class="mt-2">
+
+        <span class="badge bg-blue-lt">
+
+            <i class="ti ti-key me-1"></i>
+
+            {{ $bankSoal->kode }}
+
+        </span>
+
+    </div>
+
+@endif
 
                         </td>
 
@@ -1200,12 +1244,28 @@
                     <div>
 
                         <div class="fw-bold">
-                            {{ $bankSoal->judul }}
-                        </div>
+    {{ $bankSoal->judul }}
+</div>
 
-                        <div class="text-secondary small mt-1">
-                            {{ $bankSoal->mata_pelajaran }}
-                        </div>
+<div class="text-secondary small mt-1">
+    {{ $bankSoal->mata_pelajaran }}
+</div>
+
+@if($bankSoal->kode)
+
+    <div class="mt-2">
+
+        <span class="badge bg-blue-lt">
+
+            <i class="ti ti-key me-1"></i>
+
+            {{ $bankSoal->kode }}
+
+        </span>
+
+    </div>
+
+@endif
 
                     </div>
 

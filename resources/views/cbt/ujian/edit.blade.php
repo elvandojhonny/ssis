@@ -139,63 +139,309 @@
 
                     {{-- BANK SOAL --}}
 
-                    <div class="mb-3">
+<div class="mb-3">
 
-                        <label class="form-label required">
-                            Bank Soal
-                        </label>
-
-                        <select
-                            name="bank_soal_id"
-                            class="form-select"
-                            required
-                        >
-
-                            <option value="">
-                                Pilih bank soal
-                            </option>
+    <label class="form-label required">
+        Bank Soal
+    </label>
 
 
-                            @foreach($bankSoals as $bankSoal)
+    {{-- Bank Soal yang sedang digunakan --}}
 
-                                <option
-                                    value="{{ $bankSoal->id }}"
+    <div
+        id="bankSoalSaatIni"
+        class="card border mb-3"
+    >
 
-                                    @selected(
-                                        old(
-                                            'bank_soal_id',
-                                            $ujian->bank_soal_id
-                                        )
-                                        == $bankSoal->id
-                                    )
-                                >
+        <div class="card-body">
 
-                                    {{ $bankSoal->judul }}
+            <div class="d-flex align-items-start gap-3">
 
-                                    —
+                <span class="avatar bg-blue-lt">
 
-                                    {{ $bankSoal->mata_pelajaran }}
+                    <i class="ti ti-file-text"></i>
 
-                                    —
-
-                                    {{ $bankSoal->soals_count }}
-                                    soal
-
-                                </option>
-
-                            @endforeach
-
-                        </select>
+                </span>
 
 
-                        <div class="form-hint">
+                <div class="flex-fill">
 
-                            Hanya bank soal berstatus siap
-                            yang dapat digunakan.
+                    <div class="text-secondary small">
+                        Bank Soal Saat Ini
+                    </div>
 
-                        </div>
+                    <div
+                        id="bankSoalSaatIniJudul"
+                        class="fw-bold mt-1"
+                    >
+
+                        {{ $ujian->bankSoal->judul }}
 
                     </div>
+
+
+                    <div
+                        id="bankSoalSaatIniDetail"
+                        class="text-secondary small mt-1"
+                    >
+
+                        {{ $ujian->bankSoal->mata_pelajaran }}
+
+                        <span class="mx-1">
+                            •
+                        </span>
+
+                        Kelas {{ $ujian->bankSoal->tingkat }}
+
+                        @if($ujian->bankSoal->kode)
+
+                            <span class="mx-1">
+                                •
+                            </span>
+
+                            <strong>
+                                {{ $ujian->bankSoal->kode }}
+                            </strong>
+
+                        @endif
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    {{-- ID Bank Soal --}}
+
+    <input
+        type="hidden"
+        name="bank_soal_id"
+        id="bankSoalId"
+        value="{{ old('bank_soal_id', $ujian->bank_soal_id) }}"
+        required
+    >
+
+
+    {{-- PENCARIAN BANK SOAL BARU --}}
+
+    <div class="mt-3">
+
+        <label class="form-label">
+
+            Ganti Bank Soal
+
+            <span class="text-secondary">
+                (opsional)
+            </span>
+
+        </label>
+
+
+        <div class="input-group">
+
+            <input
+                type="text"
+                id="kodeBankSoal"
+                class="form-control"
+                placeholder="Contoh: MTK-48291"
+                autocomplete="off"
+                style="text-transform: uppercase;"
+            >
+
+
+            <button
+                type="button"
+                id="btnCariBankSoal"
+                class="btn btn-primary"
+            >
+
+                <i class="ti ti-search me-1"></i>
+
+                Cari
+
+            </button>
+
+        </div>
+
+
+        <div class="form-hint mt-2">
+
+            Masukkan kode Bank Soal baru jika ingin
+            mengganti soal yang digunakan.
+
+        </div>
+
+    </div>
+
+
+    {{-- HASIL PENCARIAN --}}
+
+    <div
+        id="hasilBankSoal"
+        class="mt-3"
+        style="display: none;"
+    >
+
+        <div class="card border">
+
+            <div class="card-body">
+
+                <div
+                    class="
+                        d-flex
+                        justify-content-between
+                        align-items-start
+                        gap-3
+                    "
+                >
+
+                    <div>
+
+                        <div class="text-secondary small mb-1">
+                            Bank Soal Ditemukan
+                        </div>
+
+                        <div
+                            id="bankSoalJudul"
+                            class="fw-bold"
+                        ></div>
+
+                        <div
+                            id="bankSoalDetail"
+                            class="text-secondary small mt-1"
+                        ></div>
+
+                    </div>
+
+
+                    <span class="badge bg-success-lt">
+
+                        <i class="ti ti-circle-check me-1"></i>
+
+                        Tersedia
+
+                    </span>
+
+                </div>
+
+
+                <div class="row g-2 mt-3">
+
+                    <div class="col-6">
+
+                        <div class="text-secondary small">
+                            Kode
+                        </div>
+
+                        <div
+                            id="bankSoalKode"
+                            class="fw-bold"
+                        ></div>
+
+                    </div>
+
+
+                    <div class="col-6">
+
+                        <div class="text-secondary small">
+                            Jumlah Soal
+                        </div>
+
+                        <div
+                            id="bankSoalJumlah"
+                            class="fw-bold"
+                        ></div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="mt-3">
+
+                    <button
+                        type="button"
+                        id="btnGunakanBankSoal"
+                        class="btn btn-success w-100"
+                    >
+
+                        <i class="ti ti-check me-1"></i>
+
+                        Gunakan Bank Soal Ini
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    {{-- ERROR --}}
+
+    <div
+        id="errorBankSoal"
+        class="alert alert-danger mt-3 mb-0"
+        style="display: none;"
+    >
+
+        <div class="d-flex">
+
+            <i class="ti ti-alert-circle me-2"></i>
+
+            <div id="errorBankSoalText"></div>
+
+        </div>
+
+    </div>
+
+
+    {{-- BANK SOAL BARU TERPILIH --}}
+
+    <div
+        id="bankSoalTerpilih"
+        class="alert alert-primary mt-3 mb-0"
+        style="display: none;"
+    >
+
+        <div class="d-flex align-items-start">
+
+            <i class="ti ti-check me-2"></i>
+
+            <div>
+
+                <div class="fw-bold">
+                    Bank Soal Baru Terpilih
+                </div>
+
+                <div
+                    id="bankSoalTerpilihNama"
+                    class="small mt-1"
+                ></div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="form-hint mt-2">
+
+        Hanya Bank Soal dari tahun ajaran aktif,
+        berstatus siap, dan tidak diarsipkan yang dapat digunakan.
+
+    </div>
+
+</div>
 
 
                     {{-- KELAS PESERTA --}}
@@ -674,5 +920,334 @@
     </div>
 
 </form>
+
+@push('scripts')
+
+<script>
+document.addEventListener(
+    'DOMContentLoaded',
+    function () {
+
+        const kodeInput =
+            document.getElementById(
+                'kodeBankSoal'
+            );
+
+        const btnCari =
+            document.getElementById(
+                'btnCariBankSoal'
+            );
+
+        const bankSoalId =
+            document.getElementById(
+                'bankSoalId'
+            );
+
+        const hasil =
+            document.getElementById(
+                'hasilBankSoal'
+            );
+
+        const errorBox =
+            document.getElementById(
+                'errorBankSoal'
+            );
+
+        const errorText =
+            document.getElementById(
+                'errorBankSoalText'
+            );
+
+        const btnGunakan =
+            document.getElementById(
+                'btnGunakanBankSoal'
+            );
+
+        const terpilih =
+            document.getElementById(
+                'bankSoalTerpilih'
+            );
+
+        const terpilihNama =
+            document.getElementById(
+                'bankSoalTerpilihNama'
+            );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Cari Bank Soal
+        |--------------------------------------------------------------------------
+        */
+
+        async function cariBankSoal()
+        {
+
+            const kode =
+                kodeInput.value
+                    .trim()
+                    .toUpperCase();
+
+
+            if (!kode) {
+
+                errorText.textContent =
+                    'Masukkan kode Bank Soal terlebih dahulu.';
+
+                errorBox.style.display =
+                    'block';
+
+                hasil.style.display =
+                    'none';
+
+                return;
+
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Reset tampilan
+            |--------------------------------------------------------------------------
+            */
+
+            errorBox.style.display =
+                'none';
+
+            hasil.style.display =
+                'none';
+
+            terpilih.style.display =
+                'none';
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Loading
+            |--------------------------------------------------------------------------
+            */
+
+            btnCari.disabled =
+                true;
+
+            btnCari.innerHTML =
+                '<span class="spinner-border spinner-border-sm me-1"></span> Mencari...';
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        '{{ route("cbt.ujian.cari-bank-soal") }}?kode='
+                        + encodeURIComponent(kode),
+                        {
+                            method: 'GET',
+
+                            headers: {
+                                'Accept':
+                                    'application/json',
+
+                                'X-Requested-With':
+                                    'XMLHttpRequest'
+                            }
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (
+                    !response.ok ||
+                    !data.success
+                ) {
+
+                    throw new Error(
+                        data.message
+                        ||
+                        'Bank Soal tidak ditemukan.'
+                    );
+
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Tampilkan hasil
+                |--------------------------------------------------------------------------
+                */
+
+                document.getElementById(
+                    'bankSoalJudul'
+                ).textContent =
+                    data.data.judul;
+
+
+                document.getElementById(
+                    'bankSoalDetail'
+                ).textContent =
+                    data.data.mata_pelajaran
+                    + ' • Kelas '
+                    + data.data.tingkat
+                    + (
+                        data.data.tahun_ajaran
+                            ? ' • '
+                            + data.data.tahun_ajaran
+                            : ''
+                    );
+
+
+                document.getElementById(
+                    'bankSoalKode'
+                ).textContent =
+                    data.data.kode;
+
+
+                document.getElementById(
+                    'bankSoalJumlah'
+                ).textContent =
+                    data.data.jumlah_soal
+                    + ' soal';
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Simpan ID sementara
+                |--------------------------------------------------------------------------
+                */
+
+                bankSoalId.value =
+                    data.data.id;
+
+
+                hasil.style.display =
+                    'block';
+
+            } catch (error) {
+
+                errorText.textContent =
+                    error.message;
+
+                errorBox.style.display =
+                    'block';
+
+            } finally {
+
+                btnCari.disabled =
+                    false;
+
+                btnCari.innerHTML =
+                    '<i class="ti ti-search me-1"></i> Cari';
+
+            }
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Tombol Cari
+        |--------------------------------------------------------------------------
+        */
+
+        btnCari.addEventListener(
+            'click',
+            cariBankSoal
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Enter pada input
+        |--------------------------------------------------------------------------
+        */
+
+        kodeInput.addEventListener(
+            'keydown',
+            function (event) {
+
+                if (
+                    event.key === 'Enter'
+                ) {
+
+                    event.preventDefault();
+
+                    cariBankSoal();
+
+                }
+
+            }
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Gunakan Bank Soal Baru
+        |--------------------------------------------------------------------------
+        */
+
+        btnGunakan.addEventListener(
+            'click',
+            function () {
+
+                if (!bankSoalId.value) {
+                    return;
+                }
+
+
+                const judul =
+                    document.getElementById(
+                        'bankSoalJudul'
+                    ).textContent;
+
+
+                const kode =
+                    document.getElementById(
+                        'bankSoalKode'
+                    ).textContent;
+
+
+                terpilihNama.textContent =
+                    judul
+                    + ' — '
+                    + kode;
+
+
+                terpilih.style.display =
+                    'block';
+
+
+                hasil.style.display =
+                    'none';
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Informasi bank soal saat ini
+                |--------------------------------------------------------------------------
+                */
+
+                const currentBox =
+                    document.getElementById(
+                        'bankSoalSaatIni'
+                    );
+
+                if (currentBox) {
+
+                    currentBox.style.display =
+                        'none';
+
+                }
+
+            }
+
+        );
+
+    }
+);
+</script>
+
+@endpush
 
 @endsection

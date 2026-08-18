@@ -590,6 +590,11 @@ Route::middleware('role:guru')
         )->name('ujian.create');
 
         Route::get(
+            '/ujian/cari-bank-soal',
+            [UjianController::class, 'cariBankSoal']
+        )->name('ujian.cari-bank-soal');
+
+        Route::get(
             '/ujian/arsip',
             [UjianController::class, 'arsip']
         )->name('ujian.arsip');
@@ -598,6 +603,8 @@ Route::middleware('role:guru')
             '/ujian',
             [UjianController::class, 'store']
         )->name('ujian.store');
+
+        
 
 
         /*
