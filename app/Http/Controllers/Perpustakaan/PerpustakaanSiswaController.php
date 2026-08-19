@@ -16,16 +16,37 @@ class PerpustakaanSiswaController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Query Dasar
+        | Query Data Aktif
         |--------------------------------------------------------------------------
+        |
+        | Menampilkan:
+        | - Dipinjam
+        | - Terlambat
+        | - Dikembalikan maksimal 7 hari terakhir
+        |
         */
 
         $query = Peminjaman::query()
-        ->where('siswa_id', $siswa->id)
-        ->whereIn('status', [
-            'dipinjam',
-            'terlambat',
-        ]);
+            ->where('siswa_id', $siswa->id)
+            ->where(function ($q) {
+
+                $q->whereIn('status', [
+                    'dipinjam',
+                    'terlambat',
+                ])
+
+                ->orWhere(function ($sub) {
+
+                    $sub->where('status', 'dikembalikan')
+                        ->whereDate(
+                            'tanggal_kembali',
+                            '>=',
+                            Carbon::today()->subDays(7)
+                        );
+
+                });
+
+            });
 
         /*
         |--------------------------------------------------------------------------
@@ -47,6 +68,7 @@ class PerpustakaanSiswaController extends Controller
             ->where(function ($q) {
 
                 $q->where('status', 'terlambat')
+
                     ->orWhere(function ($sub) {
 
                         $sub->where('status', 'dipinjam')
@@ -87,20 +109,42 @@ class PerpustakaanSiswaController extends Controller
         );
     }
 
-public function arsip()
-{
-    $siswa = auth()->user()->siswa;
 
-    $arsip = Peminjaman::with([
-        'detailPeminjaman.buku',
-        'petugas'
-    ])
-    ->where('siswa_id', $siswa->id)
-    ->where('status', 'dikembalikan')
-    ->orderByDesc('tanggal_kembali')
-    ->paginate(10);
+    /*
+    |--------------------------------------------------------------------------
+    | Arsip Peminjaman
+    |--------------------------------------------------------------------------
+    |
+    | HANYA transaksi yang:
+    | - milik siswa tersebut
+    | - status = dikembalikan
+    | - sudah lebih dari 7 hari sejak tanggal kembali
+    |
+    */
 
-    return view('perpustakaan.siswa.arsip', compact('arsip'));
-}
+    public function arsip()
+    {
+        $siswa = auth()->user()->siswa;
 
+        abort_if(!$siswa, 404);
+
+        $arsip = Peminjaman::with([
+            'detailPeminjaman.buku',
+            'petugas'
+        ])
+        ->where('siswa_id', $siswa->id)
+        ->where('status', 'dikembalikan')
+        ->whereDate(
+            'tanggal_kembali',
+            '<',
+            Carbon::today()->subDays(7)
+        )
+        ->orderByDesc('tanggal_kembali')
+        ->paginate(10);
+
+        return view(
+            'perpustakaan.siswa.arsip',
+            compact('arsip')
+        );
+    }
 }

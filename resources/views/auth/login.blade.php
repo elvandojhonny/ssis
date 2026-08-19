@@ -1153,12 +1153,7 @@
 
 
 
-                            <a
-                                href="{{ route('password.request') }}"
-                                class="login-forgot"
-                            >
-                                Lupa Password?
-                            </a>
+                            
 
 
                         </div>

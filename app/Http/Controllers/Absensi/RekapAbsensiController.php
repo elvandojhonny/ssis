@@ -1631,10 +1631,7 @@ $worksheet->getStyle('A1:J5')
             /*
              * Freeze Header.
              */
-            $worksheet
-                ->freezePane(
-                    'A8'
-                );
+            
 
 
             /*

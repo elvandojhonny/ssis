@@ -1089,15 +1089,29 @@
 
 @if($bankSoal->kode)
 
-    <div class="mt-2">
+    <div class="mt-2 d-flex align-items-center gap-2">
 
-        <span class="badge bg-blue-lt">
+        <span
+            class="badge bg-blue-lt"
+            id="kode-bank-soal-{{ $bankSoal->id }}"
+        >
 
             <i class="ti ti-key me-1"></i>
 
             {{ $bankSoal->kode }}
 
         </span>
+
+        <button
+            type="button"
+            class="btn btn-sm btn-outline-primary btn-copy-kode"
+            data-kode="{{ $bankSoal->kode }}"
+            title="Salin kode"
+        >
+
+            <i class="ti ti-copy"></i>
+
+        </button>
 
     </div>
 
@@ -1253,15 +1267,29 @@
 
 @if($bankSoal->kode)
 
-    <div class="mt-2">
+    <div class="mt-2 d-flex align-items-center gap-2">
 
-        <span class="badge bg-blue-lt">
+        <span
+            class="badge bg-blue-lt"
+            id="kode-bank-soal-mobile-{{ $bankSoal->id }}"
+        >
 
             <i class="ti ti-key me-1"></i>
 
             {{ $bankSoal->kode }}
 
         </span>
+
+        <button
+            type="button"
+            class="btn btn-sm btn-outline-primary btn-copy-kode"
+            data-kode="{{ $bankSoal->kode }}"
+            title="Salin kode"
+        >
+
+            <i class="ti ti-copy"></i>
+
+        </button>
 
     </div>
 
@@ -1514,6 +1542,64 @@ document.addEventListener('DOMContentLoaded', function () {
 
         }
     );
+
+    // ==========================================================
+// COPY KODE BANK SOAL
+// ==========================================================
+
+document.querySelectorAll('.btn-copy-kode').forEach(function (button) {
+
+    button.addEventListener('click', function () {
+
+        const kode = this.getAttribute('data-kode');
+
+        if (!kode) {
+            return;
+        }
+
+        navigator.clipboard.writeText(kode)
+            .then(function () {
+
+                const icon = button.querySelector('i');
+
+                icon.classList.remove('ti-copy');
+                icon.classList.add('ti-check');
+
+                button.classList.remove('btn-outline-primary');
+                button.classList.add('btn-success');
+
+                button.setAttribute(
+                    'title',
+                    'Kode berhasil disalin'
+                );
+
+                setTimeout(function () {
+
+                    icon.classList.remove('ti-check');
+                    icon.classList.add('ti-copy');
+
+                    button.classList.remove('btn-success');
+                    button.classList.add('btn-outline-primary');
+
+                    button.setAttribute(
+                        'title',
+                        'Salin kode'
+                    );
+
+                }, 1500);
+
+            })
+            .catch(function () {
+
+                alert(
+                    'Kode gagal disalin. Silakan copy secara manual.'
+                );
+
+            });
+
+    });
+
+});
 
 });
 </script>

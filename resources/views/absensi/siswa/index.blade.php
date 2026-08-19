@@ -333,6 +333,7 @@
             modal-dialog
             modal-xl
             modal-dialog-centered
+            modal-dialog-scrollable
         "
         role="document"
     >
@@ -340,28 +341,31 @@
         <div class="modal-content">
 
 
+            {{-- ================================================= --}}
             {{-- HEADER --}}
+            {{-- ================================================= --}}
 
             <div class="modal-header">
 
-                <div class="pe-3">
+                <div>
 
-                    <h2 class="modal-title">
-                        Detail Riwayat Kehadiran
+                    <div class="text-secondary small mb-1">
+                        Riwayat Absensi
+                    </div>
+
+                    <h2 class="modal-title mb-1">
+                        Detail Kehadiran
                     </h2>
 
-                    <div class="text-secondary mt-1">
+                    <div class="text-secondary">
 
                         {{ $user->name }}
 
-                        ·
+                        <span class="mx-1">
+                            •
+                        </span>
 
-                        {{
-                            $user
-                                ->siswa
-                                ->kelas
-                                ->nama
-                        }}
+                        {{ $user->siswa->kelas->nama }}
 
                     </div>
 
@@ -382,487 +386,543 @@
             {{-- BODY --}}
             {{-- ================================================= --}}
 
-            <div class="modal-body p-0">
+            <div class="modal-body bg-light">
 
 
-                {{-- ============================================= --}}
-                {{-- DESKTOP / LAPTOP --}}
-                {{-- ============================================= --}}
+                {{-- ================================================= --}}
+                {{-- DESKTOP --}}
+                {{-- ================================================= --}}
 
                 <div class="d-none d-md-block">
 
-                    <table
-                        class="
-                            table
-                            table-vcenter
-                            card-table
-                            mb-0
-                        "
-                    >
-
-                        <thead>
-
-                            <tr>
-
-                                <th>
-                                    Tanggal
-                                </th>
-
-                                <th>
-                                    Sesi
-                                </th>
-
-                                <th>
-                                    Waktu
-                                </th>
-
-                                <th>
-                                    Status
-                                </th>
-
-                            </tr>
-
-                        </thead>
-
-
-                        <tbody>
-
-                            @forelse(
-                                $riwayat
-                                as $absensi
-                            )
-
-                                <tr>
-
-
-                                    {{-- TANGGAL --}}
-
-                                    <td>
-
-                                        <div class="fw-bold">
-
-                                            {{
-                                                $absensi
-                                                    ->sesiAbsensi
-                                                    ->tanggal
-                                                    ->format(
-                                                        'd/m/Y'
-                                                    )
-                                            }}
-
-                                        </div>
-
-                                    </td>
-
-
-                                    {{-- SESI --}}
-
-                                    <td>
-
-                                        @if(
-                                            $absensi
-                                                ->sesiAbsensi
-                                                ->jenis
-                                            === 'pagi'
-                                        )
-
-                                            <span
-                                                class="
-                                                    badge
-                                                    bg-yellow-lt
-                                                "
-                                            >
-
-                                                <i
-                                                    class="
-                                                        ti
-                                                        ti-sun
-                                                        me-1
-                                                    "
-                                                ></i>
-
-                                                Pagi
-
-                                            </span>
-
-                                        @else
-
-                                            <span
-                                                class="
-                                                    badge
-                                                    bg-blue-lt
-                                                "
-                                            >
-
-                                                <i
-                                                    class="
-                                                        ti
-                                                        ti-sunset
-                                                        me-1
-                                                    "
-                                                ></i>
-
-                                                Siang
-
-                                            </span>
-
-                                        @endif
-
-                                    </td>
-
-
-                                    {{-- WAKTU --}}
-
-                                    <td>
-
-                                        {{
-                                            (
-                                                $absensi
-                                                    ->waktu_absen
-
-                                                ??
-
-                                                $absensi
-                                                    ->created_at
-                                            )
-                                            ?->format(
-                                                'H:i:s'
-                                            )
-
-                                            ?? '-'
-                                        }}
-
-                                    </td>
-
-
-                                    {{-- STATUS --}}
-
-                                    <td>
-
-                                        @php
-
-                                            $badgeStatus =
-                                                match(
-                                                    $absensi
-                                                        ->status
-                                                ) {
-
-                                                    'hadir'
-                                                        => 'success',
-
-                                                    'terlambat'
-                                                        => 'warning',
-
-                                                    'izin'
-                                                        => 'blue',
-
-                                                    'sakit'
-                                                        => 'azure',
-
-                                                    'alpa'
-                                                        => 'danger',
-
-                                                    default
-                                                        => 'secondary',
-
-                                                };
-
-                                        @endphp
-
-
-                                        <span
-                                            class="
-                                                badge
-                                                bg-{{
-                                                    $badgeStatus
-                                                }}-lt
-                                            "
-                                        >
-
-                                            {{
-                                                ucfirst(
-                                                    $absensi
-                                                        ->status
-                                                )
-                                            }}
-
-                                        </span>
-
-                                    </td>
-
-                                </tr>
-
-
-                            @empty
-
-                                <tr>
-
-                                    <td
-                                        colspan="4"
-                                        class="
-                                            text-center
-                                            text-secondary
-                                            py-5
-                                        "
-                                    >
-
-                                        Belum ada riwayat
-                                        kehadiran.
-
-                                    </td>
-
-                                </tr>
-
-                            @endforelse
-
-                        </tbody>
-
-                    </table>
-
-                </div>
-
-
-
-                {{-- ============================================= --}}
-                {{-- MOBILE --}}
-                {{-- ============================================= --}}
-
-                <div class="d-md-none">
-
                     @forelse(
-                        $riwayat
-                        as $absensi
+                        $riwayat->groupBy(function ($absensi) {
+
+                            return $absensi
+                                ->sesiAbsensi
+                                ->tanggal
+                                ->format('Y-m-d');
+
+                        })
+                        as $tanggal => $absensiTanggal
                     )
 
                         @php
 
-                            $badgeStatus =
-                                match(
-                                    $absensi->status
-                                ) {
-
-                                    'hadir'
-                                        => 'success',
-
-                                    'terlambat'
-                                        => 'warning',
-
-                                    'izin'
-                                        => 'blue',
-
-                                    'sakit'
-                                        => 'azure',
-
-                                    'alpa'
-                                        => 'danger',
-
-                                    default
-                                        => 'secondary',
-
-                                };
+                            $tanggalObj =
+                                $absensiTanggal
+                                    ->first()
+                                    ->sesiAbsensi
+                                    ->tanggal;
 
                         @endphp
 
 
-                        <div
-                            class="
-                                p-3
-                                border-bottom
-                            "
-                        >
+                        {{-- ================================================= --}}
+                        {{-- PEMBATAS TANGGAL --}}
+                        {{-- ================================================= --}}
+
+                        <div class="mb-4">
 
 
-                            {{-- HEADER CARD --}}
+                            {{-- HEADER TANGGAL --}}
 
                             <div
                                 class="
                                     d-flex
-                                    justify-content-between
-                                    align-items-start
+                                    align-items-center
                                     gap-3
                                     mb-3
                                 "
                             >
 
-                                <div>
+                                <div
+                                    class="
+                                        avatar
+                                        avatar-md
+                                        bg-primary-lt
+                                        flex-shrink-0
+                                    "
+                                >
 
-                                    <div
+                                    <i
                                         class="
-                                            text-secondary
-                                            small
-                                            mb-1
+                                            ti
+                                            ti-calendar
                                         "
-                                    >
-                                        Tanggal
-                                    </div>
-
-
-                                    <div class="fw-bold">
-
-                                        {{
-                                            $absensi
-                                                ->sesiAbsensi
-                                                ->tanggal
-                                                ->format(
-                                                    'd/m/Y'
-                                                )
-                                        }}
-
-                                    </div>
+                                    ></i>
 
                                 </div>
 
 
                                 <div>
 
-                                    <span
+                                    <div
                                         class="
-                                            badge
-                                            bg-{{
-                                                $badgeStatus
-                                            }}-lt
+                                            text-secondary
+                                            small
+                                        "
+                                    >
+                                        Tanggal Kehadiran
+                                    </div>
+
+                                    <div
+                                        class="
+                                            fw-bold
+                                            fs-3
                                         "
                                     >
 
                                         {{
-                                            ucfirst(
-                                                $absensi
-                                                    ->status
+                                            $tanggalObj->translatedFormat(
+                                                'l, d F Y'
                                             )
                                         }}
 
-                                    </span>
+                                    </div>
 
                                 </div>
 
                             </div>
 
 
+                            {{-- GARIS PEMBATAS --}}
 
-                            {{-- DETAIL CARD --}}
+                            <div
+                                class="
+                                    border-top
+                                    mb-3
+                                "
+                            ></div>
+
+
+                            {{-- ================================================= --}}
+                            {{-- SESI PADA TANGGAL TERSEBUT --}}
+                            {{-- ================================================= --}}
 
                             <div class="row g-3">
 
 
-                                {{-- SESI --}}
+                                @foreach(
+                                    $absensiTanggal
+                                    ->sortBy(function ($absensi) {
 
-                                <div class="col-6">
+                                        return
+                                            $absensi
+                                                ->sesiAbsensi
+                                                ->jenis
+                                            === 'pagi'
+                                            ? 1
+                                            : 2;
 
-                                    <div
-                                        class="
-                                            text-secondary
-                                            small
-                                            mb-1
-                                        "
-                                    >
-                                        Sesi
-                                    </div>
+                                    })
+                                    as $absensi
+                                )
+
+                                    @php
+
+                                        $badgeStatus =
+                                            match(
+                                                $absensi->status
+                                            ) {
+
+                                                'hadir'
+                                                    => 'success',
+
+                                                'terlambat'
+                                                    => 'warning',
+
+                                                'izin'
+                                                    => 'blue',
+
+                                                'sakit'
+                                                    => 'azure',
+
+                                                'alpa'
+                                                    => 'danger',
+
+                                                default
+                                                    => 'secondary',
+
+                                            };
 
 
-                                    @if(
-                                        $absensi
-                                            ->sesiAbsensi
-                                            ->jenis
-                                        === 'pagi'
-                                    )
+                                        $waktuAbsen =
+                                            $absensi->waktu_absen
+                                            ??
+                                            $absensi->created_at;
 
-                                        <span
+
+                                        $isPagi =
+                                            $absensi
+                                                ->sesiAbsensi
+                                                ->jenis
+                                            === 'pagi';
+
+                                    @endphp
+
+
+                                    <div class="col-12 col-lg-6">
+
+
+                                        {{-- ================================================= --}}
+                                        {{-- CARD SESI --}}
+                                        {{-- ================================================= --}}
+
+                                        <div
                                             class="
-                                                badge
-                                                bg-yellow-lt
+                                                card
+                                                h-100
+                                                border
                                             "
                                         >
 
-                                            <i
+                                            {{-- HEADER SESI --}}
+
+                                            <div
                                                 class="
-                                                    ti
-                                                    ti-sun
-                                                    me-1
+                                                    card-header
+                                                    {{
+                                                        $isPagi
+                                                            ? 'bg-yellow-lt'
+                                                            : 'bg-blue-lt'
+                                                    }}
                                                 "
-                                            ></i>
+                                            >
 
-                                            Pagi
+                                                <div
+                                                    class="
+                                                        d-flex
+                                                        align-items-center
+                                                        justify-content-between
+                                                        w-100
+                                                    "
+                                                >
 
-                                        </span>
+                                                    <div
+                                                        class="
+                                                            d-flex
+                                                            align-items-center
+                                                            gap-2
+                                                        "
+                                                    >
 
-                                    @else
+                                                        <span
+                                                            class="
+                                                                avatar
+                                                                avatar-sm
+                                                                {{
+                                                                    $isPagi
+                                                                        ? 'bg-yellow'
+                                                                        : 'bg-blue'
+                                                                }}
+                                                            "
+                                                        >
 
-                                        <span
-                                            class="
-                                                badge
-                                                bg-blue-lt
-                                            "
-                                        >
+                                                            <i
+                                                                class="
+                                                                    ti
+                                                                    {{
+                                                                        $isPagi
+                                                                            ? 'ti-sun'
+                                                                            : 'ti-sunset'
+                                                                    }}
+                                                                    text-white
+                                                                "
+                                                            ></i>
 
-                                            <i
-                                                class="
-                                                    ti
-                                                    ti-sunset
-                                                    me-1
-                                                "
-                                            ></i>
-
-                                            Siang
-
-                                        </span>
-
-                                    @endif
-
-                                </div>
+                                                        </span>
 
 
+                                                        <div>
 
-                                {{-- WAKTU --}}
+                                                            <div
+                                                                class="
+                                                                    fw-bold
+                                                                    fs-3
+                                                                "
+                                                            >
 
-                                <div class="col-6">
+                                                                Sesi
+                                                                {{
+                                                                    $isPagi
+                                                                        ? 'Pagi'
+                                                                        : 'Siang'
+                                                                }}
 
-                                    <div
-                                        class="
-                                            text-secondary
-                                            small
-                                            mb-1
-                                        "
-                                    >
-                                        Waktu
+                                                            </div>
+
+                                                            <div
+                                                                class="
+                                                                    text-secondary
+                                                                    small
+                                                                "
+                                                            >
+
+                                                                {{
+                                                                    $isPagi
+                                                                        ? 'Jam masuk pagi'
+                                                                        : 'Jam masuk siang'
+                                                                }}
+
+                                                            </div>
+
+                                                        </div>
+
+                                                    </div>
+
+
+                                                    {{-- STATUS --}}
+
+                                                    <span
+                                                        class="
+                                                            badge
+                                                            bg-{{
+                                                                $badgeStatus
+                                                            }}-lt
+                                                        "
+                                                    >
+
+                                                        @if(
+                                                            $absensi->status
+                                                            === 'hadir'
+                                                        )
+
+                                                            <i
+                                                                class="
+                                                                    ti
+                                                                    ti-check
+                                                                    me-1
+                                                                "
+                                                            ></i>
+
+                                                        @elseif(
+                                                            $absensi->status
+                                                            === 'terlambat'
+                                                        )
+
+                                                            <i
+                                                                class="
+                                                                    ti
+                                                                    ti-clock
+                                                                    me-1
+                                                                "
+                                                            ></i>
+
+                                                        @elseif(
+                                                            $absensi->status
+                                                            === 'izin'
+                                                        )
+
+                                                            <i
+                                                                class="
+                                                                    ti
+                                                                    ti-file-description
+                                                                    me-1
+                                                                "
+                                                            ></i>
+
+                                                        @elseif(
+                                                            $absensi->status
+                                                            === 'sakit'
+                                                        )
+
+                                                            <i
+                                                                class="
+                                                                    ti
+                                                                    ti-medical-cross
+                                                                    me-1
+                                                                "
+                                                            ></i>
+
+                                                        @elseif(
+                                                            $absensi->status
+                                                            === 'alpa'
+                                                        )
+
+                                                            <i
+                                                                class="
+                                                                    ti
+                                                                    ti-x
+                                                                    me-1
+                                                                "
+                                                            ></i>
+
+                                                        @endif
+
+                                                        {{
+                                                            ucfirst(
+                                                                $absensi->status
+                                                            )
+                                                        }}
+
+                                                    </span>
+
+                                                </div>
+
+                                            </div>
+
+
+                                            {{-- DETAIL SESI --}}
+
+                                            <div class="card-body">
+
+
+                                                <div
+                                                    class="
+                                                        row
+                                                        g-3
+                                                    "
+                                                >
+
+                                                    {{-- WAKTU --}}
+
+                                                    <div
+                                                        class="
+                                                            col-6
+                                                        "
+                                                    >
+
+                                                        <div
+                                                            class="
+                                                                text-secondary
+                                                                small
+                                                                mb-1
+                                                            "
+                                                        >
+                                                            Waktu Absensi
+                                                        </div>
+
+                                                        <div
+                                                            class="
+                                                                fw-bold
+                                                                fs-2
+                                                            "
+                                                        >
+
+                                                            {{
+                                                                $waktuAbsen
+                                                                    ?->format(
+                                                                        'H:i:s'
+                                                                    )
+                                                                ?? '-'
+                                                            }}
+
+                                                        </div>
+
+                                                    </div>
+
+
+                                                    {{-- STATUS --}}
+
+                                                    <div
+                                                        class="
+                                                            col-6
+                                                        "
+                                                    >
+
+                                                        <div
+                                                            class="
+                                                                text-secondary
+                                                                small
+                                                                mb-1
+                                                            "
+                                                        >
+                                                            Status Kehadiran
+                                                        </div>
+
+                                                        <div
+                                                            class="
+                                                                fw-bold
+                                                            "
+                                                        >
+
+                                                            {{
+                                                                ucfirst(
+                                                                    $absensi->status
+                                                                )
+                                                            }}
+
+                                                        </div>
+
+                                                    </div>
+
+                                                </div>
+
+
+                                                {{-- INFORMASI TAMBAHAN --}}
+
+                                                <div
+                                                    class="
+                                                        mt-3
+                                                        pt-3
+                                                        border-top
+                                                    "
+                                                >
+
+                                                    <div
+                                                        class="
+                                                            d-flex
+                                                            align-items-center
+                                                            gap-2
+                                                            text-secondary
+                                                            small
+                                                        "
+                                                    >
+
+                                                        <i
+                                                            class="
+                                                                ti
+                                                                ti-info-circle
+                                                            "
+                                                        ></i>
+
+                                                        <span>
+
+                                                            Absensi
+                                                            {{
+                                                                $isPagi
+                                                                    ? 'sesi pagi'
+                                                                    : 'sesi siang'
+                                                                }}
+                                                            pada tanggal
+                                                            {{
+                                                                $tanggalObj
+                                                                    ->format(
+                                                                        'd/m/Y'
+                                                                    )
+                                                            }}
+
+                                                        </span>
+
+                                                    </div>
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
                                     </div>
 
-
-                                    <div class="fw-bold">
-
-                                        {{
-                                            (
-                                                $absensi
-                                                    ->waktu_absen
-
-                                                ??
-
-                                                $absensi
-                                                    ->created_at
-                                            )
-                                            ?->format(
-                                                'H:i:s'
-                                            )
-
-                                            ?? '-'
-                                        }}
-
-                                    </div>
-
-                                </div>
+                                @endforeach
 
                             </div>
 
                         </div>
 
-
                     @empty
+
+
+                        {{-- ================================================= --}}
+                        {{-- TIDAK ADA DATA --}}
+                        {{-- ================================================= --}}
 
                         <div
                             class="
                                 text-center
                                 text-secondary
                                 py-5
-                                px-3
                             "
                         >
 
@@ -872,11 +932,370 @@
                                     ti-calendar-off
                                     fs-1
                                     d-block
-                                    mb-2
+                                    mb-3
                                 "
                             ></i>
 
-                            Belum ada riwayat kehadiran.
+                            <div class="fw-bold mb-1">
+                                Belum Ada Riwayat
+                            </div>
+
+                            <div>
+                                Belum ada data kehadiran
+                                yang tercatat.
+                            </div>
+
+                        </div>
+
+                    @endforelse
+
+                </div>
+
+
+
+                {{-- ================================================= --}}
+                {{-- MOBILE --}}
+                {{-- ================================================= --}}
+
+                <div class="d-md-none">
+
+                    @forelse(
+                        $riwayat->groupBy(function ($absensi) {
+
+                            return $absensi
+                                ->sesiAbsensi
+                                ->tanggal
+                                ->format('Y-m-d');
+
+                        })
+                        as $tanggal => $absensiTanggal
+                    )
+
+                        @php
+
+                            $tanggalObj =
+                                $absensiTanggal
+                                    ->first()
+                                    ->sesiAbsensi
+                                    ->tanggal;
+
+                        @endphp
+
+
+                        {{-- ================================================= --}}
+                        {{-- PEMBATAS TANGGAL MOBILE --}}
+                        {{-- ================================================= --}}
+
+                        <div class="mb-4">
+
+
+                            {{-- TANGGAL --}}
+
+                            <div
+                                class="
+                                    d-flex
+                                    align-items-center
+                                    gap-2
+                                    mb-3
+                                "
+                            >
+
+                                <span
+                                    class="
+                                        avatar
+                                        avatar-sm
+                                        bg-primary-lt
+                                    "
+                                >
+
+                                    <i class="ti ti-calendar"></i>
+
+                                </span>
+
+
+                                <div>
+
+                                    <div
+                                        class="
+                                            text-secondary
+                                            small
+                                        "
+                                    >
+                                        Tanggal
+                                    </div>
+
+                                    <div class="fw-bold">
+
+                                        {{
+                                            $tanggalObj->translatedFormat(
+                                                'l, d F Y'
+                                            )
+                                        }}
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            {{-- SESI --}}
+
+                            @foreach(
+                                $absensiTanggal
+                                ->sortBy(function ($absensi) {
+
+                                    return
+                                        $absensi
+                                            ->sesiAbsensi
+                                            ->jenis
+                                        === 'pagi'
+                                        ? 1
+                                        : 2;
+
+                                })
+                                as $absensi
+                            )
+
+                                @php
+
+                                    $badgeStatus =
+                                        match(
+                                            $absensi->status
+                                        ) {
+
+                                            'hadir'
+                                                => 'success',
+
+                                            'terlambat'
+                                                => 'warning',
+
+                                            'izin'
+                                                => 'blue',
+
+                                            'sakit'
+                                                => 'azure',
+
+                                            'alpa'
+                                                => 'danger',
+
+                                            default
+                                                => 'secondary',
+
+                                        };
+
+
+                                    $waktuAbsen =
+                                        $absensi->waktu_absen
+                                        ??
+                                        $absensi->created_at;
+
+
+                                    $isPagi =
+                                        $absensi
+                                            ->sesiAbsensi
+                                            ->jenis
+                                        === 'pagi';
+
+                                @endphp
+
+
+                                <div
+                                    class="
+                                        card
+                                        mb-3
+                                        border
+                                    "
+                                >
+
+                                    {{-- SESI --}}
+
+                                    <div
+                                        class="
+                                            card-header
+                                            {{
+                                                $isPagi
+                                                    ? 'bg-yellow-lt'
+                                                    : 'bg-blue-lt'
+                                            }}
+                                        "
+                                    >
+
+                                        <div
+                                            class="
+                                                d-flex
+                                                align-items-center
+                                                justify-content-between
+                                                w-100
+                                            "
+                                        >
+
+                                            <div
+                                                class="
+                                                    d-flex
+                                                    align-items-center
+                                                    gap-2
+                                                "
+                                            >
+
+                                                <span
+                                                    class="
+                                                        avatar
+                                                        avatar-sm
+                                                        {{
+                                                            $isPagi
+                                                                ? 'bg-yellow'
+                                                                : 'bg-blue'
+                                                        }}
+                                                    "
+                                                >
+
+                                                    <i
+                                                        class="
+                                                            ti
+                                                            {{
+                                                                $isPagi
+                                                                    ? 'ti-sun'
+                                                                    : 'ti-sunset'
+                                                            }}
+                                                            text-white
+                                                        "
+                                                    ></i>
+
+                                                </span>
+
+
+                                                <div>
+
+                                                    <div class="fw-bold">
+
+                                                        Sesi
+                                                        {{
+                                                            $isPagi
+                                                                ? 'Pagi'
+                                                                : 'Siang'
+                                                        }}
+
+                                                    </div>
+
+                                                    <div
+                                                        class="
+                                                            text-secondary
+                                                            small
+                                                        "
+                                                    >
+
+                                                        {{
+                                                            $isPagi
+                                                                ? 'Jam masuk pagi'
+                                                                : 'Jam masuk siang'
+                                                        }}
+
+                                                    </div>
+
+                                                </div>
+
+                                            </div>
+
+
+                                            <span
+                                                class="
+                                                    badge
+                                                    bg-{{
+                                                        $badgeStatus
+                                                    }}-lt
+                                                "
+                                            >
+
+                                                {{
+                                                    ucfirst(
+                                                        $absensi->status
+                                                    )
+                                                }}
+
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    {{-- DETAIL --}}
+
+                                    <div class="card-body">
+
+                                        <div
+                                            class="
+                                                text-secondary
+                                                small
+                                                mb-1
+                                            "
+                                        >
+                                            Waktu Absensi
+                                        </div>
+
+                                        <div
+                                            class="
+                                                fw-bold
+                                                fs-2
+                                            "
+                                        >
+
+                                            {{
+                                                $waktuAbsen
+                                                    ?->format(
+                                                        'H:i:s'
+                                                    )
+                                                ?? '-'
+                                            }}
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            @endforeach
+
+
+                            {{-- PEMBATAS ANTAR TANGGAL --}}
+
+                            <div
+                                class="
+                                    border-bottom
+                                    mt-4
+                                "
+                            ></div>
+
+                        </div>
+
+                    @empty
+
+                        <div
+                            class="
+                                text-center
+                                text-secondary
+                                py-5
+                            "
+                        >
+
+                            <i
+                                class="
+                                    ti
+                                    ti-calendar-off
+                                    fs-1
+                                    d-block
+                                    mb-3
+                                "
+                            ></i>
+
+                            <div class="fw-bold">
+                                Belum Ada Riwayat
+                            </div>
+
+                            <div class="small mt-1">
+                                Belum ada data kehadiran.
+                            </div>
 
                         </div>
 
@@ -887,22 +1306,46 @@
             </div>
 
 
-
             {{-- ================================================= --}}
             {{-- FOOTER --}}
             {{-- ================================================= --}}
 
             <div class="modal-footer">
 
-                <button
-                    type="button"
-                    class="btn btn-secondary"
-                    data-bs-dismiss="modal"
+                <div
+                    class="
+                        w-100
+                        d-flex
+                        justify-content-between
+                        align-items-center
+                        gap-3
+                    "
                 >
 
-                    Tutup
+                    <div class="text-secondary small">
 
-                </button>
+                        Total:
+                        <strong>
+                            {{ $riwayat->count() }}
+                        </strong>
+                        data absensi
+
+                    </div>
+
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal"
+                    >
+
+                        <i class="ti ti-x me-1"></i>
+
+                        Tutup
+
+                    </button>
+
+                </div>
 
             </div>
 
