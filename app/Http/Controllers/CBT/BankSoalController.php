@@ -546,7 +546,7 @@ public function downloadTemplate(): BinaryFileResponse
     |--------------------------------------------------------------------------
     */
     $fileName =
-        'template-soal-cbt-ssis.docx';
+        'template-soal-cbt.docx';
 
 
     $directory =
@@ -596,6 +596,7 @@ public function downloadTemplate(): BinaryFileResponse
         )
         ->deleteFileAfterSend(true);
 }
+
 
 public function upload(Request $request)
 {

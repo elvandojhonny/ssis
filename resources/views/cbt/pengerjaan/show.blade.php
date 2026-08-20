@@ -244,8 +244,12 @@
         {{-- ================================================= --}}
 
         @if(
-            !is_null($soal->pilihan_a) &&
-            trim((string) $soal->pilihan_a) !== ''
+            (
+                !is_null($soal->pilihan_a) &&
+                trim((string) $soal->pilihan_a) !== ''
+            )
+            ||
+            !empty($soal->gambar_a)
         )
 
             <label
@@ -338,8 +342,12 @@
         {{-- ================================================= --}}
 
         @if(
-            !is_null($soal->pilihan_b) &&
-            trim((string) $soal->pilihan_b) !== ''
+            (
+                !is_null($soal->pilihan_b) &&
+                trim((string) $soal->pilihan_b) !== ''
+            )
+            ||
+            !empty($soal->gambar_b)
         )
 
             <label
@@ -432,8 +440,12 @@
         {{-- ================================================= --}}
 
         @if(
-            !is_null($soal->pilihan_c) &&
-            trim((string) $soal->pilihan_c) !== ''
+            (
+                !is_null($soal->pilihan_c) &&
+                trim((string) $soal->pilihan_c) !== ''
+            )
+            ||
+            !empty($soal->gambar_c)
         )
 
             <label
@@ -526,8 +538,12 @@
         {{-- ================================================= --}}
 
         @if(
-            !is_null($soal->pilihan_d) &&
-            trim((string) $soal->pilihan_d) !== ''
+            (
+                !is_null($soal->pilihan_d) &&
+                trim((string) $soal->pilihan_d) !== ''
+            )
+            ||
+            !empty($soal->gambar_d)
         )
 
             <label
@@ -620,8 +636,12 @@
         {{-- ================================================= --}}
 
         @if(
-            !is_null($soal->pilihan_e) &&
-            trim((string) $soal->pilihan_e) !== ''
+            (
+                !is_null($soal->pilihan_e) &&
+                trim((string) $soal->pilihan_e) !== ''
+            )
+            ||
+            !empty($soal->gambar_e)
         )
 
             <label
@@ -2445,6 +2465,64 @@
 
         min-width: 75px;
 
+    }
+
+}
+
+/* =========================================================
+   GAMBAR SOAL
+========================================================= */
+
+.soal-gambar {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.soal-gambar img {
+    width: auto;
+    max-width: 100%;
+    max-height: 500px;
+    object-fit: contain;
+    display: block;
+}
+
+
+/* =========================================================
+   GAMBAR PILIHAN JAWABAN
+========================================================= */
+
+.jawaban-gambar {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.jawaban-gambar img {
+    width: auto;
+    max-width: 350px;
+    max-height: 300px;
+    object-fit: contain;
+    display: block;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 767.98px) {
+
+    .soal-gambar img {
+        max-width: 100%;
+        max-height: 350px;
+    }
+
+    .jawaban-gambar img {
+        max-width: 100%;
+        max-height: 250px;
     }
 
 }
