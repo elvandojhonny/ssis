@@ -4,6 +4,203 @@
 
 @section('content')
 
+<style>
+    /* ==========================================================
+       PREVIEW SOAL - RESPONSIVE IMAGE
+    ========================================================== */
+
+    .soal-preview-image-wrapper {
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
+    }
+
+    .soal-preview-image {
+        display: block;
+        width: auto;
+        max-width: 100%;
+        height: auto;
+        max-height: 450px;
+        object-fit: contain;
+        margin: 0;
+    }
+
+    .soal-pilihan-content {
+        min-width: 0;
+        max-width: 100%;
+        overflow-wrap: anywhere;
+    }
+
+    .soal-pilihan-image-wrapper {
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
+    }
+
+    .soal-pilihan-image {
+        display: block;
+        width: auto;
+        max-width: 100%;
+        height: auto;
+        max-height: 350px;
+        object-fit: contain;
+    }
+
+
+    /* ==========================================================
+       MOBILE
+    ========================================================== */
+
+    @media (max-width: 767.98px) {
+
+        .soal-preview-image {
+            max-width: 100%;
+            max-height: 300px;
+            width: auto;
+            height: auto;
+        }
+
+        .soal-pilihan-image {
+            max-width: 100%;
+            max-height: 250px;
+            width: auto;
+            height: auto;
+        }
+
+        /*
+         * Pilihan jawaban dibuat satu kolom di HP.
+         * Jadi gambar tidak dipaksa masuk ke kotak
+         * kiri/kanan yang sempit.
+         */
+        .preview-pilihan-row {
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        .preview-pilihan-item {
+            width: 100%;
+        }
+
+        /*
+         * Isi pilihan tidak boleh membuat
+         * halaman melebar ke samping.
+         */
+        .soal-pilihan-content {
+            min-width: 0;
+            width: 100%;
+        }
+    }
+
+    /* =========================================================
+   BANK SOAL - MOBILE TABLE STYLE
+   ========================================================= */
+
+@media (max-width: 767.98px) {
+
+    /* Hilangkan kesan card besar */
+    .bank-soal-wrapper {
+        margin-top: 1rem !important;
+        border-radius: 0 !important;
+        border-left: 0 !important;
+        border-right: 0 !important;
+        box-shadow: none !important;
+        background: transparent !important;
+    }
+
+
+    /* Header Bank Soal */
+    .bank-soal-wrapper .card-header {
+        padding: 1rem 0.25rem;
+        background: transparent;
+        border-bottom: 1px solid var(--tblr-border-color);
+    }
+
+
+    /* Daftar */
+    .bank-soal-mobile-list {
+        background: transparent;
+    }
+
+
+    /* Setiap bank soal = satu baris besar */
+    .bank-soal-mobile-row {
+        padding: 1rem 0.25rem;
+        border-bottom: 1px solid var(--tblr-border-color);
+    }
+
+
+    /* Header bank soal */
+    .bank-soal-mobile-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.75rem;
+    }
+
+
+    .bank-soal-mobile-title {
+        min-width: 0;
+        flex: 1;
+    }
+
+
+    .bank-soal-mobile-title .fw-bold {
+        font-size: 0.98rem;
+        line-height: 1.35;
+    }
+
+
+    .bank-soal-mobile-code {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        margin-top: 0.55rem;
+    }
+
+
+    .bank-soal-mobile-code .btn {
+        width: 36px;
+        height: 32px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+
+    /* Tingkat + jumlah soal */
+    .bank-soal-mobile-info {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-top: 1rem;
+        padding-top: 0.85rem;
+        border-top: 1px dashed var(--tblr-border-color);
+    }
+
+
+    .bank-soal-mobile-info .fw-medium {
+        margin-top: 0.15rem;
+    }
+
+
+    /* Tombol */
+    .bank-soal-mobile-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+
+
+    .bank-soal-mobile-actions .btn {
+        flex: 1;
+        min-height: 40px;
+        margin: 0 !important;
+    }
+
+}
+</style>
+
 <div class="page-header mb-4">
 
     <div class="row align-items-center g-3">
@@ -653,20 +850,13 @@
 
     @if(!empty($soal['gambar_pertanyaan']))
 
-        <div class="mt-3">
-
-            <img
-                src="{{ asset('storage/' . $soal['gambar_pertanyaan']) }}"
-                alt="Gambar Pertanyaan"
-                class="img-fluid rounded border"
-                style="
-                    max-width: 700px;
-                    max-height: 450px;
-                    object-fit: contain;
-                "
-            >
-
-        </div>
+        <div class="mt-3 soal-preview-image-wrapper">
+    <img
+        src="{{ asset('storage/' . $soal['gambar_pertanyaan']) }}"
+        alt="Gambar Pertanyaan"
+        class="soal-preview-image rounded border"
+    >
+</div>
 
     @endif
 
@@ -675,7 +865,7 @@
 
                             {{-- PILIHAN JAWABAN --}}
 
-<div class="row g-2">
+<div class="row g-2 preview-pilihan-row">
 
     @foreach(
         [
@@ -726,7 +916,7 @@
             || !empty($image)
         )
 
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-6 preview-pilihan-item">
 
                 <div
                     class="
@@ -765,7 +955,7 @@
 
                         {{-- ISI JAWABAN --}}
 
-                        <div class="flex-fill">
+                        <div class="flex-fill soal-pilihan-content">
 
                             {{-- TEKS --}}
 
@@ -784,20 +974,13 @@
 
                             @if(!empty($image))
 
-                                <div class="mt-3">
-
-                                    <img
-                                        src="{{ asset('storage/' . $image) }}"
-                                        alt="Gambar Pilihan {{ $huruf }}"
-                                        class="img-fluid rounded border"
-                                        style="
-                                            max-width: 500px;
-                                            max-height: 350px;
-                                            object-fit: contain;
-                                        "
-                                    >
-
-                                </div>
+                                <div class="mt-3 soal-pilihan-image-wrapper">
+    <img
+        src="{{ asset('storage/' . $image) }}"
+        alt="Gambar Pilihan {{ $huruf }}"
+        class="soal-pilihan-image rounded border"
+    >
+</div>
 
                             @endif
 
@@ -1020,7 +1203,7 @@
 {{-- DAFTAR BANK SOAL --}}
 {{-- ========================================================= --}}
 
-<div class="card mt-4">
+<div class="card mt-4 bank-soal-wrapper">
 
     <div class="card-header">
 
@@ -1240,123 +1423,117 @@
 
 
     {{-- MOBILE --}}
-    <div class="d-md-none">
+    {{-- ========================================================= --}}
+{{-- MOBILE --}}
+{{-- ========================================================= --}}
 
-        @forelse($bankSoals as $bankSoal)
+<div class="d-md-none bank-soal-mobile-list">
 
-            <div class="border-bottom p-3">
+    @forelse($bankSoals as $bankSoal)
 
-                <div
-                    class="
-                        d-flex
-                        justify-content-between
-                        align-items-start
-                        gap-3
-                    "
-                >
+        <div class="bank-soal-mobile-row">
 
-                    <div>
+            {{-- HEADER --}}
+            <div class="bank-soal-mobile-header">
 
-                        <div class="fw-bold">
-    {{ $bankSoal->judul }}
-</div>
+                <div class="bank-soal-mobile-title">
 
-<div class="text-secondary small mt-1">
-    {{ $bankSoal->mata_pelajaran }}
-</div>
-
-@if($bankSoal->kode)
-
-    <div class="mt-2 d-flex align-items-center gap-2">
-
-        <span
-            class="badge bg-blue-lt"
-            id="kode-bank-soal-mobile-{{ $bankSoal->id }}"
-        >
-
-            <i class="ti ti-key me-1"></i>
-
-            {{ $bankSoal->kode }}
-
-        </span>
-
-        <button
-            type="button"
-            class="btn btn-sm btn-outline-primary btn-copy-kode"
-            data-kode="{{ $bankSoal->kode }}"
-            title="Salin kode"
-        >
-
-            <i class="ti ti-copy"></i>
-
-        </button>
-
-    </div>
-
-@endif
-
+                    <div class="fw-bold">
+                        {{ $bankSoal->judul }}
                     </div>
 
+                    <div class="text-secondary small">
+                        {{ $bankSoal->mata_pelajaran }}
+                    </div>
 
-                    @if($bankSoal->status === 'siap')
+                    @if($bankSoal->kode)
 
-                        <span class="badge bg-success-lt">
-                            Siap
-                        </span>
+                        <div class="bank-soal-mobile-code">
 
-                    @elseif($bankSoal->status === 'diproses')
+                            <span class="badge bg-blue-lt">
+                                <i class="ti ti-key me-1"></i>
+                                {{ $bankSoal->kode }}
+                            </span>
 
-                        <span class="badge bg-yellow-lt">
-                            Diproses
-                        </span>
+                            <button
+                                type="button"
+                                class="btn btn-sm btn-outline-primary btn-copy-kode"
+                                data-kode="{{ $bankSoal->kode }}"
+                                title="Salin kode"
+                            >
+                                <i class="ti ti-copy"></i>
+                            </button>
 
-                    @else
-
-                        <span class="badge bg-danger-lt">
-                            Gagal
-                        </span>
+                        </div>
 
                     @endif
 
                 </div>
 
 
-                <div class="row g-2 mt-3">
+                {{-- STATUS --}}
 
-                    <div class="col-6">
+                @if($bankSoal->status === 'siap')
 
-                        <div class="text-secondary small">
-                            Tingkat
-                        </div>
+                    <span class="badge bg-success-lt">
+                        Siap
+                    </span>
 
-                        <div class="fw-medium">
-                            Kelas {{ $bankSoal->tingkat }}
-                        </div>
+                @elseif($bankSoal->status === 'diproses')
 
+                    <span class="badge bg-yellow-lt">
+                        Diproses
+                    </span>
+
+                @else
+
+                    <span class="badge bg-danger-lt">
+                        Gagal
+                    </span>
+
+                @endif
+
+            </div>
+
+
+            {{-- INFORMASI --}}
+
+            <div class="bank-soal-mobile-info">
+
+                <div>
+                    <div class="text-secondary small">
+                        Tingkat
                     </div>
 
-
-                    <div class="col-6">
-
-                        <div class="text-secondary small">
-                            Jumlah Soal
-                        </div>
-
-                        <div class="fw-medium">
-                            {{ $bankSoal->soals_count }} soal
-                        </div>
-
+                    <div class="fw-medium">
+                        Kelas {{ $bankSoal->tingkat }}
                     </div>
-
                 </div>
 
+
+                <div>
+                    <div class="text-secondary small">
+                        Jumlah Soal
+                    </div>
+
+                    <div class="fw-medium">
+                        {{ $bankSoal->soals_count }} soal
+                    </div>
+                </div>
+
+            </div>
+
+
+            {{-- AKSI --}}
+
+            <div class="bank-soal-mobile-actions">
 
                 <a
                     href="{{ route(
                         'cbt.bank-soal.show',
                         $bankSoal
                     ) }}"
-                    class="btn btn-outline-primary w-100 mt-3"
+                    class="btn btn-outline-primary"
                 >
                     <i class="ti ti-eye me-1"></i>
                     Lihat Detail
@@ -1364,10 +1541,13 @@
 
                 <button
                     type="button"
-                    class="btn btn-outline-secondary w-100 mt-2"
+                    class="btn btn-outline-secondary"
                     data-bs-toggle="modal"
                     data-bs-target="#modalArsipBankSoal"
-                    data-action="{{ route('cbt.bank-soal.archive', $bankSoal) }}"
+                    data-action="{{ route(
+                        'cbt.bank-soal.archive',
+                        $bankSoal
+                    ) }}"
                     data-nama="{{ $bankSoal->judul }}"
                 >
                     <i class="ti ti-archive me-1"></i>
@@ -1376,24 +1556,17 @@
 
             </div>
 
-        @empty
+        </div>
 
-            <div class="text-center text-secondary py-5">
+    @empty
 
-                <i
-                    class="ti ti-folder-off mb-2"
-                    style="font-size: 40px;"
-                ></i>
+        <div class="text-center text-secondary py-4">
+            Belum ada bank soal.
+        </div>
 
-                <div>
-                    Belum ada bank soal yang disimpan.
-                </div>
+    @endforelse
 
-            </div>
-
-        @endforelse
-
-    </div>
+</div>
 
 
     @if($bankSoals->hasPages())
