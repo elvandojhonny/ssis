@@ -11,6 +11,7 @@ class BankSoal extends Model
     protected $fillable = [
         'guru_id',
         'tahun_ajaran_id',
+        'kelas_id',
         'kode',
         'judul',
         'mata_pelajaran',
@@ -31,6 +32,11 @@ class BankSoal extends Model
         return $this->belongsTo(
             TahunAjaran::class
         );
+    }
+
+    public function kelas(): BelongsTo
+    {
+        return $this->belongsTo(Kelas::class);
     }
 
     public function soals()

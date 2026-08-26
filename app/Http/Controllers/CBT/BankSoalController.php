@@ -18,6 +18,7 @@ use PhpOffice\PhpWord\Element\TextRun;
 use App\Models\BankSoal;
 use App\Models\Soal;
 use App\Models\TahunAjaran;
+use App\Models\Kelas;
 use Illuminate\Support\Facades\DB;
 
 use PhpOffice\PhpWord\Element\Image;
@@ -68,6 +69,19 @@ class BankSoalController extends Controller
         );
     }
 
+    $kelas = Kelas::query()
+    ->where(
+        'tahun_ajaran_id',
+        $tahunAjaran->id
+    )
+    ->where(
+        'is_active',
+        true
+    )
+    ->orderBy('tingkat')
+    ->orderBy('nama')
+    ->get();
+
 
     /*
     |--------------------------------------------------------------------------
@@ -116,7 +130,8 @@ class BankSoalController extends Controller
         'cbt.bank-soal.index',
         compact(
             'bankSoals',
-            'tahunAjaran'
+            'tahunAjaran',
+            'kelas'
         )
     );
 }
@@ -1667,12 +1682,13 @@ public function store(Request $request)
             'max:255',
         ],
 
-        'tingkat' => [
+        'kelas_id' => [
             'required',
             'integer',
-            'in:10,11,12',
+            'exists:kelas,id',
         ],
 
+        
         'deskripsi' => [
             'nullable',
             'string',
@@ -1721,6 +1737,12 @@ public function store(Request $request)
                 'Belum ada tahun ajaran yang aktif. Silakan aktifkan tahun ajaran terlebih dahulu.'
             );
     }
+
+    $kelas = Kelas::query()
+    ->where('id', $validated['kelas_id'])
+    ->where('tahun_ajaran_id', $tahunAjaran->id)
+    ->where('is_active', true)
+    ->firstOrFail();
 
 
     /*
@@ -1887,7 +1909,8 @@ do {
             $previewSoals,
             $guru,
             $tahunAjaran,
-            $kode
+            $kode,
+            $kelas
         ) {
 
             /*
@@ -1903,6 +1926,9 @@ do {
                 'tahun_ajaran_id' =>
                     $tahunAjaran->id,
 
+                'kelas_id' =>
+                    $kelas->id,
+
                 'kode' =>
                     $kode,
 
@@ -1913,7 +1939,7 @@ do {
                     $validated['mata_pelajaran'],
 
                 'tingkat' =>
-                    $validated['tingkat'],
+                    $kelas->tingkat,
 
                 'deskripsi' =>
                     $validated['deskripsi']

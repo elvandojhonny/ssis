@@ -1139,44 +1139,46 @@
 
             <div class="col-md-4">
 
-                <label class="form-label required">
-                    Tingkat
-                </label>
+    <label class="form-label required">
+        Kelas
+    </label>
 
-                <select
-                    name="tingkat"
-                    class="form-select"
-                    required
-                >
+    <select
+        name="kelas_id"
+        class="form-select"
+        required
+    >
 
-                    <option value="">
-                        Pilih tingkat
-                    </option>
+        <option value="">
+            Pilih kelas
+        </option>
 
-                    <option
-                        value="10"
-                        @selected(old('tingkat') == 10)
-                    >
-                        Kelas X
-                    </option>
+        @forelse($kelas as $item)
 
-                    <option
-                        value="11"
-                        @selected(old('tingkat') == 11)
-                    >
-                        Kelas XI
-                    </option>
+            <option
+                value="{{ $item->id }}"
+                @selected(old('kelas_id') == $item->id)
+            >
+                Kelas {{ $item->tingkat }} 
+            </option>
 
-                    <option
-                        value="12"
-                        @selected(old('tingkat') == 12)
-                    >
-                        Kelas XII
-                    </option>
+        @empty
 
-                </select>
+            <option value="" disabled>
+                Belum ada kelas aktif
+            </option>
 
-            </div>
+        @endforelse
+
+    </select>
+
+    @error('kelas_id')
+        <div class="invalid-feedback">
+            {{ $message }}
+        </div>
+    @enderror
+
+</div>
 
 
             <div class="col-md-8">
