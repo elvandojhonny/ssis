@@ -608,7 +608,7 @@ public function upload(Request $request)
             'required',
             'file',
             'mimes:docx',
-            'max:10240',
+            'max:51200',
         ],
     ]);
 

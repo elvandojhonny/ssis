@@ -534,7 +534,7 @@
                         <div class="form-hint">
 
                             Format file yang diterima:
-                            Microsoft Word (.docx), maksimal 10 MB.
+                            Microsoft Word (.docx), maksimal 50 MB.
 
                         </div>
 
