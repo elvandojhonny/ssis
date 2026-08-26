@@ -1938,8 +1938,12 @@ do {
                 'mata_pelajaran' =>
                     $validated['mata_pelajaran'],
 
-                'tingkat' =>
-                    $kelas->tingkat,
+                'tingkat' => match (strtoupper($kelas->tingkat)) {
+    'X' => 10,
+    'XI' => 11,
+    'XII' => 12,
+    default => null,
+},
 
                 'deskripsi' =>
                     $validated['deskripsi']
