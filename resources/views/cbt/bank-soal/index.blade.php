@@ -199,6 +199,56 @@
     }
 
 }
+
+/* ==========================================================
+   PREVIEW SOAL - SCROLL AREA
+   ========================================================== */
+
+.preview-soal-scroll {
+    max-height: 900px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0.25rem 0.5rem 0.5rem 0.25rem;
+    scroll-behavior: smooth;
+}
+
+/* Scrollbar */
+.preview-soal-scroll::-webkit-scrollbar {
+    width: 8px;
+}
+
+.preview-soal-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.preview-soal-scroll::-webkit-scrollbar-thumb {
+    background: var(--tblr-border-color);
+    border-radius: 10px;
+}
+
+.preview-soal-scroll::-webkit-scrollbar-thumb:hover {
+    background: var(--tblr-secondary);
+}
+
+/* Firefox */
+.preview-soal-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: var(--tblr-border-color) transparent;
+}
+
+
+/* ==========================================================
+   MOBILE
+   ========================================================== */
+
+@media (max-width: 767.98px) {
+
+    .preview-soal-scroll {
+        max-height: 750px;
+        padding-right: 0.25rem;
+    }
+
+}
 </style>
 
 <div class="page-header mb-4">
@@ -775,247 +825,253 @@
 
         {{-- DAFTAR SOAL --}}
 
-        <div class="card-body">
+        {{-- DAFTAR SOAL --}}
 
-            <div class="row g-3">
+<div class="card-body">
 
-                @foreach($previewSoals as $soal)
+    <div class="preview-soal-scroll">
 
-                    <div class="col-12">
+        <div class="row g-3">
 
-                        <div class="border rounded p-3">
+            @foreach($previewSoals as $soal)
 
+                <div class="col-12">
 
-                            {{-- NOMOR DAN SKOR --}}
+                    <div class="border rounded p-3">
 
-                            <div
-                                class="
-                                    d-flex
-                                    justify-content-between
-                                    align-items-start
-                                    gap-3
-                                    mb-3
-                                "
-                            >
+                        {{-- NOMOR DAN SKOR --}}
+                        <div
+                            class="
+                                d-flex
+                                justify-content-between
+                                align-items-start
+                                gap-3
+                                mb-3
+                            "
+                        >
 
-                                <div>
+                            <div>
 
-                                    <span class="badge bg-blue-lt">
+                                <span class="badge bg-blue-lt">
 
-                                        Soal
-                                        {{ $soal['nomor'] }}
-
-                                    </span>
-
-                                </div>
-
-
-                                <span class="badge bg-yellow-lt">
-
-                                    <i class="ti ti-star me-1"></i>
-
-                                    {{ $soal['skor'] }}
-                                    Poin
+                                    Soal
+                                    {{ $soal['nomor'] }}
 
                                 </span>
 
                             </div>
 
+                            <span class="badge bg-yellow-lt">
 
-                            {{-- PERTANYAAN --}}
+                                <i class="ti ti-star me-1"></i>
 
-<div class="mb-4">
+                                {{ $soal['skor'] }}
+                                Poin
 
-    <div
-        class="
-            text-secondary
-            small
-            mb-1
-        "
-    >
-        Pertanyaan
-    </div>
+                            </span>
+
+                        </div>
 
 
-    @if(!empty($soal['pertanyaan']))
+                        {{-- PERTANYAAN --}}
+                        <div class="mb-4">
 
-        <div class="fw-medium">
-
-            {{ $soal['pertanyaan'] }}
-
-        </div>
-
-    @endif
-
-
-    @if(!empty($soal['gambar_pertanyaan']))
-
-        <div class="mt-3 soal-preview-image-wrapper">
-    <img
-        src="{{ asset('storage/' . $soal['gambar_pertanyaan']) }}"
-        alt="Gambar Pertanyaan"
-        class="soal-preview-image rounded border"
-    >
-</div>
-
-    @endif
-
-</div>
+                            <div
+                                class="
+                                    text-secondary
+                                    small
+                                    mb-1
+                                "
+                            >
+                                Pertanyaan
+                            </div>
 
 
-                            {{-- PILIHAN JAWABAN --}}
+                            @if(!empty($soal['pertanyaan']))
 
-<div class="row g-2 preview-pilihan-row">
+                                <div class="fw-medium">
 
-    @foreach(
-        [
-            'A' => [
-                'text' => 'pilihan_a',
-                'image' => 'gambar_a',
-            ],
-
-            'B' => [
-                'text' => 'pilihan_b',
-                'image' => 'gambar_b',
-            ],
-
-            'C' => [
-                'text' => 'pilihan_c',
-                'image' => 'gambar_c',
-            ],
-
-            'D' => [
-                'text' => 'pilihan_d',
-                'image' => 'gambar_d',
-            ],
-
-            'E' => [
-                'text' => 'pilihan_e',
-                'image' => 'gambar_e',
-            ],
-        ]
-        as $huruf => $data
-    )
-
-        @php
-
-            $text =
-                $soal[$data['text']]
-                ?? '';
-
-            $image =
-                $soal[$data['image']]
-                ?? null;
-
-        @endphp
-
-
-        {{-- Tampilkan jika ada teks ATAU gambar --}}
-        @if(
-            !empty($text)
-            || !empty($image)
-        )
-
-            <div class="col-12 col-md-6 preview-pilihan-item">
-
-                <div
-                    class="
-                        border
-                        rounded
-                        p-3
-                        h-100
-                    "
-                >
-
-                    <div
-                        class="
-                            d-flex
-                            align-items-start
-                            gap-2
-                        "
-                    >
-
-                        {{-- HURUF JAWABAN --}}
-
-                        <span
-                            class="
-                                avatar
-                                avatar-sm
-                                {{
-                                    $soal['jawaban_benar']
-                                    === $huruf
-                                        ? 'bg-success text-white'
-                                        : 'bg-secondary-lt'
-                                }}
-                            "
-                        >
-                            {{ $huruf }}
-                        </span>
-
-
-                        {{-- ISI JAWABAN --}}
-
-                        <div class="flex-fill soal-pilihan-content">
-
-                            {{-- TEKS --}}
-
-                            @if(!empty($text))
-
-                                <div>
-
-                                    {{ $text }}
+                                    {{ $soal['pertanyaan'] }}
 
                                 </div>
 
                             @endif
 
 
-                            {{-- GAMBAR --}}
+                            @if(!empty($soal['gambar_pertanyaan']))
 
-                            @if(!empty($image))
+                                <div class="mt-3 soal-preview-image-wrapper">
 
-                                <div class="mt-3 soal-pilihan-image-wrapper">
-    <img
-        src="{{ asset('storage/' . $image) }}"
-        alt="Gambar Pilihan {{ $huruf }}"
-        class="soal-pilihan-image rounded border"
-    >
-</div>
-
-                            @endif
-
-
-                            {{-- JAWABAN BENAR --}}
-
-                            @if(
-                                $soal['jawaban_benar']
-                                === $huruf
-                            )
-
-                                <div class="mt-2">
-
-                                    <span
-                                        class="
-                                            badge
-                                            bg-success-lt
-                                        "
+                                    <img
+                                        src="{{ asset('storage/' . $soal['gambar_pertanyaan']) }}"
+                                        alt="Gambar Pertanyaan"
+                                        class="soal-preview-image rounded border"
                                     >
 
-                                        <i
-                                            class="
-                                                ti
-                                                ti-check
-                                                me-1
-                                            "
-                                        ></i>
-
-                                        Jawaban Benar
-
-                                    </span>
-
                                 </div>
 
                             @endif
+
+                        </div>
+
+
+                        {{-- PILIHAN JAWABAN --}}
+                        <div class="row g-2 preview-pilihan-row">
+
+                            @foreach(
+                                [
+                                    'A' => [
+                                        'text' => 'pilihan_a',
+                                        'image' => 'gambar_a',
+                                    ],
+
+                                    'B' => [
+                                        'text' => 'pilihan_b',
+                                        'image' => 'gambar_b',
+                                    ],
+
+                                    'C' => [
+                                        'text' => 'pilihan_c',
+                                        'image' => 'gambar_c',
+                                    ],
+
+                                    'D' => [
+                                        'text' => 'pilihan_d',
+                                        'image' => 'gambar_d',
+                                    ],
+
+                                    'E' => [
+                                        'text' => 'pilihan_e',
+                                        'image' => 'gambar_e',
+                                    ],
+                                ]
+                                as $huruf => $data
+                            )
+
+                                @php
+
+                                    $text =
+                                        $soal[$data['text']]
+                                        ?? '';
+
+                                    $image =
+                                        $soal[$data['image']]
+                                        ?? null;
+
+                                @endphp
+
+
+                                @if(
+                                    !empty($text)
+                                    || !empty($image)
+                                )
+
+                                    <div class="col-12 col-md-6 preview-pilihan-item">
+
+                                        <div
+                                            class="
+                                                border
+                                                rounded
+                                                p-3
+                                                h-100
+                                            "
+                                        >
+
+                                            <div
+                                                class="
+                                                    d-flex
+                                                    align-items-start
+                                                    gap-2
+                                                "
+                                            >
+
+                                                {{-- HURUF JAWABAN --}}
+
+                                                <span
+                                                    class="
+                                                        avatar
+                                                        avatar-sm
+                                                        {{
+                                                            $soal['jawaban_benar']
+                                                            === $huruf
+                                                                ? 'bg-success text-white'
+                                                                : 'bg-secondary-lt'
+                                                        }}
+                                                    "
+                                                >
+                                                    {{ $huruf }}
+                                                </span>
+
+
+                                                {{-- ISI JAWABAN --}}
+
+                                                <div class="flex-fill soal-pilihan-content">
+
+                                                    @if(!empty($text))
+
+                                                        <div>
+                                                            {{ $text }}
+                                                        </div>
+
+                                                    @endif
+
+
+                                                    @if(!empty($image))
+
+                                                        <div class="mt-3 soal-pilihan-image-wrapper">
+
+                                                            <img
+                                                                src="{{ asset('storage/' . $image) }}"
+                                                                alt="Gambar Pilihan {{ $huruf }}"
+                                                                class="soal-pilihan-image rounded border"
+                                                            >
+
+                                                        </div>
+
+                                                    @endif
+
+
+                                                    @if(
+                                                        $soal['jawaban_benar']
+                                                        === $huruf
+                                                    )
+
+                                                        <div class="mt-2">
+
+                                                            <span
+                                                                class="
+                                                                    badge
+                                                                    bg-success-lt
+                                                                "
+                                                            >
+
+                                                                <i
+                                                                    class="
+                                                                        ti
+                                                                        ti-check
+                                                                        me-1
+                                                                    "
+                                                                ></i>
+
+                                                                Jawaban Benar
+
+                                                            </span>
+
+                                                        </div>
+
+                                                    @endif
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                @endif
+
+                            @endforeach
 
                         </div>
 
@@ -1023,25 +1079,13 @@
 
                 </div>
 
-            </div>
-
-        @endif
-
-    @endforeach
-
-</div>
-
-                        
-
-                        </div>
-
-                    </div>
-
-                @endforeach
-
-            </div>
+            @endforeach
 
         </div>
+
+    </div>
+
+</div>
 
 
         {{-- FOOTER PREVIEW --}}
