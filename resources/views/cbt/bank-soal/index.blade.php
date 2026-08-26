@@ -1291,7 +1291,7 @@
 
                     <tr>
                         <th>Bank Soal</th>
-                        <th>Tingkat</th>
+                        <th>Kelas</th>
                         <th>Jumlah Soal</th>
                         <th>Status</th>
                         <th class="w-1">Aksi</th>
@@ -1548,7 +1548,7 @@
 
                 <div>
                     <div class="text-secondary small">
-                        Tingkat
+                        Kelas
                     </div>
 
                     <div class="fw-medium">

@@ -68,7 +68,7 @@
             <div class="col-6 col-md-3">
 
                 <div class="text-secondary small">
-                    Tingkat
+                    Kelas
                 </div>
 
                 <div class="fw-bold mt-1">
