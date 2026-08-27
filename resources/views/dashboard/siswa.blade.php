@@ -190,7 +190,7 @@
 
 
             <h2 class="page-title">
-                Dashboard Siswa Di Online Gambar Blume muncul
+                Dashboard Siswa
             </h2>
 
 

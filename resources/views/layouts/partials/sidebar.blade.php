@@ -750,6 +750,50 @@
                         </a>
 
                     </li>
+                    
+                    <li class="nav-item mt-3">
+
+                        <div class="nav-link disabled">
+
+                            <span class="nav-link-title text-secondary">
+                                Perpustakaan
+                            </span>
+
+                        </div>
+
+                    </li>
+
+                    <li class="nav-item">
+
+                        <a
+                            class="nav-link {{
+                                request()->routeIs(
+                                    'perpustakaan.siswa.*'
+                                )
+                                    ? 'active'
+                                    : ''
+                            }}"
+                            href="{{
+                                route('perpustakaan.siswa.index')
+                            }}"
+                        >
+
+                            <span class="nav-link-icon">
+                                <i
+                                    class="
+                                        ti
+                                        ti-book-upload
+                                    "
+                                ></i>
+                            </span>
+
+                            <span class="nav-link-title">
+                                Peminjaman Saya
+                            </span>
+
+                        </a>
+
+                    </li>
 
 
                 @endif
