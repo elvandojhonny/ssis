@@ -2168,7 +2168,7 @@
                 <div class="hero-image-wrapper">
 
                     <img
-                        src="{{ asset('images/sekolahsma.jpeg') }}"
+                        src="{{ asset('images/Sma62.png') }}"
                         class="hero-image"
                         alt="SMA Negeri 6 Malinau"
                         loading="eager">
@@ -2437,7 +2437,7 @@
                 <div class="about-image-wrapper reveal">
 
                     <img
-                        src="{{ asset('images/sekolah.jpeg') }}"
+                        src="{{ asset('images/Sma6.png') }}"
                         class="img-fluid shadow-lg"
                         alt="Tentang SSIS"
                         loading="lazy">
