@@ -519,23 +519,28 @@ public function show(
 
 
     /*
-    |--------------------------------------------------------------------------
-    | Jika Ujian Sudah Selesai
-    |--------------------------------------------------------------------------
-    */
+|--------------------------------------------------------------------------
+| Jika Ujian Sudah Selesai
+|--------------------------------------------------------------------------
+|
+| Halaman pengerjaan tidak boleh dibuka kembali.
+| Jika siswa menekan Back dan browser kembali
+| ke URL pengerjaan, langsung arahkan ke Dashboard.
+|
+*/
 
-    if (
-        $pengerjaan->status ===
-        'selesai'
-    ) {
+if (
+    $pengerjaan->status ===
+    'selesai'
+) {
 
-        return redirect()
-            ->route(
-                'cbt.siswa.pengerjaan.hasil',
-                $pengerjaan
-            );
+    session()->forget(
+        'cbt_access_' . $pengerjaan->ujian_id
+    );
 
-    }
+    return redirect()
+        ->route('dashboard');
+}
 
 
     /*
