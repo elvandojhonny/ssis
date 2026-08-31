@@ -9,59 +9,68 @@
         name="viewport"
         content="width=device-width, initial-scale=1.0">
 
-    <title>
-        SSIS - SMA Negeri 6 Malinau
-    </title>
+    <title>SMA 6 Malinau | SMA Negeri 6 Malinau - SSIS</title>
 
-    <meta
-        name="description"
-        content="SSIS SMA Negeri 6 Malinau adalah sistem informasi sekolah berbasis web untuk mendukung administrasi, akademik, absensi, perpustakaan, CBT, dan layanan digital sekolah."
-    >
+<meta
+    name="description"
+    content="SMA Negeri 6 Malinau (SMA 6 Malinau) di Sungai Boh. Website dan Sistem Informasi Sekolah (SSIS) untuk layanan akademik, absensi, CBT, perpustakaan, dan informasi sekolah."
+>
 
-    <meta
-        name="author"
-        content="SMA Negeri 6 Malinau"
-    >
+<meta
+    name="author"
+    content="SMA Negeri 6 Malinau"
+>
 
-    <meta
-        name="keywords"
-        content="SSIS, SMA Negeri 6 Malinau, Sistem Informasi Sekolah, Smart School Information System, sekolah Malinau"
-    >
+<meta
+    name="keywords"
+    content="SMA 6, SMA 6 Malinau, SMA Negeri 6 Malinau, SMA Sungai Boh, SMA 6 Sungai Boh, sekolah Sungai Boh, sekolah Malinau, SMA Malinau, SSIS SMA 6 Malinau, Sistem Informasi SMA Negeri 6 Malinau"
+>
 
-    <meta
-        property="og:type"
-        content="website"
-    >
+<meta
+    name="robots"
+    content="index, follow, max-image-preview:large"
+>
 
-    <meta
-        property="og:title"
-        content="SSIS SMA Negeri 6 Malinau | Smart School Information System"
-    >
+<link
+    rel="canonical"
+    href="https://ssis-sma6.up.railway.app/"
+>
 
-    <meta
-        property="og:description"
-        content="Sistem informasi sekolah SMA Negeri 6 Malinau untuk mendukung administrasi, akademik, absensi, perpustakaan, CBT, dan layanan digital sekolah."
-    >
+<meta
+    property="og:type"
+    content="website"
+>
 
-    <meta
-        property="og:url"
-        content="https://ssis-sma6.up.railway.app/"
-    >
+<meta
+    property="og:title"
+    content="SMA 6 Malinau | SMA Negeri 6 Malinau - SSIS"
+>
 
-    <meta
-        property="og:site_name"
-        content="SSIS SMA Negeri 6 Malinau"
-    >
+<meta
+    property="og:description"
+    content="SMA Negeri 6 Malinau di Sungai Boh. Informasi sekolah dan Sistem Informasi Sekolah untuk akademik, absensi, CBT, perpustakaan, dan layanan digital."
+>
 
-    <meta
-        property="og:image"
-        content="{{ asset('images/logo SMAN 6.png') }}"
-    >
+<meta
+    property="og:url"
+    content="https://ssis-sma6.up.railway.app/"
+>
 
-    <meta
-        name="robots"
-        content="index, follow"
-    >
+<meta
+    property="og:site_name"
+    content="SMA Negeri 6 Malinau"
+>
+
+<meta
+    property="og:image"
+    content="{{ asset('images/logo SMAN 6.png') }}"
+>
+
+<meta
+    property="og:image:alt"
+    content="Logo SMA Negeri 6 Malinau"
+>
+
 
     <link
         rel="icon"
@@ -93,14 +102,41 @@
     >
 
     <script type="application/ld+json">
-    {
-        "@@context": "https://schema.org",
-        "@@type": "WebSite",
-        "name": "SSIS SMA Negeri 6 Malinau",
-        "alternateName": "SSIS",
-        "url": "https://ssis-sma6.up.railway.app/"
-    }
-    </script>
+{
+    "@context": "https://schema.org",
+    "@graph": [
+
+        {
+            "@type": "WebSite",
+            "@id": "https://ssis-sma6.up.railway.app/#website",
+            "name": "SMA Negeri 6 Malinau",
+            "alternateName": [
+                "SMA 6 Malinau",
+                "SMA 6",
+                "SMA Sungai Boh",
+                "SSIS SMA Negeri 6 Malinau"
+            ],
+            "url": "https://ssis-sma6.up.railway.app/"
+        },
+
+        {
+            "@type": "School",
+            "@id": "https://ssis-sma6.up.railway.app/#school",
+            "name": "SMA Negeri 6 Malinau",
+            "alternateName": [
+                "SMA 6 Malinau",
+                "SMA 6",
+                "SMA Sungai Boh"
+            ],
+            "url": "https://ssis-sma6.up.railway.app/",
+            "logo": "{{ asset('images/logo SMAN 6.png') }}",
+            "image": "{{ asset('images/Sma62.png') }}",
+            "description": "SMA Negeri 6 Malinau di Sungai Boh dengan Sistem Informasi Sekolah (SSIS) untuk mendukung layanan akademik dan administrasi sekolah."
+        }
+
+    ]
+}
+</script>
 
     <style>
 
@@ -1524,58 +1560,46 @@
             }
 
 
-            .floating-card {
+            /* FLOATING CARD - MOBILE */
 
-                padding: 10px 12px;
+.floating-card {
+    padding: 6px 8px;
+    border-radius: 10px;
+    max-width: 125px;
+    min-width: 0;
+    box-shadow: 0 8px 20px rgba(31,41,55,.12);
+}
 
-                border-radius: 14px;
+.floating-card.top-card {
+    top: 7px;
+    left: 7px;
+}
 
-                max-width: 190px;
+.floating-card.bottom-card {
+    bottom: 7px;
+    right: 7px;
+}
 
-            }
+.floating-card .floating-icon {
+    width: 25px;
+    height: 25px;
+    min-width: 25px;
+    border-radius: 7px;
+    font-size: .68rem;
+    margin-right: 6px !important;
+}
 
+.floating-card strong {
+    font-size: .56rem;
+    line-height: 1.15;
+    white-space: nowrap;
+}
 
-            .floating-card.top-card {
-
-                top: 12px;
-
-                left: 10px;
-
-            }
-
-
-            .floating-card.bottom-card {
-
-                bottom: 12px;
-
-                right: 10px;
-
-            }
-
-
-            .floating-icon {
-
-                width: 35px;
-
-                height: 35px;
-
-                font-size: .95rem;
-
-            }
-
-
-            .floating-card strong {
-
-                font-size: .78rem;
-
-            }
-
-
-            .floating-card small {
-
-                font-size: .62rem;
-
-            }
+.floating-card small {
+    font-size: .42rem;
+    line-height: 1.15;
+    white-space: nowrap;
+}
 
 
             .stat-card .card-body {
@@ -1967,29 +1991,29 @@
 
 
                     <h1>
-
-                        Digitalisasi
-
+                        Sistem Informasi
                         <span>
                             SMA Negeri 6 Malinau
                         </span>
-
                     </h1>
 
 
                     <p>
+                        <strong>SMA Negeri 6 Malinau</strong> atau
+                        <strong>SMA 6 Malinau</strong> yang berada di
+                        <strong>Sungai Boh</strong> menggunakan SSIS
+                        (<strong>Smart School Information System</strong>) untuk
+                        mendukung layanan sekolah secara digital.
 
-                        SSIS merupakan sistem informasi sekolah terpadu
-                        yang mengintegrasikan
+                        Sistem ini mengintegrasikan
                         <strong>Absensi Digital</strong>,
                         <strong>Computer Based Test (CBT)</strong>,
                         dan
                         <strong>Perpustakaan Digital</strong>
-                        dalam satu platform modern.
+                        dalam satu platform.
 
                         Semua layanan sekolah menjadi lebih
                         <strong>mudah, cepat, dan terintegrasi.</strong>
-
                     </p>
 
 
