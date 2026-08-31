@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\RoleMiddleware;
+use App\Http\Middleware\PreventBackAfterExam;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -17,6 +18,9 @@ return Application::configure(
 
         $middleware->alias([
             'role' => RoleMiddleware::class,
+
+            'prevent.exam.back' =>
+                PreventBackAfterExam::class,
         ]);
 
     })

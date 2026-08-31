@@ -698,13 +698,20 @@ Route::middleware('role:siswa')
         |--------------------------------------------------------------------------
         | Validasi Token
         |--------------------------------------------------------------------------
+        |
+        | Setelah ujian selesai, token juga tidak boleh digunakan
+        | untuk masuk kembali ke alur ujian.
+        |
         */
 
         Route::post(
             '/ujian/{ujian}/token',
             [UjianSiswaController::class, 'verifyToken']
         )
-            ->middleware('throttle:5,1')
+            ->middleware([
+                'throttle:5,1',
+                'prevent.exam.back',
+            ])
             ->name('ujian.token');
 
 
@@ -713,30 +720,32 @@ Route::middleware('role:siswa')
         | Halaman Persiapan Ujian
         |--------------------------------------------------------------------------
         |
-        | Dibuka setelah token berhasil diverifikasi.
+        | Jika siswa menekan Back dari hasil ujian lalu browser
+        | mencoba membuka halaman persiapan, middleware akan
+        | mengecek status pengerjaan.
         |
         */
 
         Route::get(
             '/ujian/{ujian}/mulai',
             [UjianSiswaController::class, 'mulai']
-        )->name('ujian.mulai');
+        )
+            ->middleware('prevent.exam.back')
+            ->name('ujian.mulai');
 
 
         /*
         |--------------------------------------------------------------------------
         | Mulai Pengerjaan
         |--------------------------------------------------------------------------
-        |
-        | Dipanggil ketika siswa menekan tombol
-        | "Mulai Ujian" pada halaman persiapan.
-        |
         */
 
         Route::post(
             '/ujian/{ujian}/pengerjaan',
             [PengerjaanUjianController::class, 'mulai']
-        )->name('pengerjaan.mulai');
+        )
+            ->middleware('prevent.exam.back')
+            ->name('pengerjaan.mulai');
 
 
         /*
@@ -748,7 +757,9 @@ Route::middleware('role:siswa')
         Route::get(
             '/pengerjaan/{pengerjaan}',
             [PengerjaanUjianController::class, 'show']
-        )->name('pengerjaan.show');
+        )
+            ->middleware('prevent.exam.back')
+            ->name('pengerjaan.show');
 
 
         /*
@@ -760,7 +771,9 @@ Route::middleware('role:siswa')
         Route::post(
             '/pengerjaan/{pengerjaan}/jawaban',
             [PengerjaanUjianController::class, 'simpanJawaban']
-        )->name('pengerjaan.jawaban');
+        )
+            ->middleware('prevent.exam.back')
+            ->name('pengerjaan.jawaban');
 
 
         /*
@@ -772,18 +785,39 @@ Route::middleware('role:siswa')
         Route::post(
             '/pengerjaan/{pengerjaan}/selesai',
             [PengerjaanUjianController::class, 'selesai']
-        )->name('pengerjaan.selesai');
+        )
+            ->middleware('prevent.exam.back')
+            ->name('pengerjaan.selesai');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Hasil Ujian
+        |--------------------------------------------------------------------------
+        |
+        | JANGAN beri prevent.exam.back di sini.
+        | Halaman hasil harus tetap bisa dibuka.
+        |
+        */
 
         Route::get(
             '/pengerjaan/{pengerjaan}/hasil',
             [PengerjaanUjianController::class, 'hasil']
         )->name('pengerjaan.hasil');
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Riwayat
+        |--------------------------------------------------------------------------
+        */
+
         Route::get(
             '/riwayat',
             [PengerjaanUjianController::class, 'riwayat']
         )->name('riwayat');
-        
+
+
         /*
         |--------------------------------------------------------------------------
         | Pelanggaran Ujian
