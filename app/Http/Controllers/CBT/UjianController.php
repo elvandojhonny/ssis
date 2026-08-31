@@ -114,10 +114,6 @@ public function create()
     |--------------------------------------------------------------------------
     | Kelas Aktif
     |--------------------------------------------------------------------------
-    |
-    | Hanya kelas dari tahun ajaran aktif
-    | yang boleh dipilih untuk ujian.
-    |
     */
 
     $kelas = Kelas::with(
@@ -154,22 +150,69 @@ public function create()
 
     /*
     |--------------------------------------------------------------------------
-    | Tampilkan halaman
+    | 3 Bank Soal Terbaru
     |--------------------------------------------------------------------------
     |
-    | Bank Soal TIDAK lagi dikirim ke halaman.
+    | Hanya Bank Soal yang:
     |
-    | Operator akan mencari Bank Soal
-    | berdasarkan kode melalui endpoint
-    | cariBankSoal().
+    | - tahun ajaran aktif
+    | - status siap
+    | - tidak diarsipkan
     |
+    */
+
+    $bankSoalTerbaru = collect();
+
+
+    if ($tahunAjaran) {
+
+        $bankSoalTerbaru = BankSoal::query()
+
+            ->where(
+                'tahun_ajaran_id',
+                $tahunAjaran->id
+            )
+
+            ->where(
+                'status',
+                'siap'
+            )
+
+            ->where(
+                'is_archived',
+                false
+            )
+
+            ->with([
+                'guru',
+                'tahunAjaran',
+            ])
+
+            ->withCount(
+                'soals'
+            )
+
+            ->latest()
+
+            ->take(3)
+
+            ->get();
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Tampilkan halaman
+    |--------------------------------------------------------------------------
     */
 
     return view(
         'cbt.ujian.create',
         compact(
             'kelas',
-            'tahunAjaran'
+            'tahunAjaran',
+            'bankSoalTerbaru'
         )
     );
 }

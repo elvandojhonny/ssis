@@ -308,6 +308,171 @@
 
 </div>
 
+{{-- ================================================= --}}
+{{-- BANK SOAL TERBARU --}}
+{{-- ================================================= --}}
+
+<div class="mt-4">
+
+    <div class="d-flex align-items-center justify-content-between mb-3">
+
+        <div>
+            <div class="fw-semibold">
+                Bank Soal Terbaru
+            </div>
+
+            <div class="text-secondary small">
+                Pilih langsung dari bank soal yang tersedia.
+            </div>
+        </div>
+
+        @if($bankSoalTerbaru->count() > 0)
+
+            <span class="badge bg-blue-lt">
+                {{ $bankSoalTerbaru->count() }}
+                tersedia
+            </span>
+
+        @endif
+
+    </div>
+
+
+    @forelse($bankSoalTerbaru as $bank)
+
+        <div
+            class="border rounded-3 p-3 mb-2 bank-soal-item"
+            data-bank-id="{{ $bank->id }}"
+        >
+
+            <div class="d-flex align-items-start gap-3">
+
+                {{-- ICON --}}
+
+                <div
+                    class="flex-shrink-0 bg-primary-lt rounded-circle d-flex align-items-center justify-content-center"
+                    style="width:42px;height:42px;"
+                >
+
+                    <i class="ti ti-notebook text-primary"></i>
+
+                </div>
+
+
+                {{-- INFORMASI --}}
+
+                <div class="flex-grow-1 min-width-0">
+
+                    <div class="fw-semibold text-truncate">
+
+                        {{ $bank->judul }}
+
+                    </div>
+
+
+                    <div class="text-secondary small mt-1">
+
+                        {{ $bank->mata_pelajaran }}
+
+                        <span class="mx-1">•</span>
+
+                        Kelas {{ $bank->tingkat }}
+
+                        @if($bank->tahunAjaran)
+
+                            <span class="mx-1">•</span>
+
+                            {{ $bank->tahunAjaran->nama }}
+
+                        @endif
+
+                    </div>
+
+
+                    <div class="d-flex flex-wrap gap-2 mt-2">
+
+                        <span class="badge bg-secondary-lt">
+
+                            <i class="ti ti-list me-1"></i>
+
+                            {{ $bank->soals_count }} soal
+
+                        </span>
+
+
+                        <span class="badge bg-azure-lt">
+
+                            <i class="ti ti-key me-1"></i>
+
+                            {{ $bank->kode }}
+
+                        </span>
+
+
+                        @if($bank->guru)
+
+                            <span class="badge bg-green-lt">
+
+                                <i class="ti ti-user me-1"></i>
+
+                                {{ $bank->guru->nama }}
+
+                            </span>
+
+                        @endif
+
+                    </div>
+
+                </div>
+
+
+                {{-- TOMBOL PILIH --}}
+
+                <div class="flex-shrink-0">
+
+                    <button
+                        type="button"
+                        class="btn btn-outline-primary btn-sm btn-pilih-bank-soal"
+                        data-id="{{ $bank->id }}"
+                        data-judul="{{ $bank->judul }}"
+                        data-kode="{{ $bank->kode }}"
+                    >
+
+                        <i class="ti ti-check me-1"></i>
+
+                        Pilih
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    @empty
+
+        <div class="text-center py-4 text-secondary">
+
+            <i
+                class="ti ti-notebook-off"
+                style="font-size:32px;"
+            ></i>
+
+            <div class="mt-2 fw-semibold">
+                Belum ada Bank Soal
+            </div>
+
+            <div class="small">
+                Bank Soal yang sudah siap akan muncul di sini.
+            </div>
+
+        </div>
+
+    @endforelse
+
+</div>
+
 
                     {{-- KELAS PESERTA --}}
 
@@ -717,6 +882,114 @@ document.addEventListener(
             document.getElementById(
                 'bankSoalTerpilihNama'
             );
+
+            /*
+|--------------------------------------------------------------------------
+| Pilih Bank Soal dari Daftar Terbaru
+|--------------------------------------------------------------------------
+*/
+
+const tombolPilihBank =
+    document.querySelectorAll(
+        '.btn-pilih-bank-soal'
+    );
+
+
+tombolPilihBank.forEach(
+    function (button) {
+
+        button.addEventListener(
+            'click',
+            function () {
+
+                const id =
+                    this.dataset.id;
+
+                const judul =
+                    this.dataset.judul;
+
+                const kode =
+                    this.dataset.kode;
+
+
+                /*
+                 * Simpan ID Bank Soal
+                 */
+
+                bankSoalId.value =
+                    id;
+
+
+                /*
+                 * Tampilkan sebagai
+                 * Bank Soal terpilih.
+                 */
+
+                terpilihNama.textContent =
+                    judul
+                    + ' — '
+                    + kode;
+
+
+                terpilih.style.display =
+                    'block';
+
+
+                /*
+                 * Hilangkan hasil pencarian
+                 * jika sedang terbuka.
+                 */
+
+                hasil.style.display =
+                    'none';
+
+
+                errorBox.style.display =
+                    'none';
+
+
+                /*
+                 * Tandai pilihan aktif.
+                 */
+
+                document
+                    .querySelectorAll(
+                        '.bank-soal-item'
+                    )
+                    .forEach(
+                        function (item) {
+
+                            item.classList.remove(
+                                'border-primary',
+                                'bg-primary-lt'
+                            );
+
+                        }
+                    );
+
+
+                const item =
+                    document.querySelector(
+                        '.bank-soal-item[data-bank-id="'
+                        + id
+                        + '"]'
+                    );
+
+
+                if (item) {
+
+                    item.classList.add(
+                        'border-primary',
+                        'bg-primary-lt'
+                    );
+
+                }
+
+            }
+        );
+
+    }
+);
 
 
         /*
