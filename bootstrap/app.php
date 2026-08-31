@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\RoleMiddleware;
 use App\Http\Middleware\PreventBackAfterExam;
+use App\Http\Middleware\PreventAuthenticatedCache;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -21,6 +22,9 @@ return Application::configure(
 
             'prevent.exam.back' =>
                 PreventBackAfterExam::class,
+
+            'prevent.auth.cache' =>
+                PreventAuthenticatedCache::class,
         ]);
 
     })
