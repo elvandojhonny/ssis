@@ -103,12 +103,12 @@
 
     <script type="application/ld+json">
 {
-    "@context": "https://schema.org",
-    "@graph": [
+    "@@context": "https://schema.org",
+    "@@graph": [
 
         {
-            "@type": "WebSite",
-            "@id": "https://ssis-sma6.up.railway.app/#website",
+            "@@type": "WebSite",
+            "@@id": "https://ssis-sma6.up.railway.app/#website",
             "name": "SMA Negeri 6 Malinau",
             "alternateName": [
                 "SMA 6 Malinau",
@@ -120,8 +120,8 @@
         },
 
         {
-            "@type": "School",
-            "@id": "https://ssis-sma6.up.railway.app/#school",
+            "@@type": "School",
+            "@@id": "https://ssis-sma6.up.railway.app/#school",
             "name": "SMA Negeri 6 Malinau",
             "alternateName": [
                 "SMA 6 Malinau",
