@@ -74,27 +74,22 @@ public function mulai(Ujian $ujian)
         ->first();
 
 
-    /*
-     * Jika sudah selesai,
-     * tidak dapat mengerjakan ulang.
-     */
     if (
-        $pengerjaan &&
-        $pengerjaan->status === 'selesai'
-    ) {
-        session()->forget(
-            'cbt_access_' . $ujian->id
-        );
+    $pengerjaan &&
+    $pengerjaan->status === 'selesai'
+) {
 
-        return redirect()
-            ->route(
-                'cbt.siswa.index'
-            )
-            ->with(
-                'error',
-                'Anda sudah menyelesaikan ujian ini dan tidak dapat mengerjakannya kembali.'
-            );
-    }
+    session()->forget(
+        'cbt_access_' . $ujian->id
+    );
+
+    return redirect()
+        ->route('dashboard')
+        ->with(
+            'info',
+            'Ujian sudah selesai dan tidak dapat dikerjakan kembali.'
+        );
+}
 
 
     /*
