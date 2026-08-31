@@ -1559,45 +1559,45 @@
 
             }
 
-
             /* FLOATING CARD - MOBILE */
 
 .floating-card {
-    padding: 6px 8px;
-    border-radius: 10px;
-    max-width: 125px;
+    width: 175px;
+    max-width: 175px;
     min-width: 0;
+    padding: 9px 11px;
+    border-radius: 12px;
     box-shadow: 0 8px 20px rgba(31,41,55,.12);
 }
 
 .floating-card.top-card {
-    top: 7px;
-    left: 7px;
+    top: 8px;
+    left: 8px;
 }
 
 .floating-card.bottom-card {
-    bottom: 7px;
-    right: 7px;
+    bottom: 8px;
+    right: 8px;
 }
 
 .floating-card .floating-icon {
-    width: 25px;
-    height: 25px;
-    min-width: 25px;
-    border-radius: 7px;
-    font-size: .68rem;
-    margin-right: 6px !important;
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    border-radius: 9px;
+    font-size: .8rem;
+    margin-right: 7px !important;
 }
 
 .floating-card strong {
-    font-size: .56rem;
-    line-height: 1.15;
+    font-size: .68rem;
+    line-height: 1.2;
     white-space: nowrap;
 }
 
 .floating-card small {
-    font-size: .42rem;
-    line-height: 1.15;
+    font-size: .55rem;
+    line-height: 1.2;
     white-space: nowrap;
 }
 
