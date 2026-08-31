@@ -581,9 +581,14 @@
 
     .hero-content {
 
-        animation: fadeUp .8s ease both;
+    animation:
+        fadeUp
+        1s
+        cubic-bezier(.22,1,.36,1)
+        .15s
+        both;
 
-    }
+}
 
 
     .hero h1 {
@@ -789,11 +794,16 @@
 
     .hero-image-wrapper {
 
-        position: relative;
+    position: relative;
 
-        animation: fadeRight .9s ease both;
+    animation:
+        fadeRight
+        1.1s
+        cubic-bezier(.22,1,.36,1)
+        .3s
+        both;
 
-    }
+}
 
 
     .hero-image {
@@ -1840,12 +1850,2069 @@
 
     }
 
+    /* ==========================================================
+   CINEMATIC OPENING FINAL
+========================================================== */
+
+.cinematic-opening {
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 999999;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    overflow: hidden;
+
+    background: #f7faff;
+
+    opacity: 1;
+
+    visibility: visible;
+
+    transition:
+        opacity 1s cubic-bezier(.22,1,.36,1),
+        visibility 1s ease;
+
+}
+
+
+.cinematic-opening.hide {
+
+    opacity: 0;
+
+    visibility: hidden;
+
+    pointer-events: none;
+
+}
+
+
+/* ==========================================================
+   BACKDROP
+========================================================== */
+
+.opening-backdrop {
+
+    position: absolute;
+
+    inset: 0;
+
+    background:
+
+        radial-gradient(
+            circle at 50% 45%,
+            rgba(255,255,255,.95),
+            rgba(238,246,255,.92) 36%,
+            rgba(224,237,255,.96) 100%
+        );
+
+}
+
+
+.opening-backdrop::before {
+
+    content: "";
+
+    position: absolute;
+
+    inset: -30%;
+
+    background:
+        conic-gradient(
+            from 0deg,
+            transparent,
+            rgba(32,107,196,.045),
+            transparent,
+            rgba(14,165,233,.04),
+            transparent
+        );
+
+    animation:
+        backdropRotate
+        12s
+        linear
+        infinite;
+
+}
+
+
+/* ==========================================================
+   AURA
+========================================================== */
+
+.opening-aura {
+
+    position: absolute;
+
+    width: 420px;
+
+    height: 420px;
+
+    border-radius: 50%;
+
+    filter: blur(80px);
+
+    opacity: .35;
+
+    pointer-events: none;
+
+}
+
+
+.aura-one {
+
+    background:
+        rgba(32,107,196,.18);
+
+    animation:
+        auraOne
+        5s
+        ease-in-out
+        infinite;
+
+}
+
+
+.aura-two {
+
+    width: 320px;
+
+    height: 320px;
+
+    background:
+        rgba(14,165,233,.12);
+
+    animation:
+        auraTwo
+        6s
+        ease-in-out
+        infinite;
+
+}
+
+
+/* ==========================================================
+   CENTER
+========================================================== */
+
+.opening-center {
+
+    position: relative;
+
+    z-index: 10;
+
+    display: flex;
+
+    align-items: center;
+
+    flex-direction: column;
+
+    text-align: center;
+
+}
+
+
+/* ==========================================================
+   LOGO STAGE
+========================================================== */
+
+.opening-logo-stage {
+
+    position: relative;
+
+    width: 220px;
+
+    height: 220px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+}
+
+
+/* ==========================================================
+   LOGO FINAL
+========================================================== */
+
+.opening-logo-final {
+
+    position: relative;
+
+    z-index: 5;
+
+    width: 150px;
+
+    height: 150px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background:
+        rgba(255,255,255,.92);
+
+    box-shadow:
+        0 25px 70px rgba(32,107,196,.18),
+        0 0 0 1px rgba(32,107,196,.07);
+
+    opacity: 0;
+
+    transform:
+        scale(.45);
+
+    animation:
+        logoReveal
+        1.1s
+        cubic-bezier(.16,1,.3,1)
+        1.15s
+        forwards;
+
+}
+
+
+.opening-logo-final img {
+
+    width: 118px;
+
+    height: 118px;
+
+    object-fit: contain;
+
+    filter:
+        drop-shadow(
+            0 10px 20px
+            rgba(32,107,196,.16)
+        );
+
+}
+
+
+/* ==========================================================
+   SHINE
+========================================================== */
+
+.logo-shine {
+
+    position: absolute;
+
+    top: -20%;
+
+    left: -70%;
+
+    width: 35%;
+
+    height: 140%;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(255,255,255,.95),
+            transparent
+        );
+
+    transform:
+        rotate(20deg)
+        skewX(-12deg);
+
+    opacity: 0;
+
+    animation:
+        logoShine
+        .9s
+        ease-out
+        2.05s
+        forwards;
+
+}
+
+
+/* ==========================================================
+   SPARKS
+========================================================== */
+
+.logo-spark {
+
+    position: absolute;
+
+    z-index: 3;
+
+    width: 8px;
+
+    height: 8px;
+
+    border-radius: 50%;
+
+    background:
+        var(--primary);
+
+    box-shadow:
+        0 0 15px rgba(32,107,196,.45);
+
+    opacity: 0;
+
+}
+
+
+/* kiri atas */
+
+.spark-1 {
+
+    left: 5%;
+
+    top: 18%;
+
+    animation:
+        sparkOne
+        1.6s
+        cubic-bezier(.16,1,.3,1)
+        .05s
+        forwards;
+
+}
+
+
+/* kanan atas */
+
+.spark-2 {
+
+    right: 5%;
+
+    top: 15%;
+
+    animation:
+        sparkTwo
+        1.55s
+        cubic-bezier(.16,1,.3,1)
+        .16s
+        forwards;
+
+}
+
+
+/* kiri tengah */
+
+.spark-3 {
+
+    left: 0;
+
+    top: 48%;
+
+    animation:
+        sparkThree
+        1.65s
+        cubic-bezier(.16,1,.3,1)
+        .24s
+        forwards;
+
+}
+
+
+/* kanan tengah */
+
+.spark-4 {
+
+    right: 0;
+
+    top: 52%;
+
+    animation:
+        sparkFour
+        1.65s
+        cubic-bezier(.16,1,.3,1)
+        .32s
+        forwards;
+
+}
+
+
+/* kiri bawah */
+
+.spark-5 {
+
+    left: 15%;
+
+    bottom: 5%;
+
+    animation:
+        sparkFive
+        1.6s
+        cubic-bezier(.16,1,.3,1)
+        .40s
+        forwards;
+
+}
+
+
+/* kanan bawah */
+
+.spark-6 {
+
+    right: 17%;
+
+    bottom: 4%;
+
+    animation:
+        sparkSix
+        1.6s
+        cubic-bezier(.16,1,.3,1)
+        .46s
+        forwards;
+
+}
+
+
+/* atas */
+
+.spark-7 {
+
+    left: 48%;
+
+    top: -2%;
+
+    animation:
+        sparkSeven
+        1.55s
+        cubic-bezier(.16,1,.3,1)
+        .12s
+        forwards;
+
+}
+
+
+/* bawah */
+
+.spark-8 {
+
+    left: 52%;
+
+    bottom: -2%;
+
+    animation:
+        sparkEight
+        1.6s
+        cubic-bezier(.16,1,.3,1)
+        .52s
+        forwards;
+
+}
+
+
+/* ==========================================================
+   BRAND
+========================================================== */
+
+.opening-brand {
+
+    margin-top: 2px;
+
+    opacity: 0;
+
+    transform:
+        translateY(25px);
+
+    animation:
+        brandReveal
+        .9s
+        cubic-bezier(.16,1,.3,1)
+        1.55s
+        forwards;
+
+}
+
+
+.opening-ssis {
+
+    font-size: 3rem;
+
+    font-weight: 800;
+
+    line-height: 1;
+
+    letter-spacing: 2px;
+
+    color: var(--dark);
+
+}
+
+
+.opening-name {
+
+    margin-top: 8px;
+
+    font-size: .86rem;
+
+    font-weight: 500;
+
+    letter-spacing: .25px;
+
+    color: var(--primary);
+
+}
+
+
+.opening-divider {
+
+    width: 120px;
+
+    height: 2px;
+
+    margin:
+        14px
+        auto
+        10px;
+
+    border-radius: 50px;
+
+    overflow: hidden;
+
+    background:
+        rgba(32,107,196,.08);
+
+}
+
+
+.opening-divider span {
+
+    display: block;
+
+    width: 40%;
+
+    height: 100%;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            var(--primary),
+            transparent
+        );
+
+    animation:
+        dividerSweep
+        1.2s
+        ease-in-out
+        infinite;
+
+}
+
+
+.opening-school {
+
+    font-size: .75rem;
+
+    color: var(--muted);
+
+}
+
+
+/* ==========================================================
+   LOADING
+========================================================== */
+
+.opening-loading {
+
+    display: flex;
+
+    gap: 6px;
+
+    margin-top: 21px;
+
+    opacity: 0;
+
+    animation:
+        loadingReveal
+        .5s
+        ease
+        1.75s
+        forwards;
+
+}
+
+
+.opening-loading span {
+
+    width: 5px;
+
+    height: 5px;
+
+    border-radius: 50%;
+
+    background:
+        var(--primary);
+
+    animation:
+        loadingDot
+        1s
+        ease-in-out
+        infinite;
+
+}
+
+
+.opening-loading span:nth-child(2) {
+
+    animation-delay: .14s;
+
+}
+
+
+.opening-loading span:nth-child(3) {
+
+    animation-delay: .28s;
+
+}
+
+
+/* ==========================================================
+   ORBIT
+========================================================== */
+
+.opening-orbit {
+
+    position: absolute;
+
+    width: 420px;
+
+    height: 420px;
+
+    border:
+        1px solid
+        rgba(32,107,196,.055);
+
+    border-radius: 50%;
+
+    opacity: 0;
+
+    animation:
+        orbitReveal
+        1s
+        ease
+        .7s
+        forwards;
+
+}
+
+
+.orbit-one {
+
+    transform:
+        rotate(25deg)
+        scale(.7);
+
+}
+
+
+.orbit-two {
+
+    width: 320px;
+
+    height: 320px;
+
+    transform:
+        rotate(-30deg)
+        scale(.7);
+
+    animation-delay:
+        .95s;
+
+}
+
+
+/* ==========================================================
+   PARTICLES
+========================================================== */
+
+.opening-particles {
+
+    position: absolute;
+
+    inset: 0;
+
+}
+
+
+.opening-particles i {
+
+    position: absolute;
+
+    width: 3px;
+
+    height: 3px;
+
+    border-radius: 50%;
+
+    background:
+        rgba(32,107,196,.55);
+
+    opacity: 0;
+
+    animation:
+        particleFloat
+        3s
+        ease-out
+        infinite;
+
+}
+
+
+.opening-particles i:nth-child(1) {
+    left: 8%;
+    top: 30%;
+    animation-delay: .15s;
+}
+
+.opening-particles i:nth-child(2) {
+    left: 14%;
+    top: 65%;
+    animation-delay: .7s;
+}
+
+.opening-particles i:nth-child(3) {
+    left: 23%;
+    top: 18%;
+    animation-delay: 1.2s;
+}
+
+.opening-particles i:nth-child(4) {
+    left: 31%;
+    top: 77%;
+    animation-delay: .4s;
+}
+
+.opening-particles i:nth-child(5) {
+    left: 39%;
+    top: 10%;
+    animation-delay: 1.4s;
+}
+
+.opening-particles i:nth-child(6) {
+    left: 46%;
+    top: 86%;
+    animation-delay: .8s;
+}
+
+.opening-particles i:nth-child(7) {
+    left: 55%;
+    top: 8%;
+    animation-delay: .35s;
+}
+
+.opening-particles i:nth-child(8) {
+    left: 63%;
+    top: 90%;
+    animation-delay: 1.1s;
+}
+
+.opening-particles i:nth-child(9) {
+    left: 70%;
+    top: 17%;
+    animation-delay: .6s;
+}
+
+.opening-particles i:nth-child(10) {
+    left: 78%;
+    top: 72%;
+    animation-delay: 1.5s;
+}
+
+.opening-particles i:nth-child(11) {
+    left: 88%;
+    top: 27%;
+    animation-delay: .2s;
+}
+
+.opening-particles i:nth-child(12) {
+    left: 93%;
+    top: 58%;
+    animation-delay: .9s;
+}
+
+.opening-particles i:nth-child(13) {
+    left: 5%;
+    top: 48%;
+    animation-delay: 1.3s;
+}
+
+.opening-particles i:nth-child(14) {
+    left: 19%;
+    top: 44%;
+    animation-delay: .5s;
+}
+
+.opening-particles i:nth-child(15) {
+    left: 84%;
+    top: 46%;
+    animation-delay: 1.6s;
+}
+
+.opening-particles i:nth-child(16) {
+    left: 73%;
+    top: 84%;
+    animation-delay: .75s;
+}
+
+.opening-particles i:nth-child(17) {
+    left: 28%;
+    top: 90%;
+    animation-delay: 1.7s;
+}
+
+.opening-particles i:nth-child(18) {
+    left: 58%;
+    top: 25%;
+    animation-delay: .25s;
+}
+
+.opening-particles i:nth-child(19) {
+    left: 35%;
+    top: 35%;
+    animation-delay: 1.25s;
+}
+
+.opening-particles i:nth-child(20) {
+    left: 66%;
+    top: 40%;
+    animation-delay: .55s;
+}
+
+.opening-particles i:nth-child(21) {
+    left: 11%;
+    top: 82%;
+    animation-delay: 1.45s;
+}
+
+.opening-particles i:nth-child(22) {
+    left: 90%;
+    top: 82%;
+    animation-delay: .85s;
+}
+
+.opening-particles i:nth-child(23) {
+    left: 49%;
+    top: 4%;
+    animation-delay: 1.05s;
+}
+
+.opening-particles i:nth-child(24) {
+    left: 51%;
+    top: 95%;
+    animation-delay: .45s;
+}
+
+
+/* ==========================================================
+   KEYFRAMES
+========================================================== */
+
+@keyframes backdropRotate {
+
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+
+}
+
+
+@keyframes auraOne {
+
+    0%,
+    100% {
+        transform:
+            translate(-90px,-20px)
+            scale(.85);
+    }
+
+    50% {
+        transform:
+            translate(70px,45px)
+            scale(1.15);
+    }
+
+}
+
+
+@keyframes auraTwo {
+
+    0%,
+    100% {
+        transform:
+            translate(70px,45px)
+            scale(1);
+    }
+
+    50% {
+        transform:
+            translate(-55px,-35px)
+            scale(.82);
+    }
+
+}
+
+
+@keyframes logoReveal {
+
+    0% {
+
+        opacity: 0;
+
+        transform:
+            scale(.42)
+            rotate(-8deg);
+
+        filter:
+            blur(10px);
+
+    }
+
+    60% {
+
+        opacity: 1;
+
+        transform:
+            scale(1.08)
+            rotate(1deg);
+
+        filter:
+            blur(0);
+
+    }
+
+    100% {
+
+        opacity: 1;
+
+        transform:
+            scale(1)
+            rotate(0);
+
+        filter:
+            blur(0);
+
+    }
+
+}
+
+
+@keyframes logoShine {
+
+    0% {
+
+        left: -70%;
+
+        opacity: 0;
+
+    }
+
+    15% {
+
+        opacity: .9;
+
+    }
+
+    100% {
+
+        left: 145%;
+
+        opacity: 0;
+
+    }
+
+}
+
+
+@keyframes brandReveal {
+
+    from {
+
+        opacity: 0;
+
+        transform:
+            translateY(25px)
+            scale(.96);
+
+    }
+
+    to {
+
+        opacity: 1;
+
+        transform:
+            translateY(0)
+            scale(1);
+
+    }
+
+}
+
+
+@keyframes dividerSweep {
+
+    0% {
+        transform: translateX(-170%);
+    }
+
+    100% {
+        transform: translateX(380%);
+    }
+
+}
+
+
+@keyframes loadingReveal {
+
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+
+}
+
+
+@keyframes loadingDot {
+
+    0%,
+    100% {
+
+        opacity: .2;
+
+        transform:
+            translateY(0)
+            scale(.8);
+
+    }
+
+    50% {
+
+        opacity: 1;
+
+        transform:
+            translateY(-4px)
+            scale(1);
+
+    }
+
+}
+
+
+@keyframes orbitReveal {
+
+    from {
+
+        opacity: 0;
+
+    }
+
+    to {
+
+        opacity: 1;
+
+    }
+
+}
+
+
+@keyframes particleFloat {
+
+    0% {
+
+        opacity: 0;
+
+        transform:
+            translateY(18px)
+            scale(.4);
+
+    }
+
+    20% {
+
+        opacity: .8;
+
+    }
+
+    70% {
+
+        opacity: .45;
+
+    }
+
+    100% {
+
+        opacity: 0;
+
+        transform:
+            translateY(-45px)
+            scale(1.15);
+
+    }
+
+}
+
+
+/* ==========================================================
+   SPARK KEYFRAMES
+========================================================== */
+
+@keyframes sparkOne {
+
+    from {
+        opacity: 0;
+        transform:
+            translate(-95px,-85px)
+            scale(.2);
+    }
+
+    55% {
+        opacity: 1;
+    }
+
+    to {
+        opacity: .85;
+        transform:
+            translate(5px,5px)
+            scale(.8);
+    }
+
+}
+
+
+@keyframes sparkTwo {
+
+    from {
+        opacity: 0;
+        transform:
+            translate(95px,-80px)
+            scale(.2);
+    }
+
+    55% {
+        opacity: 1;
+    }
+
+    to {
+        opacity: .85;
+        transform:
+            translate(-5px,5px)
+            scale(.8);
+    }
+
+}
+
+
+@keyframes sparkThree {
+
+    from {
+        opacity: 0;
+        transform:
+            translate(-105px,0)
+            scale(.2);
+    }
+
+    55% {
+        opacity: 1;
+    }
+
+    to {
+        opacity: .85;
+        transform:
+            translate(7px,0)
+            scale(.8);
+    }
+
+}
+
+
+@keyframes sparkFour {
+
+    from {
+        opacity: 0;
+        transform:
+            translate(105px,0)
+            scale(.2);
+    }
+
+    55% {
+        opacity: 1;
+    }
+
+    to {
+        opacity: .85;
+        transform:
+            translate(-7px,0)
+            scale(.8);
+    }
+
+}
+
+
+@keyframes sparkFive {
+
+    from {
+        opacity: 0;
+        transform:
+            translate(-80px,85px)
+            scale(.2);
+    }
+
+    55% {
+        opacity: 1;
+    }
+
+    to {
+        opacity: .85;
+        transform:
+            translate(5px,-5px)
+            scale(.8);
+    }
+
+}
+
+
+@keyframes sparkSix {
+
+    from {
+        opacity: 0;
+        transform:
+            translate(85px,85px)
+            scale(.2);
+    }
+
+    55% {
+        opacity: 1;
+    }
+
+    to {
+        opacity: .85;
+        transform:
+            translate(-5px,-5px)
+            scale(.8);
+    }
+
+}
+
+
+@keyframes sparkSeven {
+
+    from {
+        opacity: 0;
+        transform:
+            translate(0,-105px)
+            scale(.2);
+    }
+
+    55% {
+        opacity: 1;
+    }
+
+    to {
+        opacity: .85;
+        transform:
+            translate(0,8px)
+            scale(.8);
+    }
+
+}
+
+
+@keyframes sparkEight {
+
+    from {
+        opacity: 0;
+        transform:
+            translate(0,105px)
+            scale(.2);
+    }
+
+    55% {
+        opacity: 1;
+    }
+
+    to {
+        opacity: .85;
+        transform:
+            translate(0,-8px)
+            scale(.8);
+    }
+
+}
+
+
+/* ==========================================================
+   MOBILE
+========================================================== */
+
+@media (max-width: 575.98px) {
+
+    .opening-logo-stage {
+
+        width: 180px;
+
+        height: 180px;
+
+    }
+
+
+    .opening-logo-final {
+
+        width: 122px;
+
+        height: 122px;
+
+    }
+
+
+    .opening-logo-final img {
+
+        width: 96px;
+
+        height: 96px;
+
+    }
+
+
+    .opening-ssis {
+
+        font-size: 2.4rem;
+
+    }
+
+
+    .opening-name {
+
+        font-size: .74rem;
+
+    }
+
+
+    .opening-school {
+
+        font-size: .68rem;
+
+    }
+
+
+    .opening-orbit {
+
+        width: 330px;
+
+        height: 330px;
+
+    }
+
+
+    .orbit-two {
+
+        width: 260px;
+
+        height: 260px;
+
+    }
+
+}
+
+
+/* ==========================================================
+   REDUCED MOTION
+========================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .cinematic-opening *,
+    .cinematic-opening::before,
+    .cinematic-opening::after {
+
+        animation: none !important;
+
+    }
+
+}
+
+/* ==========================================================
+   TRANSITION TO LANDING PAGE
+========================================================== */
+
+.opening-flash {
+
+    position: absolute;
+
+    left: 50%;
+
+    top: 50%;
+
+    width: 20px;
+
+    height: 20px;
+
+    border-radius: 50%;
+
+    background: #ffffff;
+
+    transform:
+        translate(-50%, -50%)
+        scale(0);
+
+    opacity: 0;
+
+    z-index: 50;
+
+    pointer-events: none;
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Saat opening ditutup
+|--------------------------------------------------------------------------
+*/
+
+.cinematic-opening.hide .opening-flash {
+
+    animation:
+        openingFlash
+        1s
+        cubic-bezier(.16,1,.3,1)
+        forwards;
+
+}
+
+
+@keyframes openingFlash {
+
+    0% {
+
+        opacity: 0;
+
+        transform:
+            translate(-50%, -50%)
+            scale(0);
+
+    }
+
+    12% {
+
+        opacity: .9;
+
+        transform:
+            translate(-50%, -50%)
+            scale(3);
+
+    }
+
+    45% {
+
+        opacity: 1;
+
+        transform:
+            translate(-50%, -50%)
+            scale(25);
+
+    }
+
+    70% {
+
+        opacity: .95;
+
+        transform:
+            translate(-50%, -50%)
+            scale(65);
+
+    }
+
+    100% {
+
+        opacity: 0;
+
+        transform:
+            translate(-50%, -50%)
+            scale(95);
+
+    }
+
+}
+
+/* ==========================================================
+   LIVING HERO BACKGROUND
+========================================================== */
+
+.hero {
+
+    isolation: isolate;
+
+}
+
+
+.hero-living-bg {
+
+    position: absolute;
+
+    inset: 0;
+
+    overflow: hidden;
+
+    pointer-events: none;
+
+    z-index: 0;
+
+}
+
+
+/* ==========================================================
+   ORBS
+========================================================== */
+
+.living-orb {
+
+    position: absolute;
+
+    border-radius: 50%;
+
+    filter: blur(55px);
+
+    opacity: .45;
+
+}
+
+
+.orb-blue {
+
+    width: 420px;
+
+    height: 420px;
+
+    background:
+        rgba(32,107,196,.12);
+
+    top: -120px;
+
+    right: -80px;
+
+    animation:
+        livingOrbBlue
+        12s
+        ease-in-out
+        infinite;
+
+}
+
+
+.orb-cyan {
+
+    width: 300px;
+
+    height: 300px;
+
+    background:
+        rgba(14,165,233,.09);
+
+    bottom: -100px;
+
+    left: 10%;
+
+    animation:
+        livingOrbCyan
+        10s
+        ease-in-out
+        infinite;
+
+}
+
+
+.orb-soft {
+
+    width: 220px;
+
+    height: 220px;
+
+    background:
+        rgba(47,179,68,.055);
+
+    top: 35%;
+
+    left: -90px;
+
+    animation:
+        livingOrbSoft
+        14s
+        ease-in-out
+        infinite;
+
+}
+
+
+/* ==========================================================
+   SMALL FLOATING DOTS
+========================================================== */
+
+.living-dot {
+
+    position: absolute;
+
+    width: 5px;
+
+    height: 5px;
+
+    border-radius: 50%;
+
+    background:
+        rgba(32,107,196,.35);
+
+    box-shadow:
+        0 0 14px rgba(32,107,196,.18);
+
+    animation:
+        livingDot
+        7s
+        ease-in-out
+        infinite;
+
+}
+
+
+.dot-1 {
+    left: 9%;
+    top: 24%;
+    animation-delay: 0s;
+}
+
+.dot-2 {
+    left: 21%;
+    top: 70%;
+    animation-delay: 1s;
+}
+
+.dot-3 {
+    left: 39%;
+    top: 18%;
+    animation-delay: 2s;
+}
+
+.dot-4 {
+    right: 22%;
+    top: 29%;
+    animation-delay: 1.5s;
+}
+
+.dot-5 {
+    right: 10%;
+    top: 72%;
+    animation-delay: 3s;
+}
+
+.dot-6 {
+    left: 52%;
+    bottom: 10%;
+    animation-delay: 2.5s;
+}
+
+
+/* ==========================================================
+   KEYFRAMES
+========================================================== */
+
+@keyframes livingOrbBlue {
+
+    0%,
+    100% {
+
+        transform:
+            translate(0,0)
+            scale(1);
+
+    }
+
+    50% {
+
+        transform:
+            translate(-70px,45px)
+            scale(1.15);
+
+    }
+
+}
+
+
+@keyframes livingOrbCyan {
+
+    0%,
+    100% {
+
+        transform:
+            translate(0,0)
+            scale(1);
+
+    }
+
+    50% {
+
+        transform:
+            translate(80px,-50px)
+            scale(1.12);
+
+    }
+
+}
+
+
+@keyframes livingOrbSoft {
+
+    0%,
+    100% {
+
+        transform:
+            translate(0,0)
+            scale(1);
+
+    }
+
+    50% {
+
+        transform:
+            translate(65px,-35px)
+            scale(1.1);
+
+    }
+
+}
+
+
+@keyframes livingDot {
+
+    0%,
+    100% {
+
+        opacity: .2;
+
+        transform:
+            translate(0,0)
+            scale(.8);
+
+    }
+
+    50% {
+
+        opacity: 1;
+
+        transform:
+            translate(
+                20px,
+                -25px
+            )
+            scale(1.25);
+
+    }
+
+}
+
+.hero-image-wrapper {
+
+    will-change: transform;
+
+    transition:
+        transform .25s
+        cubic-bezier(.22,1,.36,1);
+
+}
+
+/* ==========================================================
+   CURSOR GLOW
+========================================================== */
+
+.cursor-glow {
+
+    position: fixed;
+
+    width: 180px;
+
+    height: 180px;
+
+    border-radius: 50%;
+
+    pointer-events: none;
+
+    z-index: 1;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(32,107,196,.10),
+            rgba(32,107,196,.035) 40%,
+            transparent 72%
+        );
+
+    transform:
+        translate(-50%,-50%);
+
+    opacity: 0;
+
+    transition:
+        opacity .3s ease;
+
+    mix-blend-mode: multiply;
+
+}
+
+
+@media (hover:hover) {
+
+    .cursor-glow {
+
+        opacity: 1;
+
+    }
+
+}
+
+
+@media (max-width: 991.98px) {
+
+    .cursor-glow {
+
+        display: none;
+
+    }
+
+}
+
+/* ==========================================================
+   LIVE STATUS
+========================================================== */
+
+.system-live {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+}
+
+
+.system-live-dot {
+
+    width: 8px;
+
+    height: 8px;
+
+    border-radius: 50%;
+
+    background: #2FB344;
+
+    box-shadow:
+        0 0 0 0
+        rgba(47,179,68,.35);
+
+    animation:
+        livePulse
+        1.8s
+        infinite;
+
+}
+
+
+@keyframes livePulse {
+
+    0% {
+
+        box-shadow:
+            0 0 0 0
+            rgba(47,179,68,.35);
+
+    }
+
+    70% {
+
+        box-shadow:
+            0 0 0 9px
+            rgba(47,179,68,0);
+
+    }
+
+    100% {
+
+        box-shadow:
+            0 0 0 0
+            rgba(47,179,68,0);
+
+    }
+
+}
+
+.live-clock {
+
+    margin-top: 5px;
+
+    font-size: .68rem;
+
+    font-weight: 600;
+
+    color: var(--primary);
+
+    font-variant-numeric:
+        tabular-nums;
+
+}
+
 </style>
 
 </head>
 
 
 <body>
+
+{{-- ==========================================================
+| CINEMATIC OPENING FINAL
+========================================================== --}}
+
+<div
+    id="cinematicOpening"
+    class="cinematic-opening"
+>
+
+    <div class="opening-backdrop"></div>
+
+    <div class="opening-flash"></div>
+
+    <div class="opening-aura aura-one"></div>
+    <div class="opening-aura aura-two"></div>
+
+
+    {{-- PARTIKEL --}}
+
+    <div class="opening-particles">
+
+        <i></i>
+        <i></i>
+        <i></i>
+        <i></i>
+        <i></i>
+        <i></i>
+        <i></i>
+        <i></i>
+        <i></i>
+        <i></i>
+        <i></i>
+        <i></i>
+        <i></i>
+        <i></i>
+        <i></i>
+        <i></i>
+        <i></i>
+        <i></i>
+        <i></i>
+        <i></i>
+        <i></i>
+        <i></i>
+        <i></i>
+        <i></i>
+        <i></i>
+
+    </div>
+
+
+    {{-- GARIS CAHAYA --}}
+
+    <div class="opening-orbit orbit-one"></div>
+    <div class="opening-orbit orbit-two"></div>
+
+
+    {{-- CENTER --}}
+
+    <div class="opening-center">
+
+
+        {{-- LOGO --}}
+
+        <div class="opening-logo-stage">
+
+            {{-- pecahan cahaya --}}
+
+            <span class="logo-spark spark-1"></span>
+            <span class="logo-spark spark-2"></span>
+            <span class="logo-spark spark-3"></span>
+            <span class="logo-spark spark-4"></span>
+            <span class="logo-spark spark-5"></span>
+            <span class="logo-spark spark-6"></span>
+            <span class="logo-spark spark-7"></span>
+            <span class="logo-spark spark-8"></span>
+
+
+            {{-- LOGO ASLI --}}
+
+            <div class="opening-logo-final">
+
+                <img
+                    src="{{ asset('images/logo SMAN 6.png') }}"
+                    alt="Logo SMA Negeri 6 Malinau"
+                >
+
+                <span class="logo-shine"></span>
+
+            </div>
+
+        </div>
+
+
+        {{-- BRAND --}}
+
+        <div class="opening-brand">
+
+            <div class="opening-ssis">
+                SSIS
+            </div>
+
+            <div class="opening-name">
+                Smart School Information System
+            </div>
+
+            <div class="opening-divider">
+
+                <span></span>
+
+            </div>
+
+            <div class="opening-school">
+                SMA Negeri 6 Malinau
+            </div>
+
+        </div>
+
+
+        {{-- LOADING --}}
+
+        <div class="opening-loading">
+
+            <span></span>
+            <span></span>
+            <span></span>
+
+        </div>
+
+    </div>
+
+</div>
 
 
 {{-- ==========================================================
@@ -1984,6 +4051,21 @@
 <section
     id="beranda"
     class="hero">
+
+    <div class="hero-living-bg">
+
+        <span class="living-orb orb-blue"></span>
+        <span class="living-orb orb-cyan"></span>
+        <span class="living-orb orb-soft"></span>
+
+        <span class="living-dot dot-1"></span>
+        <span class="living-dot dot-2"></span>
+        <span class="living-dot dot-3"></span>
+        <span class="living-dot dot-4"></span>
+        <span class="living-dot dot-5"></span>
+        <span class="living-dot dot-6"></span>
+
+    </div>
 
     <div class="container">
 
@@ -2257,15 +4339,29 @@
 
                             <div>
 
-                                <strong>
-                                    Sistem Aktif
-                                </strong>
+                                <div class="system-live">
 
-                                <br>
+    <span class="system-live-dot"></span>
 
-                                <small class="text-muted">
-                                    Siap digunakan
-                                </small>
+    <strong>
+        Sistem Aktif
+    </strong>
+
+</div>
+
+<br>
+
+<small class="text-muted">
+    SSIS siap digunakan
+</small>
+
+<div
+    class="live-clock"
+    id="liveClock">
+
+    00:00:00 WITA
+
+</div>
 
                             </div>
 
@@ -2768,9 +4864,9 @@
 
                     Smart School Information System
 
-                    <br>
+                   
 
-                    SMA Negeri 6 Malinau
+                    
 
                 </small>
 
@@ -2881,6 +4977,10 @@
 
 </div>
 
+<div
+    id="cursorGlow"
+    class="cursor-glow">
+</div>
 
 
 {{-- ==========================================================
@@ -2893,6 +4993,204 @@
 <script>
 
 document.addEventListener('DOMContentLoaded', function () {
+
+    /* ==========================================================
+   CINEMATIC OPENING FINAL
+========================================================== */
+
+/* ==========================================================
+   CINEMATIC OPENING FINAL
+========================================================== */
+
+const cinematicOpening =
+    document.getElementById(
+        'cinematicOpening'
+    );
+
+
+if (cinematicOpening) {
+
+    /*
+    |--------------------------------------------------------------------------
+    | LOGO SELESAI TERBENTUK
+    |--------------------------------------------------------------------------
+    |
+    | Potongan logo selesai berkumpul sekitar 2.5 - 3 detik.
+    |
+    */
+
+    setTimeout(
+        function () {
+
+            /*
+            |--------------------------------------------------------------------------
+            | Tahan logo + teks selama 1.5 detik
+            |--------------------------------------------------------------------------
+            |
+            | Jadi pengguna benar-benar sempat melihat
+            | logo dan identitas sekolah.
+            |
+            */
+
+            setTimeout(
+                function () {
+
+                    cinematicOpening.classList.add(
+                        'hide'
+                    );
+
+                },
+                1500
+            );
+
+        },
+        3000
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Hapus setelah seluruh transisi selesai
+    |--------------------------------------------------------------------------
+    */
+
+    setTimeout(
+        function () {
+
+            cinematicOpening.remove();
+
+        },
+        4500
+    );
+
+}
+
+/* ==========================================================
+   HERO PARALLAX
+========================================================== */
+
+const heroImageWrapper =
+    document.querySelector(
+        '.hero-image-wrapper'
+    );
+
+
+if (
+    heroImageWrapper &&
+    window.matchMedia(
+        '(pointer:fine)'
+    ).matches
+) {
+
+    document.addEventListener(
+        'mousemove',
+        function (event) {
+
+            const x =
+                (
+                    event.clientX /
+                    window.innerWidth
+                ) - .5;
+
+            const y =
+                (
+                    event.clientY /
+                    window.innerHeight
+                ) - .5;
+
+
+            heroImageWrapper.style.transform =
+                `
+                translate(
+                    ${x * 10}px,
+                    ${y * 8}px
+                )
+                `;
+
+        }
+    );
+
+}
+
+/* ==========================================================
+   CURSOR GLOW
+========================================================== */
+
+const cursorGlow =
+    document.getElementById(
+        'cursorGlow'
+    );
+
+
+if (
+    cursorGlow &&
+    window.matchMedia(
+        '(pointer:fine)'
+    ).matches
+) {
+
+    document.addEventListener(
+        'mousemove',
+        function (event) {
+
+            cursorGlow.style.left =
+                event.clientX + 'px';
+
+            cursorGlow.style.top =
+                event.clientY + 'px';
+
+        }
+    );
+
+}
+
+/* ==========================================================
+   LIVE CLOCK
+========================================================== */
+
+const liveClock =
+    document.getElementById(
+        'liveClock'
+    );
+
+
+function updateLiveClock() {
+
+    if (! liveClock) {
+        return;
+    }
+
+
+    const now =
+        new Date();
+
+
+    const time =
+        now.toLocaleTimeString(
+            'id-ID',
+            {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false,
+                timeZone: 'Asia/Makassar'
+            }
+        );
+
+
+    liveClock.textContent =
+        time + ' WITA';
+
+}
+
+
+updateLiveClock();
+
+
+setInterval(
+    updateLiveClock,
+    1000
+);
 
 
     /* ==========================================================
