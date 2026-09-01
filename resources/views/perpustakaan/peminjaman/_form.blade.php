@@ -579,98 +579,106 @@
 {{-- DAFTAR BUKU --}}
 {{-- ========================================================= --}}
 
-<div class="card shadow-sm border-0">
+<div class="card shadow-sm border-0 card-daftar-buku">
 
-    <div class="card-header">
+    {{-- ===================================================== --}}
+    {{-- HEADER --}}
+    {{-- ===================================================== --}}
 
-    <div class="d-flex align-items-center w-100">
+    <div class="card-header daftar-buku-header">
 
-        <div class="d-flex align-items-center">
+        <div class="daftar-buku-header-content">
 
-            <span class="avatar bg-azure-lt me-3">
+            {{-- ICON --}}
+            <div class="daftar-buku-icon">
+
                 <i class="ti ti-books"></i>
-            </span>
 
-            <div>
+            </div>
+
+            {{-- JUDUL --}}
+            <div class="daftar-buku-title">
 
                 <h3 class="card-title mb-1">
+
                     Daftar Buku
+
                 </h3>
 
-                <div class="text-secondary">
+                <div class="text-secondary daftar-buku-description">
+
                     Pilih satu atau lebih buku yang akan dipinjam oleh siswa.
+
                 </div>
 
             </div>
 
+            {{-- TAMBAH --}}
+            <button
+                type="button"
+                id="btnTambahBuku"
+                class="btn btn-primary daftar-buku-btn-tambah">
+
+                <i class="ti ti-plus me-1"></i>
+
+                <span>Tambah Buku</span>
+
+            </button>
+
         </div>
-
-        <button
-            type="button"
-            id="btnTambahBuku"
-            class="btn btn-primary ms-auto">
-
-            <i class="ti ti-plus me-1"></i>
-            Tambah Buku
-
-        </button>
 
     </div>
 
-</div>
 
-    <div class="table-responsive">
+    {{-- ===================================================== --}}
+    {{-- ISI --}}
+    {{-- ===================================================== --}}
+
+    <div class="daftar-buku-wrapper">
 
         <table
-            class="table table-vcenter table-hover card-table mb-0">
+            class="table table-vcenter mb-0 tabel-daftar-buku">
+
+            {{-- ================================================= --}}
+            {{-- HEADER TABLE --}}
+            {{-- ================================================= --}}
 
             <thead>
 
                 <tr>
 
-                    <th width="38%">
-
+                    <th class="kolom-buku">
                         Buku
-
                     </th>
 
-                    <th width="20%">
-
+                    <th class="kolom-kelas">
                         Kelas
-
                     </th>
 
-                    <th
-                        width="12%"
-                        class="text-center">
-
+                    <th class="kolom-stok text-center">
                         Stok
-
                     </th>
 
-                    <th
-                        width="12%"
-                        class="text-center">
-
+                    <th class="kolom-jumlah text-center">
                         Jumlah
-
                     </th>
 
-                    <th
-                        width="18%"
-                        class="text-center">
-
+                    <th class="kolom-aksi text-center">
                         Aksi
-
                     </th>
 
                 </tr>
 
             </thead>
 
+
+            {{-- ================================================= --}}
+            {{-- BODY --}}
+            {{-- ================================================= --}}
+
             <tbody id="tbodyBuku">
 
-                {{-- JavaScript akan mengisi di sini --}}
+                {{-- JavaScript mengisi baris di sini --}}
 
             </tbody>
 
@@ -678,31 +686,32 @@
 
     </div>
 
-    <div class="card-footer">
 
-        <div class="d-flex justify-content-between align-items-center">
+    {{-- ===================================================== --}}
+    {{-- FOOTER --}}
+    {{-- ===================================================== --}}
 
-            <div>
+    <div class="card-footer daftar-buku-footer">
 
-                <small class="text-secondary">
+        <div class="daftar-buku-footer-info">
 
+            <div class="daftar-buku-footer-text">
+
+                <i class="ti ti-info-circle me-1"></i>
+
+                <span>
                     Pilih minimal satu buku sebelum transaksi disimpan.
-
-                </small>
-
-            </div>
-
-            <div>
-
-                <span
-                    id="jumlahBaris"
-                    class="badge bg-primary-lt text-primary">
-
-                    0 Buku Dipilih
-
                 </span>
 
             </div>
+
+            <span
+                id="jumlahBaris"
+                class="badge bg-primary-lt text-primary">
+
+                0 Buku Dipilih
+
+            </span>
 
         </div>
 
@@ -716,84 +725,166 @@
 
 <template id="templateBuku">
 
-<tr>
+<tr class="baris-buku">
 
-    {{-- ========================= --}}
+    {{-- ===================================================== --}}
     {{-- BUKU --}}
-    {{-- ========================= --}}
+    {{-- ===================================================== --}}
 
-    <td>
+    <td
+        class="kolom-buku"
+        data-label="Buku">
 
-        <select
-            class="form-select buku-select"
-            name="buku[]"
-            required>
+        <div class="field-buku">
 
-            <option value="">
+            <label class="mobile-field-label">
+                Buku
+            </label>
 
-                -- Pilih Buku --
+            <select
+                class="form-select buku-select"
+                name="buku[]"
+                required>
 
-            </option>
+                <option value="">
+                    -- Pilih Buku --
+                </option>
 
-        </select>
+            </select>
+
+        </div>
 
     </td>
 
-    {{-- ========================= --}}
+
+    {{-- ===================================================== --}}
     {{-- KELAS --}}
-    {{-- ========================= --}}
+    {{-- ===================================================== --}}
 
-    <td>
+    <td
+        class="kolom-kelas"
+        data-label="Kelas">
 
-        <input
-            type="text"
-            class="form-control kelas-buku bg-light"
-            readonly>
+        <div class="field-buku">
+
+            <label class="mobile-field-label">
+                Kelas
+            </label>
+
+            <input
+                type="text"
+                class="form-control kelas-buku bg-light"
+                readonly>
+
+        </div>
 
     </td>
 
-    {{-- ========================= --}}
+
+    {{-- ===================================================== --}}
     {{-- STOK --}}
-    {{-- ========================= --}}
+    {{-- ===================================================== --}}
 
-    <td>
+    <td
+        class="kolom-stok"
+        data-label="Stok">
 
-        <input
-            type="text"
-            class="form-control stok-buku text-center fw-bold bg-light"
-            readonly>
+        <div class="field-buku">
+
+            <label class="mobile-field-label">
+                Stok
+            </label>
+
+            <input
+                type="text"
+                class="form-control stok-buku text-center fw-semibold bg-light"
+                readonly>
+
+        </div>
 
     </td>
 
-    {{-- ========================= --}}
+
+    {{-- ===================================================== --}}
     {{-- JUMLAH --}}
-    {{-- ========================= --}}
+    {{-- ===================================================== --}}
 
-    <td>
+    <td
+        class="kolom-jumlah"
+        data-label="Jumlah">
 
-        <input
-            type="number"
-            class="form-control jumlah-buku text-center"
-            name="jumlah[]"
-            value="1"
-            min="1"
-            required>
+        <div class="field-buku">
+
+            <label class="mobile-field-label">
+                Jumlah
+            </label>
+
+            <div class="quantity-control">
+
+                {{-- KURANG --}}
+                <button
+                    type="button"
+                    class="quantity-btn quantity-minus"
+                    aria-label="Kurangi jumlah">
+
+                    <i class="ti ti-minus"></i>
+
+                </button>
+
+
+                {{-- NILAI --}}
+                <input
+                    type="number"
+                    class="form-control jumlah-buku"
+                    name="jumlah[]"
+                    value="1"
+                    min="1"
+                    readonly
+                    required>
+
+
+                {{-- TAMBAH --}}
+                <button
+                    type="button"
+                    class="quantity-btn quantity-plus"
+                    aria-label="Tambah jumlah">
+
+                    <i class="ti ti-plus"></i>
+
+                </button>
+
+            </div>
+
+        </div>
 
     </td>
 
-    {{-- ========================= --}}
+
+    {{-- ===================================================== --}}
     {{-- AKSI --}}
-    {{-- ========================= --}}
+    {{-- ===================================================== --}}
 
-    <td class="text-center">
+    <td
+        class="kolom-aksi"
+        data-label="Aksi">
 
-        <button
-            type="button"
-            class="btn btn-outline-danger hapus-buku">
+        <div class="field-buku field-aksi">
 
-            <i class="ti ti-trash"></i>
+            <label class="mobile-field-label">
+                Aksi
+            </label>
 
-        </button>
+            <button
+                type="button"
+                class="btn btn-outline-danger hapus-buku">
+
+                <i class="ti ti-trash me-1"></i>
+
+                <span>Hapus</span>
+
+            </button>
+
+        </div>
 
     </td>
 
@@ -896,198 +987,853 @@
 <style>
 
 /* ==========================================================
-   PEMINJAMAN BUKU
+   DAFTAR BUKU
 ========================================================== */
 
-#reader{
+.card-daftar-buku {
 
-    border:2px dashed var(--tblr-border-color);
+    border-radius: 16px;
 
-    border-radius:14px;
-
-    overflow:hidden;
-
-    background:#fff;
+    overflow: hidden;
 
 }
 
-#reader video{
 
-    border-radius:12px;
+/* ==========================================================
+   HEADER
+========================================================== */
 
-}
+.daftar-buku-header {
 
-/* ========================================== */
-
-.card{
-
-    transition:.2s ease;
+    padding: 1.25rem;
 
 }
 
-.card:hover{
 
-    box-shadow:0 .5rem 1rem rgba(0,0,0,.06);
+.daftar-buku-header-content {
 
-}
+    display: flex;
 
-/* ========================================== */
+    align-items: center;
 
-.card-header{
-
-    padding:1rem 1.25rem;
+    gap: 1rem;
 
 }
 
-.card-title{
 
-    font-weight:600;
+.daftar-buku-icon {
 
-}
+    width: 52px;
 
-/* ========================================== */
+    height: 52px;
 
-.form-control[readonly]{
+    flex: 0 0 52px;
 
-    background:var(--tblr-bg-surface-secondary);
+    display: flex;
 
-    cursor:default;
+    align-items: center;
 
-}
+    justify-content: center;
 
-/* ========================================== */
+    border-radius: 10px;
 
-.table thead th{
+    background: var(--tblr-primary-lt);
 
-    font-weight:600;
+    color: var(--tblr-primary);
 
-    white-space:nowrap;
-
-}
-
-.table tbody td{
-
-    vertical-align:middle;
+    font-size: 1.5rem;
 
 }
 
-/* ========================================== */
 
-.buku-select{
+.daftar-buku-title {
 
-    min-width:260px;
+    min-width: 0;
 
-}
-
-.kelas-buku{
-
-    font-weight:500;
+    flex: 1;
 
 }
 
-.stok-buku{
 
-    text-align:center;
+.daftar-buku-title .card-title {
 
-    font-weight:600;
+    font-size: 1.15rem;
 
-    color:var(--tblr-success);
-
-}
-
-.jumlah-buku{
-
-    text-align:center;
-
-    width:90px;
-
-    margin:auto;
+    font-weight: 600;
 
 }
 
-/* ========================================== */
 
-#jumlahBaris{
+.daftar-buku-description {
 
-    font-size:.75rem;
-
-    padding:.55rem .9rem;
+    line-height: 1.45;
 
 }
 
-/* ========================================== */
 
-.btn{
+.daftar-buku-btn-tambah {
 
-    border-radius:10px;
+    flex: 0 0 auto;
 
-}
+    border-radius: 10px;
 
-.btn-outline-danger{
+    min-height: 42px;
 
-    width:40px;
+    padding-left: 1rem;
 
-    height:40px;
-
-    padding:0;
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
+    padding-right: 1rem;
 
 }
 
-/* ========================================== */
 
-#previewSiswa{
+/* ==========================================================
+   TABLE WRAPPER
+========================================================== */
 
-    min-height:230px;
+.daftar-buku-wrapper {
 
-    display:flex;
-
-    flex-direction:column;
-
-    justify-content:center;
-
-    align-items:center;
+    width: 100%;
 
 }
 
-#detailSiswa{
 
-    animation:fadeIn .25s ease;
+/* ==========================================================
+   TABLE
+========================================================== */
+
+.tabel-daftar-buku {
+
+    width: 100%;
+
+    table-layout: fixed;
 
 }
 
-@keyframes fadeIn{
 
-    from{
+.tabel-daftar-buku thead th {
 
-        opacity:0;
+    background: var(--tblr-bg-surface-secondary);
 
-        transform:translateY(8px);
+    color: var(--tblr-secondary);
+
+    font-size: .8rem;
+
+    font-weight: 600;
+
+    text-transform: uppercase;
+
+    letter-spacing: .02em;
+
+    padding: .85rem 1rem;
+
+    border-bottom: 1px solid var(--tblr-border-color);
+
+}
+
+
+.tabel-daftar-buku tbody td {
+
+    padding: 1rem;
+
+    vertical-align: middle;
+
+    border-bottom: 1px solid var(--tblr-border-color-translucent);
+
+}
+
+
+/* ==========================================================
+   LEBAR KOLOM DESKTOP
+========================================================== */
+
+.kolom-buku {
+
+    width: 35%;
+
+}
+
+
+.kolom-kelas {
+
+    width: 17%;
+
+}
+
+
+.kolom-stok {
+
+    width: 12%;
+
+}
+
+
+.kolom-jumlah {
+
+    width: 18%;
+
+}
+
+
+.kolom-aksi {
+
+    width: 18%;
+
+}
+
+
+/* ==========================================================
+   SELECT BUKU
+========================================================== */
+
+.buku-select {
+
+    width: 100%;
+
+    min-height: 42px;
+
+    border-radius: 10px;
+
+}
+
+
+.kelas-buku,
+.stok-buku {
+
+    min-height: 42px;
+
+    border-radius: 10px;
+
+}
+
+
+.stok-buku {
+
+    color: var(--tblr-success);
+
+}
+
+
+/* ==========================================================
+   LABEL MOBILE
+========================================================== */
+
+.mobile-field-label {
+
+    display: none;
+
+}
+
+
+/* ==========================================================
+   QUANTITY
+========================================================== */
+
+.quantity-control {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: .4rem;
+
+}
+
+
+.quantity-btn {
+
+    width: 40px;
+
+    height: 40px;
+
+    padding: 0;
+
+    flex: 0 0 40px;
+
+    border-radius: 10px;
+
+    border: 1px solid var(--tblr-border-color);
+
+    background: var(--tblr-bg-surface);
+
+    color: var(--tblr-secondary);
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    cursor: pointer;
+
+    transition: .15s ease;
+
+}
+
+
+.quantity-btn:hover {
+
+    background: var(--tblr-bg-surface-secondary);
+
+}
+
+
+.quantity-btn:active {
+
+    transform: scale(.95);
+
+}
+
+
+.quantity-btn:disabled {
+
+    opacity: .45;
+
+    cursor: not-allowed;
+
+}
+
+
+.quantity-plus {
+
+    color: var(--tblr-primary);
+
+}
+
+
+.quantity-minus {
+
+    color: var(--tblr-secondary);
+
+}
+
+
+.jumlah-buku {
+
+    width: 55px;
+
+    min-height: 40px;
+
+    padding: .375rem .25rem;
+
+    text-align: center;
+
+    font-weight: 600;
+
+    border-radius: 10px;
+
+}
+
+
+/*
+   Hilangkan spinner bawaan browser
+*/
+
+.jumlah-buku::-webkit-inner-spin-button,
+.jumlah-buku::-webkit-outer-spin-button {
+
+    -webkit-appearance: none;
+
+    margin: 0;
+
+}
+
+
+.jumlah-buku {
+
+    -moz-appearance: textfield;
+
+}
+
+
+/* ==========================================================
+   AKSI
+========================================================== */
+
+.hapus-buku {
+
+    min-height: 40px;
+
+    border-radius: 10px;
+
+    white-space: nowrap;
+
+}
+
+
+.field-aksi {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+}
+
+
+/* ==========================================================
+   FOOTER
+========================================================== */
+
+.daftar-buku-footer {
+
+    padding: 1rem 1.25rem;
+
+}
+
+
+.daftar-buku-footer-info {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 1rem;
+
+}
+
+
+.daftar-buku-footer-text {
+
+    color: var(--tblr-secondary);
+
+    font-size: .875rem;
+
+}
+
+
+#jumlahBaris {
+
+    white-space: nowrap;
+
+    font-size: .75rem;
+
+    padding: .5rem .75rem;
+
+    border-radius: 8px;
+
+}
+
+
+/* ==========================================================
+   TABLET
+========================================================== */
+
+@media (max-width: 991.98px) {
+
+    .daftar-buku-header {
+
+        padding: 1rem;
 
     }
 
-    to{
 
-        opacity:1;
+    .daftar-buku-header-content {
 
-        transform:none;
+        gap: .75rem;
+
+    }
+
+
+    .daftar-buku-icon {
+
+        width: 48px;
+
+        height: 48px;
+
+        flex-basis: 48px;
+
+    }
+
+
+    .tabel-daftar-buku tbody td {
+
+        padding: .75rem;
+
+    }
+
+
+    .buku-select {
+
+        min-width: 0;
 
     }
 
 }
 
-/* ========================================== */
 
-@media(max-width:991px){
+/* ==========================================================
+   MOBILE
+========================================================== */
 
-    .buku-select{
+@media (max-width: 767.98px) {
 
-        min-width:220px;
+
+    /* ------------------------------------------------------
+       CARD
+    ------------------------------------------------------ */
+
+    .card-daftar-buku {
+
+        border-radius: 14px;
+
+    }
+
+
+    /* ------------------------------------------------------
+       HEADER
+    ------------------------------------------------------ */
+
+    .daftar-buku-header {
+
+        padding: 1rem;
+
+    }
+
+
+    .daftar-buku-header-content {
+
+        display: grid;
+
+        grid-template-columns: 48px 1fr;
+
+        grid-template-areas:
+
+            "icon title"
+
+            "button button";
+
+        gap: .7rem .75rem;
+
+        align-items: center;
+
+    }
+
+
+    .daftar-buku-icon {
+
+        grid-area: icon;
+
+        width: 48px;
+
+        height: 48px;
+
+        flex-basis: auto;
+
+    }
+
+
+    .daftar-buku-title {
+
+        grid-area: title;
+
+    }
+
+
+    .daftar-buku-title .card-title {
+
+        font-size: 1.05rem;
+
+    }
+
+
+    .daftar-buku-description {
+
+        font-size: .875rem;
+
+    }
+
+
+    .daftar-buku-btn-tambah {
+
+        grid-area: button;
+
+        width: fit-content;
+
+        min-height: 42px;
+
+        padding-left: 1rem;
+
+        padding-right: 1rem;
+
+    }
+
+
+    /* ------------------------------------------------------
+       TABLE DIUBAH MENJADI CARD
+    ------------------------------------------------------ */
+
+    .daftar-buku-wrapper {
+
+        padding: .75rem;
+
+    }
+
+
+    .tabel-daftar-buku {
+
+        display: block;
+
+        width: 100%;
+
+    }
+
+
+    .tabel-daftar-buku thead {
+
+        display: none;
+
+    }
+
+
+    .tabel-daftar-buku tbody {
+
+        display: block;
+
+        width: 100%;
+
+    }
+
+
+    /* ------------------------------------------------------
+       SETIAP BARIS = CARD
+    ------------------------------------------------------ */
+
+    .tabel-daftar-buku tbody tr.baris-buku {
+
+        display: block;
+
+        width: 100%;
+
+        margin-bottom: .75rem;
+
+        padding: 1rem;
+
+        border: 1px solid var(--tblr-border-color);
+
+        border-radius: 14px;
+
+        background: var(--tblr-bg-surface);
+
+        box-shadow: 0 2px 6px rgba(0,0,0,.04);
+
+    }
+
+
+    .tabel-daftar-buku tbody tr.baris-buku:last-child {
+
+        margin-bottom: 0;
+
+    }
+
+
+    /* ------------------------------------------------------
+       TD
+    ------------------------------------------------------ */
+
+    .tabel-daftar-buku tbody tr.baris-buku td {
+
+        display: block;
+
+        width: 100%;
+
+        padding: 0;
+
+        border: 0;
+
+        margin-bottom: 1rem;
+
+    }
+
+
+    .tabel-daftar-buku tbody tr.baris-buku td:last-child {
+
+        margin-bottom: 0;
+
+    }
+
+
+    /* ------------------------------------------------------
+       LABEL
+    ------------------------------------------------------ */
+
+    .mobile-field-label {
+
+        display: block;
+
+        margin-bottom: .4rem;
+
+        color: var(--tblr-secondary);
+
+        font-size: .82rem;
+
+        font-weight: 500;
+
+    }
+
+
+    /* ------------------------------------------------------
+       FIELD
+    ------------------------------------------------------ */
+
+    .field-buku {
+
+        width: 100%;
+
+    }
+
+
+    .buku-select,
+    .kelas-buku,
+    .stok-buku {
+
+        width: 100%;
+
+        min-height: 44px;
+
+        border-radius: 10px;
+
+    }
+
+
+    /* ------------------------------------------------------
+       JUMLAH
+    ------------------------------------------------------ */
+
+    .quantity-control {
+
+        width: 100%;
+
+        justify-content: flex-start;
+
+        gap: .5rem;
+
+    }
+
+
+    .quantity-btn {
+
+        width: 44px;
+
+        height: 44px;
+
+        flex-basis: 44px;
+
+        border-radius: 10px;
+
+    }
+
+
+    .jumlah-buku {
+
+        width: 64px;
+
+        min-height: 44px;
+
+        font-size: 1rem;
+
+    }
+
+
+    /* ------------------------------------------------------
+       AKSI
+    ------------------------------------------------------ */
+
+    .field-aksi {
+
+        display: block;
+
+    }
+
+
+    .hapus-buku {
+
+        width: 100%;
+
+        min-height: 44px;
+
+    }
+
+
+    /* ------------------------------------------------------
+       FOOTER
+    ------------------------------------------------------ */
+
+    .daftar-buku-footer {
+
+        padding: .9rem 1rem;
+
+    }
+
+
+    .daftar-buku-footer-info {
+
+        display: flex;
+
+        flex-direction: column;
+
+        align-items: flex-start;
+
+        gap: .6rem;
+
+    }
+
+
+    .daftar-buku-footer-text {
+
+        font-size: .8rem;
+
+        line-height: 1.4;
+
+    }
+
+
+}
+
+
+/* ==========================================================
+   HP KECIL
+========================================================== */
+
+@media (max-width: 400px) {
+
+    .daftar-buku-header {
+
+        padding: .85rem;
+
+    }
+
+
+    .daftar-buku-wrapper {
+
+        padding: .6rem;
+
+    }
+
+
+    .tabel-daftar-buku tbody tr.baris-buku {
+
+        padding: .85rem;
+
+    }
+
+
+    .daftar-buku-description {
+
+        font-size: .82rem;
+
+    }
+
+
+    .daftar-buku-btn-tambah {
+
+        width: 100%;
+
+        justify-content: center;
 
     }
 
@@ -1352,6 +2098,257 @@ if (btnTutupModalPeminjaman) {
 
 }
 
+/*
+|--------------------------------------------------------------------------
+| KONTROL JUMLAH BUKU
+|--------------------------------------------------------------------------
+*/
+
+tbody.addEventListener(
+    'click',
+    function(e) {
+
+        /*
+        |--------------------------------------------------------------------------
+        | CARI TOMBOL
+        |--------------------------------------------------------------------------
+        */
+
+        const btn =
+            e.target.closest('.quantity-btn');
+
+        if (!btn) {
+            return;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CARI BARIS
+        |--------------------------------------------------------------------------
+        */
+
+        const row =
+            btn.closest('tr');
+
+        if (!row) {
+            return;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | INPUT JUMLAH
+        |--------------------------------------------------------------------------
+        */
+
+        const input =
+            row.querySelector('.jumlah-buku');
+
+        if (!input) {
+            return;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | STOK
+        |--------------------------------------------------------------------------
+        */
+
+        const stokInput =
+            row.querySelector('.stok-buku');
+
+        const stok =
+            parseInt(
+                stokInput?.value || 0
+            );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | JUMLAH SAAT INI
+        |--------------------------------------------------------------------------
+        */
+
+        let jumlah =
+            parseInt(
+                input.value || 1
+            );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | TOMBOL KURANG
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            btn.classList.contains('quantity-minus')
+        ) {
+
+            if (jumlah > 1) {
+
+                jumlah--;
+
+            }
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | TOMBOL TAMBAH
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            btn.classList.contains('quantity-plus')
+        ) {
+
+            /*
+            | Jika stok belum tersedia
+            */
+
+            if (stok <= 0) {
+
+                tampilkanInformasi(
+                    'Stok Tidak Tersedia',
+                    'Stok buku belum tersedia.',
+                    'warning'
+                );
+
+                return;
+            }
+
+
+            /*
+            | Tidak boleh melebihi stok
+            */
+
+            if (jumlah < stok) {
+
+                jumlah++;
+
+            } else {
+
+                tampilkanInformasi(
+                    'Stok Maksimal',
+                    'Jumlah buku tidak dapat melebihi stok yang tersedia.',
+                    'warning'
+                );
+
+            }
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | SIMPAN NILAI
+        |--------------------------------------------------------------------------
+        */
+
+        input.value = jumlah;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | UPDATE STATUS TOMBOL
+        |--------------------------------------------------------------------------
+        */
+
+        updateQuantityButtons(row);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | TRIGGER INPUT
+        |--------------------------------------------------------------------------
+        |
+        | Supaya sistem validasi jumlah yang sudah kamu punya
+        | tetap berjalan.
+        |
+        */
+
+        input.dispatchEvent(
+            new Event(
+                'input',
+                {
+                    bubbles: true
+                }
+            )
+        );
+
+    }
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| UPDATE TOMBOL JUMLAH
+|--------------------------------------------------------------------------
+*/
+
+function updateQuantityButtons(row)
+{
+
+    const input =
+        row.querySelector('.jumlah-buku');
+
+    const stokInput =
+        row.querySelector('.stok-buku');
+
+    const btnMinus =
+        row.querySelector('.quantity-minus');
+
+    const btnPlus =
+        row.querySelector('.quantity-plus');
+
+
+    if (
+        !input ||
+        !btnMinus ||
+        !btnPlus
+    ) {
+        return;
+    }
+
+
+    const jumlah =
+        parseInt(
+            input.value || 1
+        );
+
+
+    const stok =
+        parseInt(
+            stokInput?.value || 0
+        );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | MINIMAL 1
+    |--------------------------------------------------------------------------
+    */
+
+    btnMinus.disabled =
+        jumlah <= 1;
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | MAKSIMAL STOK
+    |--------------------------------------------------------------------------
+    */
+
+    btnPlus.disabled =
+        stok > 0 &&
+        jumlah >= stok;
+
+}
+
     /*
     |--------------------------------------------------------------------------
     | Tambah Baris Buku
@@ -1537,21 +2534,28 @@ fetch(url)
                 option.dataset.stok || '';
 
             const jumlah =
-                row.querySelector('.jumlah-buku');
+    row.querySelector('.jumlah-buku');
 
-            jumlah.max =
-                option.dataset.stok || 1;
+const stok =
+    parseInt(option.dataset.stok || 0);
 
-            if(
-                parseInt(jumlah.value)
-                >
-                parseInt(option.dataset.stok)
-            ){
+jumlah.max = stok;
 
-                jumlah.value =
-                    option.dataset.stok;
+/*
+|--------------------------------------------------------------------------
+| Set jumlah awal
+|--------------------------------------------------------------------------
+*/
 
-            }
+if (stok > 0) {
+
+    jumlah.value = 1;
+
+} else {
+
+    jumlah.value = 1;
+
+}
 
             refreshDropdown();
 
@@ -1610,6 +2614,129 @@ fetch(url)
 
         }
     );
+
+    /*
+|--------------------------------------------------------------------------
+| Tombol Tambah / Kurang Jumlah Buku
+|--------------------------------------------------------------------------
+*/
+
+tbody.addEventListener(
+    'click',
+    function(e) {
+
+        /*
+        |--------------------------------------------------------------------------
+        | TOMBOL PLUS
+        |--------------------------------------------------------------------------
+        */
+
+        const btnPlus =
+            e.target.closest('.btn-jumlah-plus');
+
+        if (btnPlus) {
+
+            const row =
+                btnPlus.closest('tr');
+
+            const input =
+                row.querySelector('.jumlah-buku');
+
+            const stok =
+                parseInt(
+                    row.querySelector('.stok-buku').value || 0
+                );
+
+            let jumlah =
+                parseInt(input.value || 1);
+
+            /*
+            |--------------------------------------------------------------------------
+            | Jika buku belum dipilih
+            |--------------------------------------------------------------------------
+            */
+
+            if (stok <= 0) {
+
+                tampilkanInformasi(
+                    'Buku Belum Dipilih',
+                    'Silakan pilih buku terlebih dahulu.',
+                    'warning'
+                );
+
+                return;
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Tambah jumlah
+            |--------------------------------------------------------------------------
+            */
+
+            if (jumlah < stok) {
+
+                jumlah++;
+
+                input.value = jumlah;
+
+            } else {
+
+                input.value = stok;
+
+                tampilkanInformasi(
+                    'Stok Maksimal',
+                    'Jumlah peminjaman sudah mencapai stok buku yang tersedia.',
+                    'warning'
+                );
+
+            }
+
+            return;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | TOMBOL MINUS
+        |--------------------------------------------------------------------------
+        */
+
+        const btnMinus =
+            e.target.closest('.btn-jumlah-minus');
+
+        if (btnMinus) {
+
+            const row =
+                btnMinus.closest('tr');
+
+            const input =
+                row.querySelector('.jumlah-buku');
+
+            let jumlah =
+                parseInt(input.value || 1);
+
+            /*
+            |--------------------------------------------------------------------------
+            | Minimal jumlah = 1
+            |--------------------------------------------------------------------------
+            */
+
+            if (jumlah > 1) {
+
+                jumlah--;
+
+                input.value = jumlah;
+
+            } else {
+
+                input.value = 1;
+
+            }
+
+        }
+
+    }
+);
 
     /*
     |--------------------------------------------------------------------------

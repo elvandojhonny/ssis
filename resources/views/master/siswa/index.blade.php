@@ -63,6 +63,14 @@
 
                 </button>
 
+                <a
+                    href="{{ route('siswa.cetak.qr') }}"
+                    class="btn btn-outline-primary"
+                >
+                    <i class="ti ti-qrcode me-1"></i>
+                    Cetak Semua QR
+                </a>
+
 
                 {{-- Tambah Siswa --}}
 

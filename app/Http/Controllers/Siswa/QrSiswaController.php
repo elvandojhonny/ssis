@@ -70,6 +70,74 @@ class QrSiswaController extends Controller
         );
     }
 
+    public function cetakSemua(Request $request)
+{
+    /*
+    |--------------------------------------------------------------------------
+    | Ukuran Cetak
+    |--------------------------------------------------------------------------
+    */
+
+    $ukuran = $request->input('ukuran', 'B4');
+
+    if (! in_array($ukuran, ['B1', 'B2', 'B3', 'B4'])) {
+        $ukuran = 'B4';
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Ambil Semua Siswa Aktif
+    |--------------------------------------------------------------------------
+    */
+
+    $siswas = Siswa::query()
+        ->with([
+            'user',
+            'kelas',
+        ])
+        ->where('is_active', true)
+        ->whereHas('kelas', function ($query) {
+            $query->where('is_active', true);
+        })
+        ->orderBy('nama')
+        ->get();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Pastikan Semua Siswa Memiliki QR Token
+    |--------------------------------------------------------------------------
+    */
+
+    foreach ($siswas as $siswa) {
+
+        if (! $siswa->qr_token) {
+
+            $siswa->update([
+                'qr_token' => Siswa::generateUniqueQrToken(),
+            ]);
+
+        }
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Kirim ke Halaman Cetak
+    |--------------------------------------------------------------------------
+    */
+
+    return view(
+        'master.siswa.qr.cetak-semua',
+        compact(
+            'siswas',
+            'ukuran'
+        )
+    );
+}
+
 
     public function regenerate(
         Request $request,

@@ -198,6 +198,24 @@ Route::middleware(['auth', 'prevent.auth.cache'])->group(function () {
             [SiswaController::class, 'import']
         )->name('siswa.import');
 
+// =========================================================
+    // CETAK QR SISWA
+    // =========================================================
+
+    Route::get(
+        '/siswa/cetak-qr',
+        [SiswaController::class, 'cetakQr']
+    )->name('siswa.cetak.qr');
+
+
+    
+
+
+Route::resource(
+    'siswa',
+    SiswaController::class
+);
+
         Route::resource(
             'siswa',
             SiswaController::class
@@ -214,6 +232,11 @@ Route::middleware(['auth', 'prevent.auth.cache'])->group(function () {
             'petugas' => 'petugas',
         ])
         ->except('show');
+
+        Route::get(
+    'siswa/qr/cetak-semua',
+    [QrSiswaController::class, 'cetakSemua']
+)->name('siswa.qr.cetakSemua');
         
         Route::get(
             '/siswa/{siswa}/qr',

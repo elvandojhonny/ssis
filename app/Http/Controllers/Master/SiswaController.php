@@ -18,6 +18,8 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Cell\DataValidation;
 
+use Barryvdh\DomPDF\Facade\Pdf;
+
 class SiswaController extends Controller
 {
     public function index()
@@ -1076,17 +1078,55 @@ public function import(Request $request)
 
         if ($validator->fails()) {
 
-            $gagal[] =
-                "Baris {$nomorBaris}: "
-                . implode(
-                    ', ',
-                    $validator
-                        ->errors()
-                        ->all()
-                );
+    $errors = [];
 
-            continue;
+    foreach ($validator->errors()->messages() as $field => $messages) {
+
+        foreach ($messages as $message) {
+
+            switch ($field) {
+
+                case 'nis':
+                    $errors[] = "NIS {$nis} sudah terdaftar di sistem.";
+                    break;
+
+                case 'nisn':
+                    $errors[] = "NISN {$nisn} sudah terdaftar di sistem.";
+                    break;
+
+                case 'username':
+                    $errors[] = "Username '{$username}' sudah digunakan.";
+                    break;
+
+                case 'email':
+                    $errors[] = "Format email tidak valid.";
+                    break;
+
+                case 'password':
+                    $errors[] = "Password minimal 8 karakter.";
+                    break;
+
+                case 'jenis_kelamin':
+                    $errors[] = "Jenis kelamin harus L atau P.";
+                    break;
+
+                case 'nama':
+                    $errors[] = "Nama siswa wajib diisi.";
+                    break;
+
+                default:
+                    $errors[] = $message;
+                    break;
+            }
         }
+    }
+
+    $gagal[] =
+        "Baris {$nomorBaris}: "
+        . implode(', ', array_unique($errors));
+
+    continue;
+}
 
 
         /*
@@ -1211,4 +1251,125 @@ public function import(Request $request)
             $gagal
         );
 }
+
+public function cetakQr(Request $request)
+{
+    $ukuran = $request->input('ukuran', 'B4');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Validasi Ukuran
+    |--------------------------------------------------------------------------
+    */
+
+    if (! in_array($ukuran, ['B1', 'B2', 'B3', 'B4'])) {
+        $ukuran = 'B4';
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Ambil Siswa Aktif
+    |--------------------------------------------------------------------------
+    */
+
+    $siswas = Siswa::query()
+    ->with([
+        'user',
+        'kelas',
+    ])
+    ->where('is_active', true)
+    ->whereHas('kelas', function ($query) {
+        $query->where('is_active', true);
+    })
+    ->get()
+    ->sort(function ($a, $b) {
+
+        /*
+        |--------------------------------------------------------------------------
+        | URUTAN TINGKAT
+        |--------------------------------------------------------------------------
+        | X → XI → XII
+        */
+
+        $tingkatA = strtoupper(
+            trim($a->kelas?->tingkat ?? '')
+        );
+
+        $tingkatB = strtoupper(
+            trim($b->kelas?->tingkat ?? '')
+        );
+
+        $urutanTingkat = [
+            'X'   => 1,
+            'XI'  => 2,
+            'XII' => 3,
+        ];
+
+        $rankA = $urutanTingkat[$tingkatA] ?? 99;
+        $rankB = $urutanTingkat[$tingkatB] ?? 99;
+
+
+        if ($rankA !== $rankB) {
+            return $rankA <=> $rankB;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | URUTAN NAMA KELAS
+        |--------------------------------------------------------------------------
+        | Jika ada beberapa kelas dalam tingkat yang sama.
+        */
+
+        $kelasA = strtoupper(
+            trim($a->kelas?->nama ?? '')
+        );
+
+        $kelasB = strtoupper(
+            trim($b->kelas?->nama ?? '')
+        );
+
+
+        $compareKelas = strnatcasecmp(
+            $kelasA,
+            $kelasB
+        );
+
+
+        if ($compareKelas !== 0) {
+            return $compareKelas;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | URUTAN NAMA SISWA
+        |--------------------------------------------------------------------------
+        | A → Z dalam kelas masing-masing.
+        */
+
+        return strcasecmp(
+            trim($a->nama),
+            trim($b->nama)
+        );
+
+    })
+    ->values();
+
+    /*
+    |--------------------------------------------------------------------------
+    | Kirim ke View PDF
+    |--------------------------------------------------------------------------
+    */
+
+    return view(
+        'master.siswa.cetak-qr',
+        compact(
+            'siswas',
+            'ukuran'
+        )
+    );
+}
+
+
 }
