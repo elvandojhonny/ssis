@@ -9,7 +9,7 @@
         name="viewport"
         content="width=device-width, initial-scale=1.0">
 
-    <title>SMA 6 Malinau | SMA Negeri 6 Malinau - SSIS</title>
+    <title>SSIS SMA 6 Malinau</title>
 
 <meta
     name="description"
@@ -33,7 +33,7 @@
 
 <link
     rel="canonical"
-    href="https://ssis-sma6.up.railway.app/"
+    href="https://ssis-sma6malinau.site/"
 >
 
 <meta
@@ -53,7 +53,7 @@
 
 <meta
     property="og:url"
-    content="https://ssis-sma6.up.railway.app/"
+    content="https://ssis-sma6malinau.site/"
 >
 
 <meta
@@ -108,7 +108,7 @@
 
         {
             "@@type": "WebSite",
-            "@@id": "https://ssis-sma6.up.railway.app/#website",
+            "@@id": "https://ssis-sma6malinau.site/#website",
             "name": "SMA Negeri 6 Malinau",
             "alternateName": [
                 "SMA 6 Malinau",
@@ -116,19 +116,19 @@
                 "SMA Sungai Boh",
                 "SSIS SMA Negeri 6 Malinau"
             ],
-            "url": "https://ssis-sma6.up.railway.app/"
+            "url": "https://ssis-sma6malinau.site/"
         },
 
         {
             "@@type": "School",
-            "@@id": "https://ssis-sma6.up.railway.app/#school",
+            "@@id": "https://ssis-sma6malinau.site/#school",
             "name": "SMA Negeri 6 Malinau",
             "alternateName": [
                 "SMA 6 Malinau",
                 "SMA 6",
                 "SMA Sungai Boh"
             ],
-            "url": "https://ssis-sma6.up.railway.app/",
+            "url": "https://ssis-sma6malinau.site/",
             "logo": "{{ asset('images/logo SMAN 6.png') }}",
             "image": "{{ asset('images/Sma62.png') }}",
             "description": "SMA Negeri 6 Malinau di Sungai Boh dengan Sistem Informasi Sekolah (SSIS) untuk mendukung layanan akademik dan administrasi sekolah."

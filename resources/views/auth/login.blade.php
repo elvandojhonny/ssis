@@ -26,7 +26,7 @@
     >
     
     <link rel="canonical"
-    href="https://ssis-sma6.up.railway.app/">
+    href="https://ssis-sma6malinau.site/">
     
     <meta property="og:title"
     content="SSIS | Smart School Information System">
@@ -38,7 +38,7 @@
     content="website">
     
     <meta property="og:url"
-    content="https://ssis-sma6.up.railway.app/">
+    content="https://ssis-sma6malinau.site/">
     
     <meta property="og:site_name"
     content="SSIS">
