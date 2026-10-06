@@ -342,7 +342,10 @@ Peminjaman::whereIn(
 public function bukuByKelas($kelasId)
 {
     $buku = Buku::with('kelas')
-        ->where('kelas_id', $kelasId)
+        ->where(function ($query) use ($kelasId) {
+            $query->where('kelas_id', $kelasId)
+                ->orWhere('is_umum', true);
+        })
         ->where('is_active', true)
         ->where('jumlah_tersedia', '>', 0)
         ->orderBy('nama_buku')
@@ -352,8 +355,13 @@ public function bukuByKelas($kelasId)
             return [
                 'id' => $item->id,
                 'nama_buku' => $item->nama_buku,
+                'nama_penulis' => $item->nama_penulis,
+                'tahun_terbit' => $item->tahun_terbit,
                 'kelas_id' => $item->kelas_id,
-                'kelas' => optional($item->kelas)->nama,
+                'is_umum' => $item->is_umum,
+                'kelas' => $item->is_umum
+                    ? 'Umum'
+                    : optional($item->kelas)->nama,
                 'jumlah_tersedia' => $item->jumlah_tersedia,
             ];
 
@@ -448,151 +456,180 @@ public function bukuByKelas($kelasId)
     |--------------------------------------------------------------------------
     */
 
-    public function store(Request $request)
-    {
-        $request->validate([
-            'siswa_id' => [
-                'required',
-                'exists:siswa,id',
-            ],
+public function store(Request $request)
+{
+    $request->validate([
+        'siswa_id' => [
+            'required',
+            'exists:siswa,id',
+        ],
 
-            'tanggal_pinjam' => [
-                'required',
-                'date',
-            ],
+        'tanggal_pinjam' => [
+            'required',
+            'date',
+        ],
 
-            'tanggal_jatuh_tempo' => [
-                'required',
-                'date',
-                'after_or_equal:tanggal_pinjam',
-            ],
+        'tanggal_jatuh_tempo' => [
+            'required',
+            'date',
+            'after_or_equal:tanggal_pinjam',
+        ],
 
-            'buku' => [
-                'required',
-                'array',
-                'min:1',
-            ],
+        'buku' => [
+            'required',
+            'array',
+            'min:1',
+        ],
 
-            'buku.*' => [
-                'exists:buku,id',
-            ],
+        'buku.*' => [
+            'exists:buku,id',
+        ],
 
-            'jumlah' => [
-                'required',
-                'array',
-            ],
+        'jumlah' => [
+            'required',
+            'array',
+        ],
 
-            'jumlah.*' => [
-                'integer',
-                'min:1',
-            ],
+        'jumlah.*' => [
+            'integer',
+            'min:1',
+        ],
+    ]);
+
+    $petugas = Auth::user()->petugas;
+
+    if (!$petugas) {
+        return back()
+            ->with('error', 'Data petugas tidak ditemukan.');
+    }
+
+    $siswa = Siswa::with('kelas')
+        ->where('id', $request->siswa_id)
+        ->where('is_active', true)
+        ->first();
+
+    if (!$siswa) {
+        return back()
+            ->withInput()
+            ->with(
+                'error',
+                'Data siswa tidak ditemukan atau tidak aktif.'
+            );
+    }
+
+    if (
+        count($request->buku)
+        !=
+        count(array_unique($request->buku))
+    ) {
+        return back()
+            ->withInput()
+            ->with(
+                'error',
+                'Buku yang sama tidak boleh dipilih lebih dari satu kali.'
+            );
+    }
+
+    DB::beginTransaction();
+
+    try {
+
+        $peminjaman = Peminjaman::create([
+
+            'kode_peminjaman'      => $this->generateKode(),
+
+            'petugas_id'           => $petugas->id,
+
+            'siswa_id'             => $request->siswa_id,
+
+            'guru_id'              => null,
+
+            'tanggal_pinjam'       => $request->tanggal_pinjam,
+
+            'tanggal_jatuh_tempo'  => $request->tanggal_jatuh_tempo,
+
+            'status'               => 'dipinjam',
+
+            'catatan'              => $request->catatan,
+
         ]);
 
-        $petugas = Auth::user()->petugas;
+        foreach ($request->buku as $index => $bukuId) {
 
-        if (!$petugas) {
+            $buku = Buku::with('kelas')
+                ->findOrFail($bukuId);
 
-            return back()
-                ->with('error', 'Data petugas tidak ditemukan.');
-        }
+            $jumlah = (int) $request->jumlah[$index];
 
-        DB::beginTransaction();
-
-        try {
-
-            $peminjaman = Peminjaman::create([
-
-                'kode_peminjaman'      => $this->generateKode(),
-
-                'petugas_id'           => $petugas->id,
-
-                'siswa_id'             => $request->siswa_id,
-
-                'guru_id'              => null,
-
-                'tanggal_pinjam'       => $request->tanggal_pinjam,
-
-                'tanggal_jatuh_tempo'  => $request->tanggal_jatuh_tempo,
-
-                'status'               => 'dipinjam',
-
-                'catatan'              => $request->catatan,
-
-            ]);
+            /*
+            |--------------------------------------------------------------------------
+            | Cek Hak Peminjaman Buku
+            |--------------------------------------------------------------------------
+            |
+            | Buku Umum:
+            |   boleh dipinjam semua siswa.
+            |
+            | Buku Kelas:
+            |   hanya boleh dipinjam siswa dari kelas yang sama.
+            |
+            */
 
             if (
-                count($request->buku)
-                !=
-                count(array_unique($request->buku))
+                !$buku->is_umum
+                &&
+                (int) $buku->kelas_id !== (int) $siswa->kelas_id
             ) {
+                $namaKelasBuku = optional($buku->kelas)->nama ?? 'kelas tertentu';
 
-                return back()
-
-                    ->withInput()
-
-                    ->with(
-                        'error',
-                        'Buku yang sama tidak boleh dipilih lebih dari satu kali.'
-                    );
-
-            }
-
-            foreach ($request->buku as $index => $bukuId) {
-
-                $buku = Buku::findOrFail($bukuId);
-
-                $jumlah = (int) $request->jumlah[$index];
-
-                if ($buku->jumlah_tersedia < $jumlah) {
-
-                    throw new \Exception(
-                        "Stok buku {$buku->nama_buku} tidak mencukupi."
-                    );
-                }
-
-                DetailPeminjaman::create([
-
-                    'peminjaman_id' => $peminjaman->id,
-
-                    'buku_id'       => $buku->id,
-
-                    'jumlah'        => $jumlah,
-
-                ]);
-
-                $buku->decrement(
-                    'jumlah_tersedia',
-                    $jumlah
+                throw new \Exception(
+                    "Buku {$buku->nama_buku} hanya dapat dipinjam oleh siswa dari {$namaKelasBuku}."
                 );
             }
 
-            DB::commit();
+            if ($buku->jumlah_tersedia < $jumlah) {
 
-return redirect()
-    ->route('perpustakaan.peminjaman.index')
-    ->with(
-        'success',
-        'Peminjaman berhasil disimpan.'
-    );
+                throw new \Exception(
+                    "Stok buku {$buku->nama_buku} tidak mencukupi."
+                );
+            }
 
-        } catch (\Throwable $e) {
+            DetailPeminjaman::create([
 
-    DB::rollBack();
+                'peminjaman_id' => $peminjaman->id,
 
-    return back()
-        ->withInput()
-        ->with(
-            'error',
-            $e->getMessage()
-        );
-}
+                'buku_id'       => $buku->id,
+
+                'jumlah'        => $jumlah,
+
+            ]);
+
+            $buku->decrement(
+                'jumlah_tersedia',
+                $jumlah
+            );
+        }
+
+        DB::commit();
+
+        return redirect()
+            ->route('perpustakaan.peminjaman.index')
+            ->with(
+                'success',
+                'Peminjaman berhasil disimpan.'
+            );
+
+    } catch (\Throwable $e) {
+
+        DB::rollBack();
+
+        return back()
+            ->withInput()
+            ->with(
+                'error',
+                $e->getMessage()
+            );
     }
-        /*
-    |--------------------------------------------------------------------------
-    | Detail Peminjaman
-    |--------------------------------------------------------------------------
-    */
-
+}
    /*
 |--------------------------------------------------------------------------
 | Detail Peminjaman

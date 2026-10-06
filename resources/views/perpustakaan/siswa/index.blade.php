@@ -543,8 +543,10 @@
                             data-buku="{{ base64_encode(json_encode(
                                 $item->detailPeminjaman->map(function($detail){
                                     return [
-                                        'nama'=>$detail->buku?->nama_buku,
-                                        'jumlah'=>$detail->jumlah,
+                                        'nama' => $detail->buku?->nama_buku,
+                                        'penulis' => $detail->buku?->nama_penulis,
+                                        'tahun' => $detail->buku?->tahun_terbit,
+                                        'jumlah' => $detail->jumlah,
                                     ];
                                 })->values()->toArray()
                             )) }}"
@@ -767,8 +769,10 @@
         data-buku="{{ base64_encode(json_encode(
             $item->detailPeminjaman->map(function($detail){
                 return [
-                    'nama'=>$detail->buku?->nama_buku,
-                    'jumlah'=>$detail->jumlah,
+                    'nama' => $detail->buku?->nama_buku,
+                    'penulis' => $detail->buku?->nama_penulis,
+                    'tahun' => $detail->buku?->tahun_terbit,
+                    'jumlah' => $detail->jumlah,
                 ];
             })->values()->toArray()
         )) }}">
@@ -950,6 +954,10 @@
 
                                         <th>Buku</th>
 
+                                        <th width="220">
+                                            Informasi Buku
+                                        </th>
+
                                         <th width="120" class="text-center">
                                             Jumlah
                                         </th>
@@ -962,7 +970,7 @@
 
                                     <tr>
 
-                                        <td colspan="2" class="text-center">
+                                        <td colspan="3" class="text-center">
                                             -
                                         </td>
 
@@ -1084,7 +1092,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 detailDaftarBuku.innerHTML = `
                     <tr>
-                        <td colspan="2" class="text-center">
+                        <td colspan="3" class="text-center">
                             Tidak ada data buku
                         </td>
                     </tr>
@@ -1095,6 +1103,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
             buku.forEach(function(item){
 
+                const penulis = item.penulis
+                    ? item.penulis
+                    : '-';
+
+                const tahun = item.tahun
+                    ? item.tahun
+                    : '-';
+
                 detailDaftarBuku.innerHTML += `
                     <tr>
                         <td>
@@ -1102,7 +1118,26 @@ document.addEventListener('DOMContentLoaded', function () {
                                 <span class="avatar avatar-sm bg-azure-lt me-2">
                                     <i class="ti ti-book"></i>
                                 </span>
-                                ${item.nama}
+
+                                <div>
+                                    <div class="fw-semibold">
+                                        ${item.nama ?? '-'}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="small">
+                                <div>
+                                    <span class="text-secondary">Penulis:</span>
+                                    ${penulis}
+                                </div>
+
+                                <div class="mt-1">
+                                    <span class="text-secondary">Tahun Terbit:</span>
+                                    ${tahun}
+                                </div>
                             </div>
                         </td>
 

@@ -731,23 +731,80 @@ $sheet->getStyle('A11')
         }
 
         /*
+|--------------------------------------------------------------------------
+| Daftar Buku
+|--------------------------------------------------------------------------
+*/
+
+$daftarBuku = $item
+    ->detailPeminjaman
+    ->map(function ($detail) {
+
+        if (!$detail->buku) {
+
+            return
+                'Buku tidak ditemukan' .
+                PHP_EOL .
+                'Jumlah: ' .
+                $detail->jumlah;
+        }
+
+        $detailBuku =
+            $detail->buku->nama_buku;
+
+        /*
         |--------------------------------------------------------------------------
-        | Daftar Buku
+        | Nama Penulis
         |--------------------------------------------------------------------------
         */
 
-        $daftarBuku = $item
+        if (
+            !empty(
+                $detail->buku->nama_penulis
+            )
+        ) {
 
-            ->detailPeminjaman
+            $detailBuku .=
+                PHP_EOL .
+                'Penulis: ' .
+                $detail->buku->nama_penulis;
+        }
 
-            ->map(function ($detail) {
+        /*
+        |--------------------------------------------------------------------------
+        | Tahun Terbit
+        |--------------------------------------------------------------------------
+        */
 
-                return $detail->buku->nama_buku .
-                    ' (' . $detail->jumlah . ')';
+        if (
+            !empty(
+                $detail->buku->tahun_terbit
+            )
+        ) {
 
-            })
+            $detailBuku .=
+                PHP_EOL .
+                'Tahun Terbit: ' .
+                $detail->buku->tahun_terbit;
+        }
 
-            ->implode(PHP_EOL);
+        /*
+        |--------------------------------------------------------------------------
+        | Jumlah
+        |--------------------------------------------------------------------------
+        */
+
+        $detailBuku .=
+            PHP_EOL .
+            'Jumlah: ' .
+            $detail->jumlah;
+
+        return $detailBuku;
+
+    })
+    ->implode(
+        PHP_EOL . PHP_EOL
+    );
 
         /*
         |--------------------------------------------------------------------------

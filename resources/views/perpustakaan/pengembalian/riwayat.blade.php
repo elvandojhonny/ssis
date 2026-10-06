@@ -841,6 +841,18 @@
                                                                         ?->nama_buku
                                                                     ?? '-',
 
+                                                                'nama_penulis' =>
+                                                                    $detail
+                                                                        ->buku
+                                                                        ?->nama_penulis
+                                                                    ?? null,
+
+                                                                'tahun_terbit' =>
+                                                                    $detail
+                                                                        ->buku
+                                                                        ?->tahun_terbit
+                                                                    ?? null,
+
                                                                 'jumlah' =>
                                                                     $detail
                                                                         ->jumlah,
@@ -1744,19 +1756,64 @@ document.addEventListener(
                                     '<i class="ti ti-book"></i>';
 
 
-                                const nama =
+                                const infoWrapper =
                                     document.createElement(
-                                        'span'
+                                        'div'
                                     );
 
+                                infoWrapper.className =
+                                    'min-width-0';
+
+
+                                const nama =
+                                    document.createElement(
+                                        'div'
+                                    );
 
                                 nama.className =
                                     'fw-medium';
 
-
                                 nama.textContent =
                                     item.nama
                                     || '-';
+
+
+                                infoWrapper.appendChild(
+                                    nama
+                                );
+
+
+                                const meta =
+                                    document.createElement(
+                                        'div'
+                                    );
+
+                                meta.className =
+                                    'text-secondary small mt-1';
+
+                                const penulis =
+                                    item.nama_penulis
+                                    ? `Penulis: ${item.nama_penulis}`
+                                    : '';
+
+                                const tahun =
+                                    item.tahun_terbit
+                                    ? `Tahun terbit: ${item.tahun_terbit}`
+                                    : '';
+
+                                const metaParts = [
+                                    penulis,
+                                    tahun
+                                ].filter(Boolean);
+
+                                if (metaParts.length > 0) {
+                                    meta.textContent =
+                                        metaParts.join(' • ');
+
+                                    infoWrapper.appendChild(
+                                        meta
+                                    );
+                                }
 
 
                                 wrapper.appendChild(
@@ -1765,7 +1822,7 @@ document.addEventListener(
 
 
                                 wrapper.appendChild(
-                                    nama
+                                    infoWrapper
                                 );
 
 

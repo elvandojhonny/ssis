@@ -2413,40 +2413,127 @@ function updateQuantityButtons(row)
 
         });
 
+    /*
+    |--------------------------------------------------------------------------
+    | Urutkan daftar buku
+    |--------------------------------------------------------------------------
+    | Buku untuk kelas siswa ditampilkan lebih dulu,
+    | kemudian Buku Umum. Di dalam masing-masing kelompok
+    | diurutkan berdasarkan nama buku A-Z.
+    |--------------------------------------------------------------------------
+    */
+    const daftarTerurut = [...daftarBuku].sort(function(a, b){
+
+        const umumA = a.is_umum ? 1 : 0;
+        const umumB = b.is_umum ? 1 : 0;
+
+        if(umumA !== umumB){
+            return umumA - umumB;
+        }
+
+        return String(a.nama_buku || '')
+            .localeCompare(
+                String(b.nama_buku || ''),
+                'id',
+                { sensitivity: 'base' }
+            );
+    });
+
     document.querySelectorAll('.buku-select')
         .forEach(function(select){
 
             const current = select.value;
 
-            select.innerHTML =
-                '<option value="">-- Pilih Buku --</option>';
+            select.innerHTML = '';
 
-            daftarBuku.forEach(function(item){
+            const optionAwal = document.createElement('option');
+            optionAwal.value = '';
+            optionAwal.textContent = '-- Pilih Buku --';
+            select.appendChild(optionAwal);
 
-                if(
-                    selected.includes(String(item.id))
-                    &&
-                    current != item.id
-                ){
-                    return;
-                }
-
-                select.innerHTML += `
-                <option
-                    value="${item.id}"
-                    data-kelas-id="${item.kelas_id}"
-                    data-kelas="${item.kelas}"
-                    data-stok="${item.jumlah_tersedia}">
-                    ${item.nama_buku}
-                </option>
-                `;
-
+            const bukuKelas = daftarTerurut.filter(function(item){
+                return !item.is_umum;
             });
+
+            const bukuUmum = daftarTerurut.filter(function(item){
+                return item.is_umum;
+            });
+
+            function buatOption(item){
+
+                const option = document.createElement('option');
+
+                option.value = item.id;
+                option.dataset.kelasId = item.kelas_id ?? '';
+                option.dataset.kelas = item.kelas ?? '';
+                option.dataset.stok = item.jumlah_tersedia ?? 0;
+                option.dataset.umum = item.is_umum ? '1' : '0';
+                option.dataset.penulis = item.nama_penulis ?? '';
+                option.dataset.tahunTerbit = item.tahun_terbit ?? '';
+
+                const namaBuku = item.nama_buku || 'Tanpa Nama Buku';
+                const penulis = item.nama_penulis
+                    ? `Penulis: ${item.nama_penulis}`
+                    : 'Penulis: -';
+                const tahun = item.tahun_terbit
+                    ? `Tahun: ${item.tahun_terbit}`
+                    : 'Tahun: -';
+
+                option.textContent =
+                    `${namaBuku} | ${penulis} | ${tahun}`;
+
+                return option;
+            }
+
+            if(bukuKelas.length > 0){
+
+                const groupKelas = document.createElement('optgroup');
+                groupKelas.label = 'Buku Kelas Siswa';
+
+                bukuKelas.forEach(function(item){
+
+                    if(
+                        selected.includes(String(item.id))
+                        &&
+                        String(current) !== String(item.id)
+                    ){
+                        return;
+                    }
+
+                    groupKelas.appendChild(buatOption(item));
+                });
+
+                if(groupKelas.children.length > 0){
+                    select.appendChild(groupKelas);
+                }
+            }
+
+            if(bukuUmum.length > 0){
+
+                const groupUmum = document.createElement('optgroup');
+                groupUmum.label = 'Buku Umum';
+
+                bukuUmum.forEach(function(item){
+
+                    if(
+                        selected.includes(String(item.id))
+                        &&
+                        String(current) !== String(item.id)
+                    ){
+                        return;
+                    }
+
+                    groupUmum.appendChild(buatOption(item));
+                });
+
+                if(groupUmum.children.length > 0){
+                    select.appendChild(groupUmum);
+                }
+            }
 
             select.value = current;
 
         });
-
 }
 
 
@@ -2463,7 +2550,14 @@ function updateQuantityButtons(row)
                     return;
                 }
 
-                option.hidden = String(option.dataset.kelasId) !== String(kelasId);
+                /* Buku Umum selalu boleh dipilih oleh semua kelas. */
+                if(option.dataset.umum === '1'){
+                    option.hidden = false;
+                    return;
+                }
+
+                option.hidden =
+                    String(option.dataset.kelasId) !== String(kelasId);
 
             });
 
@@ -2528,7 +2622,9 @@ fetch(url)
                 console.log(daftarBuku);
 
             row.querySelector('.kelas-buku').value =
-                option.dataset.kelas || '';
+                option.dataset.umum === '1'
+                    ? 'Umum'
+                    : (option.dataset.kelas || '');
 
             row.querySelector('.stok-buku').value =
                 option.dataset.stok || '';

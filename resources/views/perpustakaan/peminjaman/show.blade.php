@@ -976,6 +976,42 @@
 
                                             @if($detail->buku)
 
+                                                @if($detail->buku->nama_penulis)
+
+                                                    <div
+                                                        class="
+                                                            text-secondary
+                                                            small
+                                                            mt-1
+                                                        "
+                                                    >
+
+                                                        <i class="ti ti-user me-1"></i>
+
+                                                        {{ $detail->buku->nama_penulis }}
+
+                                                    </div>
+
+                                                @endif
+
+                                                @if($detail->buku->tahun_terbit)
+
+                                                    <div
+                                                        class="
+                                                            text-secondary
+                                                            small
+                                                            mt-1
+                                                        "
+                                                    >
+
+                                                        <i class="ti ti-calendar me-1"></i>
+
+                                                        {{ $detail->buku->tahun_terbit }}
+
+                                                    </div>
+
+                                                @endif
+
                                                 <div
                                                     class="
                                                         text-secondary
@@ -1002,7 +1038,19 @@
 
                                 <td>
 
-                                    @if($detail->buku?->kelas)
+                                    @if($detail->buku?->is_umum)
+
+                                        <span
+                                            class="
+                                                badge
+                                                bg-green-lt
+                                                text-green
+                                            "
+                                        >
+                                            Umum
+                                        </span>
+
+                                    @elseif($detail->buku?->kelas)
 
                                         <span
                                             class="
@@ -1019,8 +1067,6 @@
                                                     ->tingkat
                                                 ?? ''
                                             }}
-
-                                           
 
                                         </span>
 
@@ -1259,6 +1305,42 @@
 
                             @if($detail->buku)
 
+                                @if($detail->buku->nama_penulis)
+
+                                    <div
+                                        class="
+                                            text-secondary
+                                            small
+                                            mt-1
+                                        "
+                                    >
+
+                                        <i class="ti ti-user me-1"></i>
+
+                                        {{ $detail->buku->nama_penulis }}
+
+                                    </div>
+
+                                @endif
+
+                                @if($detail->buku->tahun_terbit)
+
+                                    <div
+                                        class="
+                                            text-secondary
+                                            small
+                                            mt-1
+                                        "
+                                    >
+
+                                        <i class="ti ti-calendar me-1"></i>
+
+                                        {{ $detail->buku->tahun_terbit }}
+
+                                    </div>
+
+                                @endif
+
                                 <div
                                     class="
                                         text-secondary
@@ -1299,7 +1381,19 @@
                                 Kelas
                             </div>
 
-                            @if($detail->buku?->kelas)
+                            @if($detail->buku?->is_umum)
+
+                                <span
+                                    class="
+                                        badge
+                                        bg-green-lt
+                                        text-green
+                                    "
+                                >
+                                    Umum
+                                </span>
+
+                            @elseif($detail->buku?->kelas)
 
                                 <span
                                     class="

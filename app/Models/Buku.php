@@ -14,23 +14,22 @@ class Buku extends Model
     protected $fillable = [
         'kelas_id',
         'nama_buku',
+        'nama_penulis',
+        'tahun_terbit',
         'jumlah',
         'jumlah_tersedia',
+        'is_umum',
         'is_active',
     ];
 
     protected function casts(): array
     {
         return [
+            'tahun_terbit' => 'integer',
+            'is_umum' => 'boolean',
             'is_active' => 'boolean',
         ];
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Relasi
-    |--------------------------------------------------------------------------
-    */
 
     public function kelas()
     {

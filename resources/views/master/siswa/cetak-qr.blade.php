@@ -84,7 +84,7 @@
     */
 
     $backgroundImage =
-        asset('images/Sma62.png');
+        asset('images/QR1.png');
 
 
     /*

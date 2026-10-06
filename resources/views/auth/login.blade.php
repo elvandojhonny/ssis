@@ -9,47 +9,68 @@
         content="width=device-width, initial-scale=1"
     >
 
-    <title>SSIS | Smart School Information System - SMA Negeri 6 Malinau</title>
+    <title>Login | SSIS SMA Negeri 6 Malinau</title>
 
-    <meta name="description"
-    content="Portal resmi Smart School Information System (SSIS) SMA Negeri 6 Malinau. Akses sistem akademik, absensi siswa, perpustakaan digital, CBT, dan layanan sekolah secara online.">
-    
-    <meta name="keywords"
-    content="SSIS, SMA Negeri 6 Malinau, Smart School, Sistem Informasi Sekolah, Absensi, Perpustakaan, CBT">
-    
-    <meta name="robots" content="index, follow">
+    <meta
+        name="description"
+        content="Portal resmi Smart School Information System (SSIS) SMA Negeri 6 Malinau. Akses sistem akademik, absensi siswa, perpustakaan digital, CBT, dan layanan sekolah secara online."
+    >
+
+    <meta
+        name="keywords"
+        content="SSIS, SMA Negeri 6 Malinau, Smart School, Sistem Informasi Sekolah, Absensi, Perpustakaan, CBT, SSIS CBT, Login SSIS"
+    >
+
+    <meta name="robots" content="noindex, nofollow">
 
     <link
-    rel="icon"
-    type="image/png"
-    href="{{ asset('images/logo SMAN 6.png') }}"
+        rel="icon"
+        type="image/png"
+        href="{{ asset('favicon.png') }}"
     >
-    
-    <link rel="canonical"
-    href="https://ssis-sma6malinau.site/">
-    
-    <meta property="og:title"
-    content="SSIS | Smart School Information System">
-    
-    <meta property="og:description"
-    content="Portal resmi Smart School Information System SMA Negeri 6 Malinau.">
-    
-    <meta property="og:type"
-    content="website">
-    
-    <meta property="og:url"
-    content="https://ssis-sma6malinau.site/">
-    
-    <meta property="og:site_name"
-    content="SSIS">
-    
-    <meta property="og:image"
-    content="{{ asset('images/logo SMAN 6.png') }}">
-    
-    @vite([
-        'resources/css/app.css',
-        'resources/js/app.js'
-    ])
+
+    <link
+        rel="apple-touch-icon"
+        href="{{ asset('favicon.png') }}"
+    >
+
+    <link
+        rel="canonical"
+        href="{{ route('login') }}"
+    >
+
+    <meta
+        property="og:title"
+        content="SSIS | Smart School Information System"
+    >
+
+    <meta
+        property="og:description"
+        content="Portal resmi Smart School Information System SMA Negeri 6 Malinau."
+    >
+
+    <meta
+        property="og:type"
+        content="website"
+    >
+
+    <meta
+        property="og:url"
+        content="{{ route('login') }}"
+    >
+
+    <meta
+        property="og:site_name"
+        content="SSIS"
+    >
+
+    <meta
+        property="og:image"
+        content="{{ asset('images/logo SMAN 6.png') }}"
+    >
+
+    {{-- Vite --}}
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
 
@@ -914,31 +935,23 @@
         }
 
 
-        #panduanModal iframe{
+        #panduanModal iframe {
+            width: 100%;
+            height: 70vh;
+            border: none;
+        }
 
-    width:100%;
+        @media(max-width:768px) {
 
-    height:70vh;
+            #panduanModal .modal-dialog {
+                margin: .5rem;
+            }
 
-    border:none;
+            #panduanModal iframe {
+                height: 60vh;
+            }
 
-}
-
-@media(max-width:768px){
-
-    #panduanModal .modal-dialog{
-
-        margin:.5rem;
-
-    }
-
-    #panduanModal iframe{
-
-        height:60vh;
-
-    }
-
-}
+        }
 
     </style>
 
@@ -947,12 +960,9 @@
 
 <body>
 
-
     <main class="login-page">
 
-
         <div class="login-container">
-
 
             <!-- =====================================================
                  SCHOOL IDENTITY
@@ -960,14 +970,11 @@
 
             <div class="login-brand">
 
-
                 <!-- LOGO -->
 
                 <div class="login-logo-scene">
 
-
                     <div class="login-logo-orbit">
-
 
                         <img
                             src="{{ asset('images/logo SMAN 6.png') }}"
@@ -975,12 +982,9 @@
                             class="login-logo"
                         >
 
-
                     </div>
 
-
                 </div>
-
 
 
                 <h1 class="login-school-name">
@@ -992,10 +996,7 @@
                     Smart School Information System
                 </p>
 
-
             </div>
-
-
 
 
             <!-- =====================================================
@@ -1004,34 +1005,26 @@
 
             <div class="card login-card">
 
-
                 <div class="login-card-body">
-
 
                     <!-- HEADER -->
 
                     <div class="login-card-header">
 
-
                         <div class="login-card-eyebrow">
                             Portal SSIS
                         </div>
 
-
                         <h2 class="login-title">
                             Selamat Datang
                         </h2>
-
 
                         <p class="login-description">
                             Masuk menggunakan akun Anda untuk mengakses
                             sistem informasi sekolah.
                         </p>
 
-
                     </div>
-
-
 
 
                     <!-- FORM -->
@@ -1041,15 +1034,11 @@
                         method="POST"
                     >
 
-
                         @csrf
-
-
 
                         <!-- USERNAME -->
 
                         <div class="login-form-group">
-
 
                             <label
                                 for="username"
@@ -1058,44 +1047,24 @@
                                 Username
                             </label>
 
-
                             <input
                                 id="username"
                                 type="text"
                                 name="username"
                                 value="{{ old('username') }}"
-                                class="
-                                    form-control
-                                    login-input
-                                    @error('username')
-                                        is-invalid
-                                    @enderror
-                                "
+                                class="form-control login-input"
                                 placeholder="Masukkan username"
                                 autocomplete="username"
                                 autofocus
                                 required
                             >
 
-
-                            @error('username')
-
-                                <div class="invalid-feedback">
-                                    {{ $message }}
-                                </div>
-
-                            @enderror
-
-
                         </div>
-
-
 
 
                         <!-- PASSWORD -->
 
                         <div class="login-form-group">
-
 
                             <label
                                 for="password"
@@ -1104,76 +1073,50 @@
                                 Password
                             </label>
 
-
                             <input
                                 id="password"
                                 type="password"
                                 name="password"
-                                class="
-                                    form-control
-                                    login-input
-                                "
+                                class="form-control login-input"
                                 placeholder="Masukkan password"
                                 autocomplete="current-password"
                                 required
                             >
 
-
                         </div>
-
-
 
 
                         <!-- OPTIONS -->
 
                         <div class="login-options">
 
-
-                            <label
-                                class="
-                                    form-check
-                                    login-remember
-                                "
-                            >
-
+                            <label class="form-check login-remember">
 
                                 <input
                                     type="checkbox"
                                     name="remember"
                                     class="form-check-input"
+                                    value="1"
                                 >
-
 
                                 <span class="form-check-label">
                                     Ingat saya
                                 </span>
 
-
                             </label>
 
-
-
-                            
-
-
                         </div>
-
-
 
 
                         <!-- SUBMIT -->
 
                         <button
                             type="submit"
-                            class="
-                                btn
-                                btn-primary
-                                login-button
-                                w-100
-                            "
+                            class="btn btn-primary login-button w-100"
                         >
                             Login
                         </button>
+
 
                         <div class="d-grid gap-2 mt-3">
 
@@ -1190,13 +1133,9 @@
 
                     </form>
 
-
                 </div>
 
-
             </div>
-
-
 
 
             <!-- =====================================================
@@ -1205,22 +1144,17 @@
 
             <div class="login-footer-note">
 
-
                 <span
                     class="login-footer-dot"
                 ></span>
-
 
                 <span>
                     Sistem informasi sekolah terintegrasi
                 </span>
 
-
             </div>
 
-
         </div>
-
 
     </main>
 

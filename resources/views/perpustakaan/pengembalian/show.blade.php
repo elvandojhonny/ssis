@@ -201,6 +201,11 @@
             overflow-wrap: anywhere;
         }
 
+        .mobile-book-name .small {
+            font-size: 11px;
+            line-height: 1.4;
+        }
+
         .mobile-book-qty {
             display: flex;
             flex-direction: column;
@@ -648,12 +653,30 @@
                                             </span>
 
 
-                                            <div class="fw-semibold">
+                                            <div>
 
-                                                {{
-                                                    $detail->buku?->nama_buku
-                                                    ?? 'Buku tidak ditemukan'
-                                                }}
+                                                <div class="fw-semibold">
+
+                                                    {{
+                                                        $detail->buku?->nama_buku
+                                                        ?? 'Buku tidak ditemukan'
+                                                    }}
+
+                                                </div>
+
+                                                @if($detail->buku?->nama_penulis)
+                                                    <div class="text-secondary small mt-1">
+                                                        <i class="ti ti-user me-1"></i>
+                                                        Penulis: {{ $detail->buku->nama_penulis }}
+                                                    </div>
+                                                @endif
+
+                                                @if($detail->buku?->tahun_terbit)
+                                                    <div class="text-secondary small mt-1">
+                                                        <i class="ti ti-calendar me-1"></i>
+                                                        Tahun terbit: {{ $detail->buku->tahun_terbit }}
+                                                    </div>
+                                                @endif
 
                                             </div>
 
@@ -741,10 +764,26 @@
 
                             <div class="mobile-book-name">
 
-                                {{
-                                    $detail->buku?->nama_buku
-                                    ?? 'Buku tidak ditemukan'
-                                }}
+                                <div>
+                                    {{
+                                        $detail->buku?->nama_buku
+                                        ?? 'Buku tidak ditemukan'
+                                    }}
+                                </div>
+
+                                @if($detail->buku?->nama_penulis)
+                                    <div class="text-secondary small fw-normal mt-1">
+                                        <i class="ti ti-user me-1"></i>
+                                        Penulis: {{ $detail->buku->nama_penulis }}
+                                    </div>
+                                @endif
+
+                                @if($detail->buku?->tahun_terbit)
+                                    <div class="text-secondary small fw-normal mt-1">
+                                        <i class="ti ti-calendar me-1"></i>
+                                        Tahun terbit: {{ $detail->buku->tahun_terbit }}
+                                    </div>
+                                @endif
 
                             </div>
 
